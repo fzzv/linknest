@@ -1,3 +1,4 @@
+import { cn } from '@linknest/utils/lib';
 import { type JSX } from 'react';
 
 export function Card({
@@ -5,23 +6,34 @@ export function Card({
   title,
   children,
   href,
+  description,
 }: {
   className?: string;
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   href: string;
+  description?: string;
 }): JSX.Element {
   return (
-    <a
-      className={className}
-      href={`${href}?utm_source=create-turbo&utm_medium=basic&utm_campaign=create-turbo"`}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      <h2>
-        {title} <span>-&gt;</span>
-      </h2>
-      <p>{children}</p>
-    </a>
+    <div className={cn('card card-side bg-base-100 shadow-sm', className)}>
+      <figure>
+        ?
+      </figure>
+      <div className="card-body">
+        { children ? (
+          children
+        ) : (
+          <>
+            <h2 className="card-title">{title}</h2>
+            <p>{description}</p>
+            <div className="card-actions justify-end">
+              <button className="btn btn-primary" onClick={() => window.open(href, '_blank')}>
+                Go to
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

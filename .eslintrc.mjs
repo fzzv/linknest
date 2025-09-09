@@ -1,4 +1,4 @@
-import { libraryConfig } from "@repo/eslint-config/library";
+import { libraryConfig } from "@linknest/eslint-config/library";
 import tsParser from "@typescript-eslint/parser";
 
 export default [

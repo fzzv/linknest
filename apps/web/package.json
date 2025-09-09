@@ -11,7 +11,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
+    "@linknest/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.1.13",
     "daisyui": "^5.1.9",
     "next": "^15.4.2",
@@ -20,8 +20,8 @@
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@linknest/eslint-config": "workspace:*",
+    "@linknest/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
