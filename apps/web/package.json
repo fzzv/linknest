@@ -15,6 +15,7 @@
     "@linknest/utils": "workspace:^",
     "@tailwindcss/postcss": "^4.1.13",
     "daisyui": "^5.1.9",
+    "lucide-react": "^0.543.0",
     "next": "^15.4.2",
     "postcss": "^8.5.6",
     "react": "^19.1.0",
