@@ -16,13 +16,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "src/*"
-      ]
-    }
-  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -34,11 +27,17 @@
     }
   },
   "dependencies": {
-    "@nestjs/mapped-types": "*"
+    "@nestjs/common": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "nestjs-cls": "^6.0.1",
+    "pg-connection-string": "^2.9.1",
+    "postgres": "^3.4.7"
   },
   "devDependencies": {
     "@linknest/eslint-config": "workspace:*",
     "@linknest/typescript-config": "workspace:*",
+    "@types/express": "^4.17.17",
     "@types/node": "^22.10.7",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.2",

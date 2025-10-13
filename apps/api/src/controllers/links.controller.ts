@@ -7,10 +7,9 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { LinksService } from './links.service';
+import { LinksService } from 'src/services/links.service';
 
-import { CreateLinkDto } from '@linknest/api/links/dto/create-link.dto';
-import { UpdateLinkDto } from '@linknest/api/links/dto/update-link.dto';
+import { CreateLinkDto, UpdateLinkDto } from '@linknest/api';
 
 @Controller('links')
 export class LinksController {
