@@ -220,9 +220,15 @@ importers:
       class-validator:
         specifier: ^0.14.2
         version: 0.14.2
+      kysely:
+        specifier: ^0.28.5
+        version: 0.28.8
       nestjs-cls:
         specifier: ^6.0.1
         version: 6.0.1(@nestjs/common@11.1.6)(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      nestjs-kysely:
+        specifier: ^3.1.1
+        version: 3.1.1(@nestjs/common@11.1.6)(@nestjs/core@11.1.6)(kysely@0.28.8)(reflect-metadata@0.2.2)
       pg-connection-string:
         specifier: ^2.9.1
         version: 2.9.1

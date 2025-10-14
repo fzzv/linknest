@@ -58,10 +58,10 @@ const getEnv = (): EnvData => {
   // 配置数据库连接参数
   const parts = {
     connectionType: 'parts',
-    host: dto.DB_HOSTNAME || 'database',
+    host: dto.DB_HOSTNAME || 'localhost',
     port: dto.DB_PORT || 5432,
     username: dto.DB_USERNAME || 'postgres',
-    password: dto.DB_PASSWORD || 'postgres',
+    password: dto.DB_PASSWORD || 'Fan0124.',
     database: dto.DB_DATABASE_NAME || 'linknest',
   } as const;
 
