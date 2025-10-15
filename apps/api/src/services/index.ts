@@ -1,7 +1,7 @@
-import { LinksService } from "src/services/links.service";
 import { UserService } from "src/services/user.service";
+import { CategoryService } from "src/services/category.service";
 
 export const services = [
-  LinksService,
   UserService,
+  CategoryService,
 ]

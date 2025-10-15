@@ -105,7 +105,7 @@ const getEnv = (): EnvData => {
       },
       bigint: { // 设置 bigint 类型转换
         to: 20,
-        from: [20],
+        from: [20, 1700],
         parse: (value: string) => Number.parseInt(value),
         serialize: (value: number) => value.toString(),
       },

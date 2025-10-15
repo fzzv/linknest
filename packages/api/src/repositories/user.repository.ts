@@ -1,6 +1,5 @@
 import { Insertable, Kysely } from "kysely";
-import { DB } from "../schema";
-import { UserTable } from "../schema/tables/user.table";
+import { DB, User } from "../schema/tables";
 import { Injectable } from "@nestjs/common";
 import { InjectKysely } from "nestjs-kysely";
 
@@ -8,7 +7,7 @@ import { InjectKysely } from "nestjs-kysely";
 export class UserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  async createUser(user: Insertable<UserTable>) {
+  async createUser(user: Insertable<User>) {
     return await this.db.insertInto('user').values(user).execute();
   }
 

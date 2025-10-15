@@ -1,44 +1,37 @@
-import { Link } from './entities/link.entity';
-
-import { CreateLinkDto } from './dtos/create-link.dto';
-import { UpdateLinkDto } from './dtos/update-link.dto';
 import { CreateUserDto } from './dtos/user.dto';
+import { CreateCategoryDto } from './dtos/category.dto';
 
 import { ConfigRepository } from './repositories/config.repository';
 import { LoggingRepository } from './repositories/logging.repository';
 import { UserRepository } from './repositories/user.repository';
+import { CategoryRepository } from './repositories/category.repository';
 
 import { GlobalExceptionFilter } from './middlewares/global-exception.filter';
 
 export * from './common/enum';
 
-export * from './schema';
+export * from './schema/tables';
 
 export {
-  Link,
-  CreateLinkDto,
-  UpdateLinkDto,
   CreateUserDto,
+  CreateCategoryDto,
   ConfigRepository,
   LoggingRepository,
   GlobalExceptionFilter,
   UserRepository,
+  CategoryRepository,
 };
 
 export const dto = {
-  CreateLinkDto,
-  UpdateLinkDto,
   CreateUserDto,
-}
-
-export const entities = {
-  Link,
+  CreateCategoryDto,
 }
 
 export const repositories = [
   ConfigRepository,
   LoggingRepository,
   UserRepository,
+  CategoryRepository,
 ]
 
 export const middlewares = [
