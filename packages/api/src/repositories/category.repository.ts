@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { InjectKysely } from "nestjs-kysely";
 import { Kysely } from "kysely";
-import { Category, DB } from "../schema/tables";
+import { CategoryTable, DB } from "../schema/tables";
 import { Insertable } from "kysely";
 
 @Injectable()
 export class CategoryRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  create(category: Insertable<Category>) {
+  create(category: Insertable<CategoryTable>) {
     return this.db.insertInto('category').values(category).returningAll().executeTakeFirstOrThrow();
   }
 
@@ -20,7 +20,8 @@ export class CategoryRepository {
       .execute();
   }
 
-  async deleteCategory(id: number | string) {
-    return await this.db.deleteFrom('category').where('id', '=', Number(id)).execute();
+  async deleteCategory(id: string) {
+    console.log(await this.db.deleteFrom('category').where('id', '=', id).executeTakeFirst())
+    return await this.db.deleteFrom('category').where('id', '=', id).execute();
   }
 }

@@ -17,7 +17,8 @@ export class CategoryController {
   }
 
   @Delete(':id')
-  deleteCategory(@Param('id') id: string | number) {
+  deleteCategory(@Param('id') id: string) {
+    console.log(id, typeof id, 'id');
     return this.categoryService.deleteCategory(id);
   }
 }

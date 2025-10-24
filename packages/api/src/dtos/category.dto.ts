@@ -17,7 +17,7 @@ export class CreateCategoryDto {
   @IsNotEmpty()
   icon?: string;
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  user_id: number;
+  user_id: string;
 }

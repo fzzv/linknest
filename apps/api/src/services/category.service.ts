@@ -1,13 +1,12 @@
-import { Insertable } from "kysely";
 import { Injectable } from "@nestjs/common";
-import { Category, CategoryRepository } from "@linknest/api";
+import { Insertable } from "kysely";
+import { CategoryTable } from "@linknest/api";
+import { BaseService } from "./base.service";
 
 @Injectable()
-export class CategoryService {
+export class CategoryService extends BaseService {
 
-  constructor(private readonly categoryRepository: CategoryRepository) {}
-
-  async createCategory(category: Insertable<Category>) {
+  async createCategory(category: Insertable<CategoryTable>) {
     return await this.categoryRepository.create(category);
   }
 
@@ -15,7 +14,7 @@ export class CategoryService {
     return await this.categoryRepository.getAllCategories();
   }
 
-  async deleteCategory(id: string | number) {
+  async deleteCategory(id: string) {
     return await this.categoryRepository.deleteCategory(id);
   }
 }

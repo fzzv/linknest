@@ -11,28 +11,117 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export interface Category {
+export interface BookmarkTable {
+  category_id: string | null;
+  created_at: Generated<Timestamp | null>;
+  description: string | null;
+  favicon_url: string | null;
+  id: Generated<string>;
+  image_url: string | null;
+  is_public: Generated<boolean | null>;
+  sort: Generated<number | null>;
+  title: string;
+  updated_at: Generated<Timestamp | null>;
+  url: string;
+  user_id: string | null;
+  view_count: Generated<number | null>;
+}
+
+export interface BookmarkTagTable {
+  bookmark_id: string | null;
+  created_at: Generated<Timestamp | null>;
+  id: Generated<string>;
+  tag_id: string | null;
+}
+
+export interface BookmarkViewTable {
+  bookmark_id: string | null;
+  browser_id: string | null;
+  id: Generated<string>;
+  ip_address: string | null;
+  os_id: string | null;
+  referrer: string | null;
+  user_agent: string | null;
+  viewed_at: Generated<Timestamp | null>;
+}
+
+export interface BrowserTable {
+  id: Generated<string>;
+  name: string;
+}
+
+export interface CategoryTable {
   created_at: Generated<Timestamp | null>;
   description: string | null;
   icon: string | null;
-  id: Generated<number>;
+  id: Generated<string>;
   name: string;
   sort: Generated<number | null>;
   updated_at: Generated<Timestamp | null>;
-  user_id: number | null;
+  user_id: string | null;
 }
 
-export interface User {
+export interface CollectionTable {
+  created_at: Generated<Timestamp | null>;
+  description: string | null;
+  id: Generated<string>;
+  is_public: Generated<boolean | null>;
+  name: string;
+  updated_at: Generated<Timestamp | null>;
+  user_id: string | null;
+}
+
+export interface CollectionBookmarkTable {
+  bookmark_id: string | null;
+  collection_id: string | null;
+  created_at: Generated<Timestamp | null>;
+  id: Generated<string>;
+  sort: Generated<number | null>;
+}
+
+export interface OperatingSystemTable {
+  id: Generated<string>;
+  name: string;
+}
+
+export interface TagTable {
+  color: Generated<string | null>;
+  created_at: Generated<Timestamp | null>;
+  id: Generated<string>;
+  name: string;
+  user_id: string | null;
+}
+
+export interface UserTable {
   avatar_url: string | null;
   created_at: Generated<Timestamp | null>;
   email: string;
-  id: Generated<number>;
+  id: Generated<string>;
   password: string;
   updated_at: Generated<Timestamp | null>;
   username: string;
 }
 
+export interface WebsiteMetadataTable {
+  description: string | null;
+  favicon_url: string | null;
+  id: Generated<string>;
+  image_url: string | null;
+  last_updated: Generated<Timestamp | null>;
+  title: string | null;
+  url: string;
+}
+
 export interface DB {
-  category: Category;
-  user: User;
+  bookmark: BookmarkTable;
+  bookmark_tag: BookmarkTagTable;
+  bookmark_view: BookmarkViewTable;
+  browser: BrowserTable;
+  category: CategoryTable;
+  collection: CollectionTable;
+  collection_bookmark: CollectionBookmarkTable;
+  operating_system: OperatingSystemTable;
+  tag: TagTable;
+  user: UserTable;
+  website_metadata: WebsiteMetadataTable;
 }

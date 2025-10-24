@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
-import { UserRepository, User } from "@linknest/api";
-import { Insertable } from "kysely";
+import { CreateUserDto, mapUser, UserResponseDto } from "@linknest/api";
+import { BaseService } from "./base.service";
 
 @Injectable()
-export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+export class UserService extends BaseService {
 
-  async create(user: Insertable<User>) {
-    await this.userRepository.createUser(user);
+  async create(dto: CreateUserDto): Promise<UserResponseDto> {
+    const user = await this.userRepository.createUser(dto);
+    return mapUser(user);
   }
 
   async getAllUsers() {
