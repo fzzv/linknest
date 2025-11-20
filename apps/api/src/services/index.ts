@@ -1,9 +1,8 @@
-import { BaseService } from "src/services/base.service";
-import { UserService } from "src/services/user.service";
-import { CategoryService } from "src/services/category.service";
+import { ConfigurationService } from 'src/services/configuration.service';
+import { UserService } from 'src/services/user.service';
+import { Provider } from '@nestjs/common';
 
-export const services = [
-  BaseService,
-  UserService,
-  CategoryService,
-]
+export const services: Provider[] = [
+  ConfigurationService,
+  UserService
+];
