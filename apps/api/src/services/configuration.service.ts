@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtSignOptions } from '@nestjs/jwt';
 
 @Injectable()
 export class ConfigurationService {
@@ -62,7 +63,13 @@ export class ConfigurationService {
   get jwtSecret(): string {
     return this.configService.get<string>('JWT_SECRET')!;
   }
-  get expiresIn(): string {
-    return this.configService.get<string>('JWT_EXPIRES_IN')!;
+  get expiresIn(): JwtSignOptions['expiresIn'] {
+    return this.configService.get<JwtSignOptions['expiresIn']>('JWT_EXPIRES_IN');
+  }
+  get jwtRefreshSecret(): string {
+    return this.configService.get<string>('JWT_REFRESH_SECRET') || this.jwtSecret;
+  }
+  get refreshExpiresIn(): JwtSignOptions['expiresIn'] {
+    return this.configService.get<JwtSignOptions['expiresIn']>('JWT_REFRESH_EXPIRES_IN');
   }
 }

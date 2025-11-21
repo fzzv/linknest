@@ -6,7 +6,21 @@ This package contains the database schema for the Linknest project.
 
 ```bash
 pnpm install
-pnpm dev
+pnpm build
+```
+
+## Generate
+
+```bash
+pnpm generate:docs
+```
+
+## Migration
+
+```bash
+npx prisma migrate reset
+npx prisma migrate dev --name <migration-name>
+npx prisma migrate resolve --applied <migration-name>
 ```
 
 ## Usage

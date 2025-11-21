@@ -20,10 +20,23 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String?
+  id       Int     @id @default(autoincrement())
+  email    String  @unique // 登录账号
+  password String // 密码（存 Hash 值，不要存明文）
+  nickname String? // 昵称
+  avatar   String? // 头像 URL
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model VerificationCode {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }
