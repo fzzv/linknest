@@ -10,6 +10,7 @@ import {
   SendVerificationCodeDto,
   UserDto
 } from "src/dtos";
+import { PublicApi } from "src/decorators/public-api.decorator";
 import { UserService } from "src/services/user.service";
 
 @ApiTags('用户')
@@ -28,6 +29,7 @@ export class UserController {
   @ApiOperation({ summary: '发送邮箱验证码' })
   @ApiBody({ type: SendVerificationCodeDto })
   @ApiCreatedResponse({ description: '验证码发送成功', type: MessageResponseDto })
+  @PublicApi()
   sendVerificationCode(@Body() dto: SendVerificationCodeDto) {
     return this.userService.sendVerificationCode(dto);
   }
@@ -36,6 +38,7 @@ export class UserController {
   @ApiOperation({ summary: '邮箱注册' })
   @ApiBody({ type: RegisterUserDto })
   @ApiCreatedResponse({ description: '注册成功', type: RegisterResponseDto })
+  @PublicApi()
   register(@Body() dto: RegisterUserDto) {
     return this.userService.register(dto);
   }
@@ -44,6 +47,7 @@ export class UserController {
   @ApiOperation({ summary: '邮箱+密码登录' })
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ description: '登录成功', type: AuthResponseDto })
+  @PublicApi()
   login(@Body() dto: LoginDto) {
     return this.userService.login(dto);
   }
@@ -52,6 +56,7 @@ export class UserController {
   @ApiOperation({ summary: '刷新 AccessToken/RefreshToken' })
   @ApiBody({ type: RefreshTokenDto })
   @ApiOkResponse({ description: '刷新成功', type: AuthResponseDto })
+  @PublicApi()
   refresh(@Body() dto: RefreshTokenDto) {
     return this.userService.refreshTokens(dto);
   }
