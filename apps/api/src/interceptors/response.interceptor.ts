@@ -20,7 +20,7 @@ export class ResponseInterceptor implements NestInterceptor {
 
         // 否则，返回默认的响应结构
         return {
-          code: 200,
+          code: 0,
           data,
           message: 'success',
         } satisfies ResponseEnvelope;
