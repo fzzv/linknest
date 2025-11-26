@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, Transition } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { TextField } from '@linknest/ui/text-field';
+import { useMessage } from '@linknest/ui/message';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth';
 import { login as loginRequest } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
@@ -20,7 +20,7 @@ const motionConfig = {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [message, messageHolder] = useMessage({ placement: 'top' });
   const login = useAuthStore((state) => state.login);
   const t = useTranslations('Login');
 
@@ -38,21 +38,21 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      setServerError(null);
       const data = await loginRequest(values);
       login(data);
       router.push('/');
     } catch (error) {
       if (error instanceof Error) {
-        setServerError(error.message);
+        message.error(error.message);
       } else {
-        setServerError('登录失败，请稍后重试');
+        message.error('登录失败，请稍后重试');
       }
     }
   }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 text-white bg-[#050b1a]">
+      {messageHolder}
       <div className="hidden lg:flex flex-col items-center justify-center bg-linear-to-b from-slate-950 to-slate-900 text-center space-y-6 px-12">
         <motion.div
           className="w-20 h-20 rounded-3xl bg-indigo-500/90 flex items-center justify-center text-4xl font-semibold"
@@ -96,12 +96,6 @@ export default function LoginPage() {
               error={errors.password?.message}
               actionSlot={<Link href="#" className="text-sm text-indigo-400 hover:underline">{t('forgotPassword')}</Link>}
             />
-
-            {serverError ? (
-              <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                {serverError}
-              </div>
-            ) : null}
 
             <button
               type="submit"

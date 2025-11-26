@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TextField } from '@linknest/ui/text-field';
+import { useMessage } from '@linknest/ui/message';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -13,9 +14,9 @@ import { useTranslations } from 'next-intl';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [codeCooldown, setCodeCooldown] = useState(0);
   const [sendingCode, setSendingCode] = useState(false);
+  const [message, messageHolder] = useMessage({ placement: 'top' });
 
   const t = useTranslations('Register');
 
@@ -58,13 +59,12 @@ export default function RegisterPage() {
       return;
     }
     try {
-      setFeedback(null);
       setSendingCode(true);
       await sendVerificationCode(email);
       setCodeCooldown(60);
-      setFeedback({ type: 'success', message: '验证码已发送，请检查邮箱' });
+      message.success('验证码已发送，请检查邮箱');
     } catch (error) {
-      setFeedback({ type: 'error', message: error instanceof Error ? error.message : '验证码发送失败' });
+      message.error(error instanceof Error ? error.message : '验证码发送失败');
     } finally {
       setSendingCode(false);
     }
@@ -73,23 +73,23 @@ export default function RegisterPage() {
   const onSubmit = handleSubmit(
     async (values) => {
       try {
-        setFeedback(null);
         await registerAccount(values);
-        setFeedback({ type: 'success', message: '注册成功，即将跳转至登录页' });
+        message.success('注册成功，即将跳转至登录页');
         setTimeout(() => router.push('/login'), 1200);
       } catch (error) {
-        setFeedback({ type: 'error', message: error instanceof Error ? error.message : '注册失败，请稍后再试' });
+        message.error(error instanceof Error ? error.message : '注册失败，请稍后再试');
       }
     },
     (formErrors) => {
       const firstError = Object.values(formErrors)[0];
-      const message = typeof firstError?.message === 'string' ? firstError.message : '请检查表单输入';
-      setFeedback({ type: 'error', message });
+      const msg = typeof firstError?.message === 'string' ? firstError.message : '请检查表单输入';
+      message.error(msg);
     },
   );
 
   return (
     <div className="min-h-screen bg-[#040916] text-white">
+      {messageHolder}
       <div className="flex items-center gap-2 text-xl font-semibold pt-10 pl-10">
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500 text-sm font-bold">LN</span>
         LinkNest
@@ -133,7 +133,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={handleSendCode}
                     disabled={sendingCode || codeCooldown > 0}
-                    className="h-9 rounded-lg bg-indigo-500 px-4 text-xs font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-9 rounded-lg bg-indigo-500 px-4 text-xs font-semibold text-white transition hover:bg-indigo-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {codeCooldown > 0 ? t('sentCode', { codeCooldown }) : t('sendCode')}
                   </button>
@@ -167,21 +167,10 @@ export default function RegisterPage() {
                 error={errors.confirmPassword?.message}
               />
 
-              {feedback ? (
-                <div
-                  className={`rounded-xl border px-4 py-3 text-sm ${feedback.type === 'success'
-                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
-                    : 'border-red-500/40 bg-red-500/10 text-red-300'
-                    }`}
-                >
-                  {feedback.message}
-                </div>
-              ) : null}
-
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-12 w-full rounded-xl bg-indigo-500 text-base font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-12 w-full rounded-xl cursor-pointer bg-indigo-500 text-base font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? t('creatingAccount') : t('createAccount')}
               </button>
