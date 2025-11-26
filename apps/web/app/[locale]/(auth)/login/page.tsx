@@ -10,6 +10,7 @@ import { TextField } from '@linknest/ui/text-field';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth';
 import { login as loginRequest } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
+import { useTranslations } from 'next-intl';
 
 const motionConfig = {
   initial: { opacity: 0, y: 24 },
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const login = useAuthStore((state) => state.login);
+  const t = useTranslations('Login');
 
   const {
     register,
@@ -60,7 +62,7 @@ export default function LoginPage() {
         </motion.div>
         <motion.div className="space-y-4" {...motionConfig} transition={{ ...motionConfig.transition, delay: 0.1 }}>
           <h1 className="text-4xl font-semibold tracking-wide">LinkNest</h1>
-          <p className="text-slate-400 text-lg">Your Digital Nest, Perfectly Organized.</p>
+          <p className="text-slate-400 text-lg">{t('subtitle')}</p>
         </motion.div>
       </div>
 
@@ -71,28 +73,28 @@ export default function LoginPage() {
           transition={{ ...motionConfig.transition, delay: 0.2 }}
         >
           <div className="space-y-2">
-            <h2 className="text-3xl font-semibold">Welcome Back</h2>
-            <p className="text-slate-400">Log in to access your dashboard.</p>
+            <h2 className="text-3xl font-semibold">{t('title')}</h2>
+            <p className="text-slate-400">{t('description')}</p>
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <TextField
-              label="Email Address"
+              label={t('email')}
               type="email"
-              placeholder="you@example.com"
+              placeholder={t('emailPlaceholder')}
               autoComplete="email"
               {...register('email')}
               error={errors.email?.message}
             />
 
             <TextField
-              label="Password"
+              label={t('password')}
               type="password"
-              placeholder="Enter your password"
+              placeholder={t('passwordPlaceholder')}
               autoComplete="current-password"
               {...register('password')}
               error={errors.password?.message}
-              actionSlot={<Link href="#" className="text-sm text-indigo-400 hover:underline">Forgot Password?</Link>}
+              actionSlot={<Link href="#" className="text-sm text-indigo-400 hover:underline">{t('forgotPassword')}</Link>}
             />
 
             {serverError ? (
@@ -106,14 +108,14 @@ export default function LoginPage() {
               disabled={isSubmitting}
               className="h-12 w-full rounded-xl bg-indigo-500 text-base font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? 'Signing in…' : 'Login'}
+              {isSubmitting ? 'Signing in…' : t('login')}
             </button>
           </form>
 
           <p className="text-center text-sm text-slate-400">
-            Don&apos;t have an account?{' '}
+            {t('dontHaveAccount')} {' '}
             <Link href="/register" className="text-indigo-400 font-medium hover:underline">
-              Sign Up
+              {t('signUp')}
             </Link>
           </p>
         </motion.div>

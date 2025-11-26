@@ -23,7 +23,7 @@ const FALLBACK_ICON = LucideIcons.Circle || (() => null)
 
 const SvgIcon: React.FC<SvgIconProps> = ({ name, size = 24, strokeWidth = 2, color, className, ...rest }) => {
   // runtime 从导入的对象中取图标组件
-  const IconComponent = (LucideIcons as any)[name] ?? FALLBACK_ICON
+  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<LucideProps>>)[name] ?? FALLBACK_ICON
 
   // 如果传入了非字符串或组件不存在，也不会抛错，只渲染占位
   if (!IconComponent) return null

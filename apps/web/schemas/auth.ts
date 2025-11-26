@@ -6,7 +6,7 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = loginSchema.extend({
-  nickname: z.string().max(30, '昵称最多 30 个字符').optional().or(z.literal('')).transform((value) => value?.trim() || undefined),
+  nickname: z.string().max(30, '昵称最多 30 个字符').optional(),
   code: z.string().regex(/^[0-9]{4,6}$/u, '请输入 4-6 位数字验证码'),
   confirmPassword: z.string().min(6, '确认密码至少 6 位'),
 }).superRefine((data, ctx) => {

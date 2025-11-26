@@ -1,0 +1,41 @@
+{
+  "Metadata": {
+    "title": "LinkNest",
+    "description": "LinkNest is a link aggregation platform"
+  },
+  "Login": {
+    "title": "Welcome Back",
+    "description": "Log in to access your dashboard.",
+    "subtitle": "Your Digital Nest, Perfectly Organized.",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot Password?",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "dontHaveAccount": "Don't have an account?"
+  },
+  "Register": {
+    "title": "Create Your LinkNest Account",
+    "description": "Organize your digital world, one link at a time.",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter your nickname",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "code": "Email Verification Code",
+    "codePlaceholder": "Enter the 6-digit code",
+    "sendCode": "Send Code",
+    "sentCode": "Sent (${codeCooldown}s)",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "passwordRequirements": "Password must be at least 8 characters long and contain at least one uppercase letter and one number",
+    "confirmPasswordRequirements": "Passwords do not match",
+    "creatingAccount": "Creating Account…",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "login": "Log In"
+  }
+}
