@@ -11,7 +11,6 @@ export interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({ label, error, actionSlot, className, ...props }, ref) => {
-    console.log('error in text field', error);
     return (
       <label className="flex flex-col gap-2 w-full">
         <div className="flex items-center justify-between text-sm font-medium text-slate-200">
