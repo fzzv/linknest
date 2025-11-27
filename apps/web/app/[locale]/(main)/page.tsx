@@ -1,29 +1,198 @@
+'use client';
+
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
-import { Menu } from "lucide-react";
+import BookmarkCard, { BookmarkCardData } from "@/components/BookmarkCard";
+import { Button } from "@linknest/ui/button";
+import { Menu, Plus, Search, X } from "lucide-react";
+import { cn } from "@linknest/utils/lib";
 
 const sidebarItems = [
+  { label: "All Bookmarks", icon: "Bookmark", count: 24, active: true },
+  { label: "Work", icon: "Briefcase", count: 8 },
+  { label: "Design Resources", icon: "Palette", count: 6 },
+  { label: "Personal", icon: "UserRound", count: 5 },
+  { label: "Uncategorized", icon: "Box", count: 5 },
+];
+
+const bookmarkCards: BookmarkCardData[] = [
   {
-    label: "工具",
-    icon: 'ChartLine',
+    title: "DaisyUI Docs",
+    description: "The most popular component library for Tailwind CSS.",
+    image: "/window.svg",
+    gradient: "from-[#fde7d4] via-[#f9d3cc] to-[#f2c9d5]",
   },
   {
-    label: "链接",
-    icon: 'Link',
+    title: "Figma Community",
+    description: "Explore thousands of community-made templates and UI kits.",
+    image: "/cover.svg",
+    gradient: "from-[#f6f1ff] via-[#f6f1ff] to-[#e9e4fb]",
+  },
+  {
+    title: "React Official Website",
+    description: "The library for building modern web and native interfaces.",
+    image: "/window.svg",
+    gradient: "from-[#eefeea] via-[#d9f6e4] to-[#dbeed7]",
+  },
+  {
+    title: "MDN Web Docs",
+    description: "Resources for developers, by developers on web standards.",
+    image: "/window.svg",
+    gradient: "from-[#d7eafd] via-[#d9f4ff] to-[#cfe0ff]",
+  },
+  {
+    title: "Dribbble Inspiration",
+    description: "The go-to community to discover work from creative people.",
+    image: "/cover.svg",
+    gradient: "from-[#f0f2ff] via-[#e7ecff] to-[#dae2ff]",
+  },
+  {
+    title: "GitHub",
+    description: "Where the world builds software and collaborates together.",
+    image: "/window.svg",
+    gradient: "from-[#f7f7f9] via-[#d7dae2] to-[#cacfd9]",
+  },
+  {
+    title: "Framer Templates",
+    description: "Production-ready landing pages to launch ideas fast.",
+    image: "/cover.svg",
+    gradient: "from-[#fff6ec] via-[#ffe5d3] to-[#f7caa4]",
+  },
+  {
+    title: "Product Hunt",
+    description: "Daily leaderboard of new products and creative projects.",
+    image: "/window.svg",
+    gradient: "from-[#fde9de] via-[#f7d5c8] to-[#f2beb3]",
   },
 ];
 
 export default function Home() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const syncState = (matches: boolean) => {
+      if (matches) {
+        setIsSidebarOpen(false);
+      }
+    };
+    const handleChange = (event: MediaQueryListEvent) => syncState(event.matches);
+
+    syncState(mediaQuery.matches);
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleChange);
+    } else {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === "function") {
+        mediaQuery.removeEventListener("change", handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  const toggleSidebar = () => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setIsDesktopSidebarCollapsed((prev) => !prev);
+      return;
+    }
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   return (
-    <div>
+    <div className="min-h-screen bg-[#030712] text-white">
       <Sidebar
-        className="fixed top-0 left-0 lg:block hidden border-r border-gray-200"
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 hidden transition-transform duration-300 lg:flex",
+          isDesktopSidebarCollapsed ? "-translate-x-full" : "translate-x-0",
+        )}
         sidebarItems={sidebarItems}
       />
-      <main className="lg:pl-[256px] w-full h-screen">
-        <nav className="h-10 bg-green-300 flex items-center px-4 lg:hidden">
-          <Menu className="text-white" />
+
+      <Sidebar
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 w-64 shadow-2xl transition-transform duration-300 lg:hidden",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+        sidebarItems={sidebarItems}
+      />
+      {isSidebarOpen && (
+        <Button
+          aria-label="Close sidebar overlay"
+          variant="ghost"
+          size="icon"
+          color="primary"
+          className="fixed inset-0 z-50 left-54 top-2 rounded-2xl border border-white/10 text-white/80 lg:hidden"
+          onClick={closeSidebar}
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      )}
+
+      <div
+        className={cn(
+          "flex min-h-screen flex-col transition-[padding] duration-300",
+          isDesktopSidebarCollapsed ? "lg:pl-0" : "lg:pl-64",
+        )}
+      >
+        <nav className="flex h-16 items-center gap-3 border-b border-white/5 bg-[#050b16] px-4 text-sm font-semibold lg:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-2xl border border-white/10 text-white/80"
+            onClick={toggleSidebar}
+            aria-label="Toggle sidebar"
+            aria-expanded={isSidebarOpen}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span>LinkNest</span>
+          <div className="ml-auto rounded-2xl bg-white/10 px-3 py-2 text-xs text-white/70">+ Bookmark</div>
         </nav>
-      </main>
+
+        <main className="flex-1 px-4 py-10 sm:px-8 lg:px-14">
+          <div className="max-w-6xl">
+            <p className="text-xs uppercase tracking-[0.35em] text-white/40">Dashboard</p>
+            <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">All Bookmarks</h1>
+                <p className="mt-3 text-base text-white/70">
+                  Showing all your saved links. {bookmarkCards.length} items found.
+                </p>
+              </div>
+              <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+                <label className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/80 focus-within:border-white/30 md:w-72">
+                  <Search className="h-4 w-4 text-white/50" />
+                  <input
+                    type="text"
+                    placeholder="Search bookmarks..."
+                    className="w-full bg-transparent placeholder:text-white/40 focus:outline-none"
+                  />
+                </label>
+                <Button
+                  variant="outline"
+                  className="border-0 text-sm font-semibold"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New Bookmark
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <section className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {bookmarkCards.map((bookmark) => (
+              <BookmarkCard key={bookmark.title} card={bookmark} />
+            ))}
+          </section>
+        </main>
+      </div>
     </div>
   );
 }
