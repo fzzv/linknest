@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import BookmarkCard, { BookmarkCardData } from "@/components/BookmarkCard";
 import { Button } from "@linknest/ui/button";
-import { Menu, Plus, Search, X } from "lucide-react";
+import { Menu, Plus, Search } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 
 const sidebarItems = [
@@ -122,17 +122,13 @@ export default function Home() {
         )}
         sidebarItems={sidebarItems}
       />
+      {/* 关闭侧边栏 */}
       {isSidebarOpen && (
-        <Button
-          aria-label="Close sidebar overlay"
-          variant="ghost"
-          size="icon"
-          color="primary"
-          className="fixed inset-0 z-50 left-54 top-2 rounded-2xl border border-white/10 text-white/80 lg:hidden"
+        <div
+          aria-hidden
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[1px] lg:hidden"
           onClick={closeSidebar}
-        >
-          <X className="h-5 w-5" />
-        </Button>
+        />
       )}
 
       <div
