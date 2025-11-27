@@ -7,6 +7,7 @@ import { ConfigurationService } from "src/services/configuration.service";
 import { MailService } from "src/services/mail.service";
 import { VerificationCodeService } from "src/services/verification-code.service";
 import { hashPassword, verifyPassword } from "src/utils/password.util";
+import { I18nService } from "nestjs-i18n";
 
 export type JwtPayload = {
   sub: number;
@@ -24,6 +25,7 @@ export class UserService {
     private readonly verificationCodeService: VerificationCodeService,
     private readonly jwtService: JwtService,
     private readonly configurationService: ConfigurationService,
+    private readonly i18n: I18nService
   ) {}
 
   async getUsers() {
@@ -42,30 +44,30 @@ export class UserService {
   async sendVerificationCode({ email }: SendVerificationCodeDto) {
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      throw new BadRequestException('该邮箱已注册');
+      throw new BadRequestException(this.i18n.t('error.emailAlreadyExists'));
     }
 
     const cooldown = await this.verificationCodeService.getCooldownInSeconds(email);
     if (cooldown > 0) {
-      throw new BadRequestException(`请 ${cooldown} 秒后再试`);
+      throw new BadRequestException(this.i18n.t('error.tryAgainLater', { args: { cooldown } }));
     }
 
     const code = this.generateVerificationCode();
     await this.mailService.sendVerificationCode(email, code, this.verificationCodeTtlMinutes);
     await this.verificationCodeService.setCode(email, code, this.verificationCodeTtlMinutes * 60 * 1000);
 
-    return { message: '验证码已发送' };
+    return { message: this.i18n.t('sendVerificationCode') };
   }
 
   async register({ email, password, code, nickname }: RegisterUserDto) {
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      throw new BadRequestException('该邮箱已注册');
+      throw new BadRequestException(this.i18n.t('error.emailAlreadyExists'));
     }
 
     const isValidCode = await this.verificationCodeService.verifyCode(email, code);
     if (!isValidCode) {
-      throw new BadRequestException('验证码无效或已过期');
+      throw new BadRequestException(this.i18n.t('error.invalidCode'));
     }
 
     const hashedPassword = await hashPassword(password);
@@ -79,12 +81,12 @@ export class UserService {
   async login({ email, password }: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw new UnauthorizedException('邮箱或密码不正确');
+      throw new UnauthorizedException(this.i18n.t('error.invalidEmailOrPassword'));
     }
 
     const passwordValid = await verifyPassword(password, user.password);
     if (!passwordValid) {
-      throw new UnauthorizedException('邮箱或密码不正确');
+      throw new UnauthorizedException(this.i18n.t('error.invalidEmailOrPassword'));
     }
 
     const tokens = await this.generateTokens(user);
@@ -101,12 +103,12 @@ export class UserService {
         secret: this.configurationService.jwtRefreshSecret,
       });
       if (payload.tokenType !== 'refresh') {
-        throw new UnauthorizedException('Refresh Token 无效');
+        throw new UnauthorizedException(this.i18n.t('error.invalidRefreshToken'));
       }
 
       const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
       if (!user) {
-        throw new UnauthorizedException('用户不存在');
+        throw new UnauthorizedException(this.i18n.t('error.userNotFound'));
       }
 
       const tokens = await this.generateTokens(user);
@@ -115,7 +117,7 @@ export class UserService {
         user: this.toSafeUser(user),
       };
     } catch {
-      throw new UnauthorizedException('Refresh Token 无效或已过期');
+      throw new UnauthorizedException(this.i18n.t('error.invalidRefreshToken'));
     }
   }
 

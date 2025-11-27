@@ -27,6 +27,7 @@
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "nestjs-i18n": "^10.5.1",
     "nodemailer": "^7.0.10",
     "passport-jwt": "^4.0.1",
     "redis": "^5.10.0",

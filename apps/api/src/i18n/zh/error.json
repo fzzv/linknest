@@ -1,0 +1,8 @@
+{
+  "emailAlreadyExists": "该邮箱已注册",
+  "invalidCode": "验证码无效或已过期",
+  "invalidEmailOrPassword": "邮箱或密码不正确",
+  "invalidRefreshToken": "Refresh Token 无效",
+  "userNotFound": "用户不存在",
+  "tryAgainLater": "请 ${cooldown} 秒后再试"
+}
