@@ -143,7 +143,14 @@ export default function Home() {
             <Menu className="h-5 w-5" />
           </Button>
           <span>LinkNest</span>
-          <div className="ml-auto rounded-2xl bg-white/10 px-3 py-2 text-xs text-white/70">+ Bookmark</div>
+          <Button
+            variant="custom"
+            color="custom"
+            className="ml-auto"
+          >
+            <Plus className="h-5 w-5" />
+            Bookmark
+          </Button>
         </nav>
 
         <main className="flex-1 px-4 py-10 sm:px-8 lg:px-14">
