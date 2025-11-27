@@ -5,7 +5,7 @@ export interface BookmarkCardData {
   title: string;
   description: string;
   image: string;
-  gradient: string;
+  class: string;
 }
 
 interface BookmarkCardProps {
@@ -15,7 +15,7 @@ interface BookmarkCardProps {
 const BookmarkCard = ({ card }: BookmarkCardProps) => {
   return (
     <article className="rounded-3xl border border-white/5 bg-white/2 p-5 text-white transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/4">
-      <div className={cn("relative mb-5 aspect-4/3 overflow-hidden rounded-[26px] bg-linear-to-br", card.gradient)}>
+      <div className={cn("relative mb-5 aspect-4/3 overflow-hidden rounded-[26px] bg-linear-to-br", card.class)}>
         <div className="pointer-events-none absolute inset-3 rounded-[22px] border border-white/15 bg-black/10 backdrop-blur">
           <Image
             src={card.image}
