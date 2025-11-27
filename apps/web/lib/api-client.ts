@@ -9,12 +9,38 @@ export interface ApiResponse<T> {
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   token?: string;
   body?: BodyInit | Record<string, unknown> | null | undefined;
+  locale?: string;
+}
+
+function getCurrentLocale(fallback: string = 'en'): string {
+  if (typeof window === 'undefined') {
+    // 在服务端调用时就用兜底值，或者直接返回 fallback
+    return fallback;
+  }
+
+  // 优先用 <html lang="xx">
+  const htmlLang = document.documentElement.lang;
+  if (htmlLang) return htmlLang;
+
+  // 尝试从 NEXT_LOCALE cookie 中读取
+  const match = document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]+)/);
+  if (match && match[1]) {
+    try {
+      return decodeURIComponent(match[1]);
+    } catch {
+      return match[1];
+    }
+  }
+
+  // 兜底
+  return fallback;
 }
 
 export async function apiClient<T>(path: string, options: RequestOptions = {}) {
-  const { token, headers, body, ...rest } = options;
+  const { token, headers, locale, body, ...rest } = options;
   const requestHeaders: HeadersInit = {
     'Content-Type': 'application/json',
+    'Accept-Language': locale || getCurrentLocale(),
     ...headers,
   };
   if (token) {
