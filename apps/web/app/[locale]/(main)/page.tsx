@@ -109,20 +109,14 @@ export default function Home() {
     <div className="min-h-screen bg-[#030712] text-white">
       <Sidebar
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden transition-transform duration-300 lg:flex",
-          isDesktopSidebarCollapsed ? "-translate-x-full" : "translate-x-0",
-        )}
-        sidebarItems={sidebarItems}
-      />
-
-      <Sidebar
-        className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 shadow-2xl transition-transform duration-300 lg:hidden",
+          "fixed inset-y-0 left-0 z-40 w-64 shadow-2xl transition-transform duration-300",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+          "lg:shadow-none",
+          isDesktopSidebarCollapsed ? "lg:-translate-x-full" : "lg:translate-x-0",
         )}
         sidebarItems={sidebarItems}
       />
-      {/* 关闭侧边栏 */}
+      {/* 蒙层 点击蒙层关闭侧边栏 */}
       {isSidebarOpen && (
         <div
           aria-hidden
