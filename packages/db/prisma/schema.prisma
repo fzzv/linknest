@@ -28,6 +28,10 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // --- 新增关联 ---
+  categories Category[] // 用户拥有的分类
+  links      Link[] // 用户拥有的链接（方便统计总数或全局搜索）
 }
 
 model VerificationCode {
@@ -39,4 +43,65 @@ model VerificationCode {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+// --------------------------------------
+// 分类模型 (对应 Chrome 书签的文件夹)
+// --------------------------------------
+model Category {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(255) // 分类名称
+  sortOrder Int     @default(0) // 排序权重，数字越小越靠前
+  isPublic  Boolean @default(false) // 是否公开（未来扩展分享功能用）
+
+  // --- 关联用户 ---
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // --- 关联父级分类 (实现无限嵌套) ---
+  parentId Int? // 根目录的 parentId 为 null
+  parent   Category?  @relation("CategoryToParent", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryToParent")
+
+  // --- 关联链接 ---
+  links Link[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 索引优化：经常查询某用户下的某层级分类
+  @@index([userId, parentId])
+}
+
+// --------------------------------------
+// 链接模型 (对应书签)
+// --------------------------------------
+model Link {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(255)
+  url         String  @db.Text // URL 可能很长，使用 Text 类型
+  description String? @db.VarChar(1000) // 网站描述/备注
+
+  // --- 图标与封面 ---
+  icon String? @db.Text
+
+  // 封面图：存 URL
+  cover String? @db.VarChar(2048)
+
+  sortOrder Int @default(0) // 排序权重
+
+  // --- 关联分类 ---
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // --- 关联用户 ---
+  // 虽然可以通过 Category 找到 User，但直接关联 User 方便做“我的所有书签”查询
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId]) // 查找分类下的链接
+  @@index([userId]) // 查找用户的所有链接
 }
