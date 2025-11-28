@@ -1,5 +1,5 @@
 import { cn } from "@linknest/utils/lib";
-import { Button } from "@linknest/ui/button";
+import { Button } from "@linknest/ui";
 import SvgIcon, { IconName } from "@/components/SvgIcon";
 
 interface SidebarItem {

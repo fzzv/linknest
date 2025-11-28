@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import BookmarkCard, { BookmarkCardData } from "@/components/BookmarkCard";
-import { Button } from "@linknest/ui/button";
 import { Menu, Plus, Search } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { fetchCategories } from "@/services/categories";
-import { useMessage } from "@linknest/ui/message";
+import { Button, useMessage } from "@linknest/ui";
 
 type SidebarItem = {
   label: string;

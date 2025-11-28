@@ -1,8 +1,7 @@
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TextField } from '@linknest/ui/text-field';
-import { useMessage } from '@linknest/ui/message';
+import { useMessage, TextField } from '@linknest/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
