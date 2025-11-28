@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "pnpm build --watch",
     "build": "tsc -b -v",
+    "reset": "npx prisma migrate reset",
+    "migrate": "npx prisma migrate dev",
     "generate:docs": "prisma generate",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit"
