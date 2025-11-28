@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import BookmarkCard, { BookmarkCardData } from "@/components/BookmarkCard";
+import Link from "next/link";
 import { Menu, Plus, Search } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { fetchCategories } from "@/services/categories";
-import { Button, useMessage } from "@linknest/ui";
+import { Avatar, Button, useMessage } from "@linknest/ui";
+import { useAuthStore } from "@/store/auth-store";
 
 type SidebarItem = {
   label: string;
@@ -73,6 +75,7 @@ export default function Home() {
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
+  const { user, isAuthenticated, logout } = useAuthStore();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -144,6 +147,10 @@ export default function Home() {
       closeSidebar();
     }
   };
+  const handleLogout = () => {
+    logout();
+    message.success("已退出登录");
+  };
 
   return (
     <div className="min-h-screen bg-[#030712] text-white">
@@ -186,14 +193,41 @@ export default function Home() {
             <Menu className="h-5 w-5" />
           </Button>
           <span>LinkNest</span>
-          <Button
-            variant="custom"
-            color="custom"
-            className="ml-auto"
-          >
-            <Plus className="h-5 w-5" />
-            Bookmark
-          </Button>
+          <div className="ml-auto flex items-center gap-3">
+            <Button
+              variant="custom"
+              color="custom"
+              className="shrink-0"
+            >
+              <Plus className="h-5 w-5" />
+              Bookmark
+            </Button>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <Avatar
+                  src={user?.avatar ?? undefined}
+                  alt={user?.nickname ?? user?.email ?? "User"}
+                  size="sm"
+                />
+                <Button
+                  variant="ghost"
+                  color="custom"
+                  size="sm"
+                  className="border border-white/10"
+                  onClick={handleLogout}
+                >
+                  退出
+                </Button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-2xl border border-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                登录
+              </Link>
+            )}
+          </div>
         </nav>
 
         <main className="flex-1 px-4 py-10 sm:px-8 lg:px-14">
