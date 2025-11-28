@@ -4,13 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { PUBLIC_API_KEY } from 'src/decorators/public-api.decorator';
 import { ConfigurationService } from 'src/services/configuration.service';
-
-interface JwtPayload {
-  sub: number;
-  email: string;
-  tokenType?: 'access' | 'refresh';
-  [key: string]: unknown;
-}
+import { AuthUser } from 'src/types/auth';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -39,7 +33,7 @@ export class AuthGuard implements CanActivate {
 
     // 验证 token
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+      const payload = await this.jwtService.verifyAsync<AuthUser>(token, {
         secret: this.configurationService.jwtSecret,
       });
       // 检查 token 类型
@@ -47,7 +41,7 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException('Invalid token');
       }
       // 设置用户信息
-      (request as Request & { user?: JwtPayload }).user = payload;
+      (request as Request & { user?: AuthUser }).user = payload;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
     }

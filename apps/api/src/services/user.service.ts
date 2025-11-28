@@ -8,12 +8,7 @@ import { MailService } from "src/services/mail.service";
 import { VerificationCodeService } from "src/services/verification-code.service";
 import { hashPassword, verifyPassword } from "src/utils/password.util";
 import { I18nService } from "nestjs-i18n";
-
-export type JwtPayload = {
-  sub: number;
-  email: string;
-  tokenType?: 'access' | 'refresh';
-};
+import { AuthUser } from "src/types/auth";
 
 @Injectable()
 export class UserService {
@@ -99,14 +94,14 @@ export class UserService {
 
   async refreshTokens({ refreshToken }: RefreshTokenDto) {
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
+      const payload = await this.jwtService.verifyAsync<AuthUser>(refreshToken, {
         secret: this.configurationService.jwtRefreshSecret,
       });
       if (payload.tokenType !== 'refresh') {
         throw new UnauthorizedException(this.i18n.t('error.invalidRefreshToken'));
       }
 
-      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+      const user = await this.prisma.user.findUnique({ where: { id: payload.userId } });
       if (!user) {
         throw new UnauthorizedException(this.i18n.t('error.userNotFound'));
       }
@@ -126,8 +121,8 @@ export class UserService {
   }
 
   private async generateTokens(user: User) {
-    const payload: JwtPayload = { sub: user.id, email: user.email, tokenType: 'access' };
-    const refreshPayload: JwtPayload = { ...payload, tokenType: 'refresh' };
+    const payload: AuthUser = { userId: user.id, email: user.email, tokenType: 'access' };
+    const refreshPayload: AuthUser = { ...payload, tokenType: 'refresh' };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
