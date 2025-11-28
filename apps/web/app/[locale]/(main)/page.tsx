@@ -6,14 +6,16 @@ import BookmarkCard, { BookmarkCardData } from "@/components/BookmarkCard";
 import { Button } from "@linknest/ui/button";
 import { Menu, Plus, Search } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
+import { IconName } from "@/components/SvgIcon";
+import { fetchCategories } from "@/services/categories";
+import { useMessage } from "@linknest/ui/message";
 
-const sidebarItems = [
-  { label: "All Bookmarks", icon: "Bookmark", count: 24, active: true },
-  { label: "Work", icon: "Briefcase", count: 8 },
-  { label: "Design Resources", icon: "Palette", count: 6 },
-  { label: "Personal", icon: "UserRound", count: 5 },
-  { label: "Uncategorized", icon: "Box", count: 5 },
-];
+type SidebarItem = {
+  label: string;
+  icon?: IconName;
+  count?: number;
+  id: number;
+};
 
 const bookmarkCards: BookmarkCardData[] = [
   {
@@ -67,8 +69,11 @@ const bookmarkCards: BookmarkCardData[] = [
 ];
 
 export default function Home() {
+  const [message, messageHolder] = useMessage({ placement: 'top' });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
+  const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -95,6 +100,36 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const categories = await fetchCategories();
+        if (!mounted) return;
+
+        const mapped = categories.map((category) => ({
+          id: category.id,
+          label: category.name,
+          icon: (category.icon as IconName) || "Bookmark",
+          count: category.count ?? 0,
+        }));
+
+        setSidebarItems(mapped);
+        if (mapped.length) {
+          setActiveCategoryId(mapped[0]?.id);
+        }
+      } catch (error) {
+        message.error("Failed to load categories");
+        console.error("Failed to load categories", error);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const toggleSidebar = () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
       setIsDesktopSidebarCollapsed((prev) => !prev);
@@ -104,9 +139,16 @@ export default function Home() {
   };
 
   const closeSidebar = () => setIsSidebarOpen(false);
+  const handleSelectCategory = (id: number) => {
+    setActiveCategoryId(id);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      closeSidebar();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#030712] text-white">
+      {messageHolder}
       <Sidebar
         className={cn(
           "fixed inset-y-0 left-0 z-40 w-64 shadow-2xl transition-transform duration-300",
@@ -115,6 +157,8 @@ export default function Home() {
           isDesktopSidebarCollapsed ? "lg:-translate-x-full" : "lg:translate-x-0",
         )}
         sidebarItems={sidebarItems}
+        activeId={activeCategoryId ?? undefined}
+        onSelect={handleSelectCategory}
       />
       {/* 蒙层 点击蒙层关闭侧边栏 */}
       {isSidebarOpen && (

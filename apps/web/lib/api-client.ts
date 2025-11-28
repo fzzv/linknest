@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/lib/env';
+import { useAuthStore } from '@/store/auth-store';
 
 export interface ApiResponse<T> {
   code: number;
@@ -12,6 +13,18 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   locale?: string;
 }
 
+// 不需要登录的接口
+const PUBLIC_PATHS = ['/users/login', '/users/register', '/users/send-code', '/users/refresh'];
+
+function isPublicPath(path: string) {
+  return PUBLIC_PATHS.some((publicPath) => path.startsWith(publicPath));
+}
+
+/**
+ * 获取当前语言
+ * @param fallback 兜底值
+ * @returns 当前语言
+ */
 function getCurrentLocale(fallback: string = 'en'): string {
   if (typeof window === 'undefined') {
     // 在服务端调用时就用兜底值，或者直接返回 fallback
@@ -38,13 +51,24 @@ function getCurrentLocale(fallback: string = 'en'): string {
 
 export async function apiClient<T>(path: string, options: RequestOptions = {}) {
   const { token, headers, locale, body, ...rest } = options;
+  let authToken = token;
+
+  // 判断是否需要登录才能请求
+  if (!authToken && !isPublicPath(path) && typeof window !== 'undefined') {
+    try {
+      authToken = useAuthStore.getState().tokens?.accessToken ?? undefined;
+    } catch (error) {
+      console.warn('Failed to read auth token from store', error);
+    }
+  }
+
   const requestHeaders: HeadersInit = {
     'Content-Type': 'application/json',
     'Accept-Language': locale || getCurrentLocale(),
     ...headers,
   };
-  if (token) {
-    (requestHeaders as Record<string, string>).Authorization = `Bearer ${token}`;
+  if (authToken) {
+    (requestHeaders as Record<string, string>).Authorization = `Bearer ${authToken}`;
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {

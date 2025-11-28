@@ -2,18 +2,22 @@ import { cn } from "@linknest/utils/lib";
 import { Button } from "@linknest/ui/button";
 import SvgIcon, { IconName } from "@/components/SvgIcon";
 
-interface SidebarProps {
-  className?: string;
-  sidebarItems: {
-    label: string;
-    icon?: IconName;
-    href?: string;
-    count?: number | string;
-    active?: boolean;
-  }[];
+interface SidebarItem {
+  label: string;
+  icon?: IconName;
+  href?: string;
+  count?: number | string;
+  id?: number;
 }
 
-const Sidebar = ({ className, sidebarItems }: SidebarProps) => {
+interface SidebarProps {
+  className?: string;
+  sidebarItems: SidebarItem[];
+  activeId?: number;
+  onSelect?: (id: number, item: SidebarItem) => void;
+}
+
+const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) => {
   return (
     <aside className={cn("flex h-screen w-64 flex-col border-r border-white/5 bg-[#050b16] text-white/80", className)}>
       <header className="px-6 pt-10">
@@ -29,24 +33,33 @@ const Sidebar = ({ className, sidebarItems }: SidebarProps) => {
       </header>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-10">
-        {sidebarItems.map((item) => (
-          <Button
-            key={item.label}
-            variant="custom"
-            className={cn(
-              "h-auto w-full justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
-              item.active
-                ? "border-primary text-white"
-                : "text-white/70 hover:bg-white/5 hover:text-white",
-            )}
-          >
-            {item.icon && <SvgIcon name={item.icon} className="h-5 w-5" />}
-            <span className="flex-1 text-left">{item.label}</span>
-            {item.count !== undefined && (
-              <span className="text-xs font-normal text-white/50">{item.count}</span>
-            )}
-          </Button>
-        ))}
+        {sidebarItems.map((item) => {
+          const isActive = item.id !== undefined && item.id === activeId;
+
+          return (
+            <Button
+              key={item.id ?? item.label}
+              variant="custom"
+              className={cn(
+                "h-auto w-full justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+                isActive
+                  ? "border-primary text-white"
+                  : "text-white/70 hover:bg-white/5 hover:text-white",
+              )}
+              onClick={() => {
+                if (item.id === undefined) return;
+                onSelect?.(item.id, item);
+              }}
+              aria-pressed={isActive}
+            >
+              {item.icon && <SvgIcon name={item.icon} className="h-5 w-5" />}
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.count !== undefined && (
+                <span className="text-xs font-normal text-white/50">{item.count}</span>
+              )}
+            </Button>
+          );
+        })}
       </nav>
 
       <div className="px-4 pb-8">
