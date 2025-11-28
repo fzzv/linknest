@@ -53,6 +53,7 @@ model Category {
   name      String  @db.VarChar(255) // 分类名称
   sortOrder Int     @default(0) // 排序权重，数字越小越靠前
   isPublic  Boolean @default(false) // 是否公开（未来扩展分享功能用）
+  icon      String? @db.VarChar(255) // 分类图标
 
   // --- 关联用户 ---
   userId Int
