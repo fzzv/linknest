@@ -11,9 +11,16 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get()
+  @ApiOperation({ summary: '获取分类列表' })
+  @ApiOkResponse({ type: CategoryDto, isArray: true })
+  getCategories(@CurrentUser('userId') userId: number) {
+    return this.categoryService.list(userId);
+  }
+
+  @Get('/tree')
   @ApiOperation({ summary: '获取分类树（包含子分类与链接）' })
   @ApiOkResponse({ type: CategoryTreeDto, isArray: true })
-  getCategories(@CurrentUser('userId') userId: number) {
+  getCategoriesTree(@CurrentUser('userId') userId: number) {
     return this.categoryService.listTree(userId);
   }
 

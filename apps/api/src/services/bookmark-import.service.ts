@@ -152,6 +152,7 @@ export class BookmarkImportService {
             userId,
             sortOrder: node.addDate ?? 0,
             isPublic: false,
+            icon: 'Bookmark',
           },
         });
         stats.categories += 1;
@@ -207,7 +208,14 @@ export class BookmarkImportService {
     }
 
     const category = await tx.category.create({
-      data: { name: 'Imported Bookmarks', parentId: null, userId, sortOrder: 0, isPublic: false },
+      data: {
+        name: 'Imported Bookmarks',
+        parentId: null,
+        userId,
+        sortOrder: 0,
+        isPublic: false,
+        icon: 'Bookmark',
+      },
     });
     stats.categories += 1;
     ref.value = category.id;

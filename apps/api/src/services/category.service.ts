@@ -2,12 +2,36 @@ import { PrismaService, type Category, type Link } from '@linknest/db';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto, UpdateCategoryDto } from 'src/dtos';
 
-type CategoryTreeNode = Category & { children: CategoryTreeNode[]; links: Link[] };
+type CategoryWithCount = Category & { count: number };
+type CategoryTreeNode = Category & { children: CategoryTreeNode[]; links: Link[]; count: number };
 
 @Injectable()
 export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * 获取分类列表
+   * @param userId 用户 ID
+   * @returns 分类列表
+   */
+  async list(userId: number): Promise<CategoryWithCount[]> {
+    const categories = await this.prisma.category.findMany({
+      where: { userId },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      include: { _count: { select: { links: true } } },
+    });
+
+    return categories.map(({ _count, ...category }) => ({
+      ...category,
+      count: _count.links,
+    }));
+  }
+
+  /**
+   * 获取分类树
+   * @param userId 用户 ID
+   * @returns 分类树
+   */
   async listTree(userId: number): Promise<CategoryTreeNode[]> {
     const categories = await this.prisma.category.findMany({
       where: { userId },
@@ -22,7 +46,7 @@ export class CategoryService {
 
     const map = new Map<number, CategoryTreeNode>();
     categories.forEach((category) => {
-      map.set(category.id, { ...category, children: [] });
+      map.set(category.id, { ...category, children: [], count: category.links.length });
     });
 
     const roots: CategoryTreeNode[] = [];
@@ -38,14 +62,21 @@ export class CategoryService {
   }
 
   async getById(id: number, userId: number) {
-    return this.ensureOwnedCategory(id, userId);
+    const category = await this.prisma.category.findFirst({
+      where: { id, userId },
+      include: { _count: { select: { links: true } } },
+    });
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+    return this.mapWithCount(category);
   }
 
   async create(userId: number, dto: CreateCategoryDto) {
     if (dto.parentId) {
       await this.ensureOwnedCategory(dto.parentId, userId);
     }
-    return this.prisma.category.create({
+    const category = await this.prisma.category.create({
       data: {
         name: dto.name,
         sortOrder: dto.sortOrder ?? 0,
@@ -54,6 +85,8 @@ export class CategoryService {
         userId,
       },
     });
+
+    return { ...category, count: 0 };
   }
 
   async update(id: number, userId: number, dto: UpdateCategoryDto) {
@@ -79,7 +112,8 @@ export class CategoryService {
         isPublic: dto.isPublic,
         parentId,
       },
-    });
+      include: { _count: { select: { links: true } } },
+    }).then((category) => this.mapWithCount(category));
   }
 
   async remove(id: number, userId: number) {
@@ -94,5 +128,10 @@ export class CategoryService {
       throw new NotFoundException('Category not found');
     }
     return category;
+  }
+
+  private mapWithCount(category: Category & { _count: { links: number } }): CategoryWithCount {
+    const { _count, ...rest } = category;
+    return { ...rest, count: _count.links };
   }
 }

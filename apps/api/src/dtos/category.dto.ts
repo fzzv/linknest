@@ -40,6 +40,9 @@ export class CategoryDto {
   @ApiProperty({ example: false })
   isPublic!: boolean;
 
+  @ApiProperty({ example: 3 })
+  count!: number;
+
   @ApiProperty({ example: 1, nullable: true })
   parentId!: number | null;
 
