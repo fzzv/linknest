@@ -1,5 +1,8 @@
 import { PrismaService, Prisma } from '@linknest/db';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { createHash } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join, posix } from 'node:path';
 
 type BookmarkNode = FolderNode | LinkNode;
 
@@ -123,6 +126,15 @@ export class BookmarkImportService {
       .replace(/&#39;/g, "'");
   }
 
+  /**
+   * 持久化书签节点
+   * @param tx Prisma 事务客户端
+   * @param nodes 书签节点
+   * @param userId 用户 ID
+   * @param parentCategoryId 父分类 ID
+   * @param stats 统计信息
+   * @param fallbackCategoryRef 回退分类引用
+   */
   private async persistNodes(
     tx: Prisma.TransactionClient,
     nodes: BookmarkNode[],
@@ -151,12 +163,13 @@ export class BookmarkImportService {
       if (!categoryId) {
         categoryId = await this.getOrCreateFallbackCategory(tx, userId, fallbackCategoryRef, stats);
       }
+      const iconPath = await this.saveIconIfNeeded(node.icon);
       await tx.link.create({
         data: {
           title: node.title || node.url,
           url: node.url,
           description: null,
-          icon: node.icon ?? null,
+          icon: iconPath,
           cover: null,
           sortOrder: node.addDate ?? 0,
           categoryId,
@@ -167,6 +180,14 @@ export class BookmarkImportService {
     }
   }
 
+  /**
+   * 获取或创建回退分类
+   * @param tx Prisma 事务客户端
+   * @param userId 用户 ID
+   * @param ref 回退分类引用
+   * @param stats 统计信息
+   * @returns 回退分类 ID
+   */
   private async getOrCreateFallbackCategory(
     tx: Prisma.TransactionClient,
     userId: number,
@@ -191,5 +212,82 @@ export class BookmarkImportService {
     stats.categories += 1;
     ref.value = category.id;
     return category.id;
+  }
+
+  /**
+   * 将书签的图标保存到本地 linkicons 文件夹下
+   * @param icon 
+   * @returns 保存后的文件路径
+   */
+  private async saveIconIfNeeded(icon?: string): Promise<string | null> {
+    if (!icon) {
+      return null;
+    }
+
+    const trimmedIcon = icon.trim();
+    if (!trimmedIcon) {
+      return null;
+    }
+
+    // 判断是否为 Data URL
+    const base64Marker = ';base64,';
+    const markerIndex = trimmedIcon.indexOf(base64Marker);
+    const isDataUrl = trimmedIcon.startsWith('data:') && markerIndex > 'data:'.length;
+    if (!isDataUrl) {
+      return trimmedIcon;
+    }
+
+    // 清理头部，获取 MIME 类型和数据
+    const meta = trimmedIcon.slice('data:'.length, markerIndex);
+    const data = trimmedIcon.slice(markerIndex + base64Marker.length);
+    const mime = meta.split(';')[0];
+    if (!mime || !data) {
+      return trimmedIcon;
+    }
+    // 将 Base64 数据转换为 Buffer
+    const buffer = Buffer.from(data, 'base64');
+    // 计算 MD5 哈希值
+    const hash = createHash('md5').update(buffer).digest('hex');
+    const filename = `${hash}.${this.getExtensionFromMime(mime)}`;
+    // 图标保存目录
+    const dir = this.getIconDir();
+    // recursive: true 表示如果目录不存在，则创建目录
+    await mkdir(dir, { recursive: true });
+    const filePath = join(dir, filename);
+    try {
+      // flag: 'wx' 表示如果文件存在，则抛出错误
+      await writeFile(filePath, buffer, { flag: 'wx' });
+    } catch (error) {
+      const writeError = error as NodeJS.ErrnoException;
+      if (writeError.code !== 'EEXIST') {
+        throw error;
+      }
+    }
+
+    return posix.join('/linkicons', filename);
+  }
+
+  private getIconDir() {
+    return join(__dirname, '..', '..', 'linkicons');
+  }
+
+  /**
+   * 根据 MIME 类型获取文件扩展名
+   * @param mime MIME 类型
+   * @returns 文件扩展名
+   */
+  private getExtensionFromMime(mime: string) {
+    const normalized = mime.toLowerCase();
+    const mimeMap: Record<string, string> = {
+      'image/png': 'png',
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/gif': 'gif',
+      'image/svg+xml': 'svg',
+      'image/x-icon': 'ico',
+      'image/vnd.microsoft.icon': 'ico',
+      'image/webp': 'webp',
+    };
+    return mimeMap[normalized] ?? 'png';
   }
 }

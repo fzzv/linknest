@@ -1,13 +1,15 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'node:path';
 import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
 import { ResponseInterceptor } from 'src/interceptors/response.interceptor';
 import { AppModule } from './app.module';
 import 'dotenv/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // 启用 CORS
   app.enableCors();
   // 全局验证管道
@@ -18,6 +20,8 @@ async function bootstrap() {
   }));
   // 全局拦截器：日志与统一响应结构
   app.useGlobalInterceptors(new LoggingInterceptor(), new ResponseInterceptor());
+  // 配置静态资源目录
+  app.useStaticAssets(join(__dirname, '..', 'linkicons'), { prefix: '/linkicons/' });
 
   // Swagger 文档
   const swaggerConfig = new DocumentBuilder()
