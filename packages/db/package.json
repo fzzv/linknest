@@ -1,0 +1,45 @@
+{
+  "name": "@linknest/db",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm build --watch",
+    "build": "tsc -b -v",
+    "reset": "npx prisma migrate reset",
+    "migrate": "npx prisma migrate dev",
+    "generate:docs": "prisma generate",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "./dist/**"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js"
+    },
+    "./*": {
+      "import": "./dist/src/*.js",
+      "require": "./dist/src/*.js"
+    }
+  },
+  "devDependencies": {
+    "@linknest/eslint-config": "workspace:^",
+    "@linknest/typescript-config": "workspace:^",
+    "@types/node": "^24.10.0",
+    "prisma-docs-generator": "^0.8.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@prisma/client": "6.18.0",
+    "dotenv": "^17.2.3",
+    "prisma": "^6.18.0"
+  }
+}

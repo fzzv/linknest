@@ -1,36 +1,77 @@
 import { cn } from "@linknest/utils/lib";
-import Image from "next/image";
+import { Button } from "@linknest/ui";
 import SvgIcon, { IconName } from "@/components/SvgIcon";
+
+interface SidebarItem {
+  label: string;
+  icon?: IconName;
+  href?: string;
+  count?: number | string;
+  id?: number;
+}
 
 interface SidebarProps {
   className?: string;
-  sidebarItems: {
-    label: string;
-    icon?: IconName;
-    href?: string;
-  }[];
+  sidebarItems: SidebarItem[];
+  activeId?: number;
+  onSelect?: (id: number, item: SidebarItem) => void;
 }
 
-const Sidebar = ({ className, sidebarItems }: SidebarProps) => {
+const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) => {
   return (
-    <div className={cn("w-64 h-screen", className)}>
-      <header className="flex items-center gap-2 h-18 px-4 border-b border-gray-200">
-        <Image src="/globe.svg" alt="logo" width={50} height={50} />
-        <div className="text-2xl font-bold">Linknest</div>
+    <aside className={cn("flex h-screen w-64 flex-col border-r border-white/5 bg-[#050b16] text-white/80", className)}>
+      <header className="px-6 pt-10">
+        <div className="flex items-center gap-4 rounded-3xl border border-white/5 bg-white/2 px-4 py-3">
+          <div className="relative h-12 w-12 rounded-2xl bg-primary flex items-center justify-center">
+            <span className="text-2xl font-bold">LN</span>
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-white">LinkNest</p>
+            <p className="text-xs text-white/50">Your Bookmark Hub</p>
+          </div>
+        </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto flex-col px-4 py-4 space-y-2">
-        {sidebarItems.map((item) => (
-          <div
-            className="flex items-center gap-2 h-10 w-full px-4 rounded-md border border-gray-200 hover:bg-gray-100 cursor-pointer"
-            key={item.label}
-          >
-            {item.icon && <SvgIcon name={item.icon} />}
-            <span>{item.label}</span>
-          </div>
-        ))}
+      <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-10">
+        {sidebarItems.map((item) => {
+          const isActive = item.id !== undefined && item.id === activeId;
+
+          return (
+            <Button
+              key={item.id ?? item.label}
+              variant="custom"
+              className={cn(
+                "h-auto w-full justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+                isActive
+                  ? "border-primary text-white"
+                  : "text-white/70 hover:bg-white/5 hover:text-white",
+              )}
+              onClick={() => {
+                if (item.id === undefined) return;
+                onSelect?.(item.id, item);
+              }}
+              aria-pressed={isActive}
+            >
+              {item.icon && <SvgIcon name={item.icon} className="h-5 w-5" />}
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.count !== undefined && (
+                <span className="text-xs font-normal text-white/50">{item.count}</span>
+              )}
+            </Button>
+          );
+        })}
+      </nav>
+
+      <div className="px-4 pb-8">
+        <Button
+          variant="outline"
+          color="primary"
+          className="w-full rounded-2xl py-3 text-sm font-semibold transition"
+        >
+          New Category
+        </Button>
       </div>
-    </div>
+    </aside>
   );
 };
 

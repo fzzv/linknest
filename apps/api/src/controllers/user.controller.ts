@@ -1,18 +1,63 @@
-import { Controller, Post, Body, Get } from "@nestjs/common";
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+  AuthResponseDto,
+  LoginDto,
+  MessageResponseDto,
+  RefreshTokenDto,
+  RegisterResponseDto,
+  RegisterUserDto,
+  SendVerificationCodeDto,
+  UserDto
+} from "src/dtos";
+import { PublicApi } from "src/decorators/public-api.decorator";
 import { UserService } from "src/services/user.service";
-import { CreateUserDto } from "@linknest/api";
 
-@Controller('user')
+@ApiTags('用户')
+@Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
+  constructor(private readonly userService: UserService) { }
 
   @Get()
-  getAllUsers() {
-    return this.userService.getAllUsers();
+  @ApiOperation({ summary: '获取用户列表' })
+  @ApiOkResponse({ description: '用户列表', type: UserDto, isArray: true })
+  async getUsers() {
+    return this.userService.getUsers();
+  }
+
+  @Post('send-code')
+  @ApiOperation({ summary: '发送邮箱验证码' })
+  @ApiBody({ type: SendVerificationCodeDto })
+  @ApiCreatedResponse({ description: '验证码发送成功', type: MessageResponseDto })
+  @PublicApi()
+  sendVerificationCode(@Body() dto: SendVerificationCodeDto) {
+    return this.userService.sendVerificationCode(dto);
+  }
+
+  @Post('register')
+  @ApiOperation({ summary: '邮箱注册' })
+  @ApiBody({ type: RegisterUserDto })
+  @ApiCreatedResponse({ description: '注册成功', type: RegisterResponseDto })
+  @PublicApi()
+  register(@Body() dto: RegisterUserDto) {
+    return this.userService.register(dto);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: '邮箱+密码登录' })
+  @ApiBody({ type: LoginDto })
+  @ApiOkResponse({ description: '登录成功', type: AuthResponseDto })
+  @PublicApi()
+  login(@Body() dto: LoginDto) {
+    return this.userService.login(dto);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: '刷新 AccessToken/RefreshToken' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiOkResponse({ description: '刷新成功', type: AuthResponseDto })
+  @PublicApi()
+  refresh(@Body() dto: RefreshTokenDto) {
+    return this.userService.refreshTokens(dto);
   }
 }

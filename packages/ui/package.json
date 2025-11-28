@@ -3,9 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    ".": "./src/index.ts",
+    "./*": "./src/*.tsx",
+    "./index.css": "./dist/index.css"
   },
+  "style": "./dist/index.css",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
+    "dev": "postcss ./src/index.css -o ./dist/index.css --watch",
+    "build": "postcss ./src/index.css -o ./dist/index.css",
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit"
@@ -17,11 +26,17 @@
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
     "eslint": "^9.31.0",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
     "typescript": "5.8.2"
   },
   "dependencies": {
     "@linknest/utils": "workspace:^",
+    "@tailwindcss/postcss": "^4.1.13",
+    "daisyui": "^5.5.5",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.66.1",
+    "tailwindcss": "^4.1.13"
   }
 }

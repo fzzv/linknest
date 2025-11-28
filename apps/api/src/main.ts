@@ -1,28 +1,38 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from 'src/app.module';
-import { ConfigRepository, LoggingRepository, LinknestEnvironment } from '@linknest/api';
-import { serverVersion } from 'src/constants';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'node:path';
+import { LoggingInterceptor } from 'src/interceptors/logging.interceptor';
+import { ResponseInterceptor } from 'src/interceptors/response.interceptor';
+import { AppModule } from './app.module';
+import 'dotenv/config';
 
 async function bootstrap() {
-  process.title = 'linknest-api';
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // 启用 CORS
+  app.enableCors();
+  // 全局验证管道
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true, // 移除未定义的属性
+    forbidNonWhitelisted: true, // 移除未定义的属性时，抛出异常
+    transform: true, // 自动转换请求体为 DTO 类型
+  }));
+  // 全局拦截器：日志与统一响应结构
+  app.useGlobalInterceptors(new LoggingInterceptor(), new ResponseInterceptor());
+  // 配置静态资源目录
+  app.useStaticAssets(join(__dirname, '..', 'linkicons'), { prefix: '/linkicons/' });
 
-  const app = await NestFactory.create(AppModule);
+  // Swagger 文档
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('LinkNest API')
+    .setDescription('LinkNest 接口文档')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, document);
 
-  // 设置日志上下文
-  const logger = await app.resolve(LoggingRepository);
-  logger.setContext('Bootstrap');
-  app.useLogger(logger);
-
-  const configRepository = app.get(ConfigRepository);
-  const { environment, host, port } = configRepository.getEnv();
-  const isDev = environment === LinknestEnvironment.DEVELOPMENT;
-  if (isDev) {
-    // 开发环境允许跨域
-    app.enableCors();
-  }
-  const server = await (host ? app.listen(port, host) : app.listen(port));
-  server.requestTimeout = 24 * 60 * 60 * 1000;
-  logger.log(`Server is running on ${await app.getUrl()} [v${serverVersion}] [${environment}]`);
+  await app.listen(3000);
 }
 
 void bootstrap();

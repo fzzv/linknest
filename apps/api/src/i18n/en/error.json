@@ -1,0 +1,8 @@
+{
+  "emailAlreadyExists": "The email already exists",
+  "invalidCode": "The code is invalid or expired",
+  "invalidEmailOrPassword": "The email or password is incorrect",
+  "invalidRefreshToken": "The refresh token is invalid",
+  "userNotFound": "The user not found",
+  "tryAgainLater": "Please try again in ${cooldown} seconds"
+}

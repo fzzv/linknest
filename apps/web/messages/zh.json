@@ -1,0 +1,41 @@
+{
+  "Metadata": {
+    "title": "LinkNest",
+    "description": "LinkNest 是一个链接聚合平台"
+  },
+  "Login": {
+    "title": "欢迎回来",
+    "description": "登录以访问您的仪表板。",
+    "subtitle": "",
+    "email": "邮箱地址",
+    "emailPlaceholder": "输入您的邮箱地址",
+    "password": "密码",
+    "passwordPlaceholder": "输入您的密码",
+    "forgotPassword": "忘记密码？",
+    "login": "登录",
+    "signUp": "注册",
+    "dontHaveAccount": "没有账户？"
+  },
+  "Register": {
+    "title": "创建您的 LinkNest 账户",
+    "description": "组织您的数字世界，一个链接一次。",
+    "nickname": "昵称",
+    "nicknamePlaceholder": "输入您的昵称",
+    "email": "邮箱地址",
+    "emailPlaceholder": "输入您的邮箱地址",
+    "code": "邮箱验证码",
+    "codePlaceholder": "输入 6 位验证码",
+    "sendCode": "发送验证码",
+    "sentCode": "发送中 (${codeCooldown}s)",
+    "password": "密码",
+    "passwordPlaceholder": "输入您的密码",
+    "confirmPassword": "确认密码",
+    "confirmPasswordPlaceholder": "确认您的密码",
+    "passwordRequirements": "密码至少 8 位，且包含大写字母和数字",
+    "confirmPasswordRequirements": "两次输入的密码不一致",
+    "creatingAccount": "创建账户中…",
+    "createAccount": "创建账户",
+    "alreadyHaveAccount": "已经有账户？",
+    "login": "登录"
+  }
+}
