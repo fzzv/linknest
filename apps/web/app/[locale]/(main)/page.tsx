@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData } from "@/components/LinkCard";
 import Link from "next/link";
@@ -9,9 +9,10 @@ import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { fetchLinks, fetchPublicLinks, type LinkItem } from "@/services/links";
-import { Avatar, Button, useMessage } from "@linknest/ui";
+import { Avatar, Button, Select, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations, type Locale } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 type SidebarItem = {
   label: string;
@@ -30,6 +31,22 @@ export default function Home() {
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
+
+  // 语言切换
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const languageOptions = [
+    { value: 'en', label: t('languageEnglish') },
+    { value: 'zh', label: t('languageChinese') },
+  ];
+
+  const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextLocale = event.target.value as Locale;
+    if (nextLocale === locale) return;
+
+    router.replace(pathname, { locale: nextLocale });
+  };
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -194,33 +211,34 @@ export default function Home() {
           </Button>
           <span>LinkNest</span>
           <div className="ml-auto flex items-center gap-3">
+            <Select
+              size="sm"
+              value={locale}
+              variant="solid"
+              onChange={handleLanguageChange}
+              options={languageOptions}
+              aria-label={t('language')}
+              wrapperClassName="w-auto"
+              className="min-w-30 pl-5"
+            />
+
             {isAuthenticated ? (
-              <>
+              <div className="flex items-center gap-2">
+                <Avatar
+                  src={user?.avatar ?? undefined}
+                  alt={user?.nickname ?? user?.email ?? "User"}
+                  size="sm"
+                />
                 <Button
-                  variant="custom"
+                  variant="ghost"
                   color="custom"
-                  className="shrink-0"
+                  size="sm"
+                  className="border border-white/10"
+                  onClick={handleLogout}
                 >
-                  <Plus className="h-4 w-4" />
-                  Link
+                  {t('logout')}
                 </Button>
-                <div className="flex items-center gap-2">
-                  <Avatar
-                    src={user?.avatar ?? undefined}
-                    alt={user?.nickname ?? user?.email ?? "User"}
-                    size="sm"
-                  />
-                  <Button
-                    variant="ghost"
-                    color="custom"
-                    size="sm"
-                    className="border border-white/10"
-                    onClick={handleLogout}
-                  >
-                    {t('logout')}
-                  </Button>
-                </div>
-              </>
+              </div>
             ) : (
               <Link
                 href="/login"
@@ -242,7 +260,7 @@ export default function Home() {
                   {t('showAllYourSavedLinks', { count: links.length })}
                 </p>
               </div>
-              <div className="w-full flex flex-col gap-3 md:w-auto md:flex-row md:items-center">
+              <div className="w-full flex gap-3 md:w-auto md:flex-row md:items-center">
                 <label className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/80 focus-within:border-white/30 md:w-72">
                   <Search className="h-4 w-4 text-white/50" />
                   <input
@@ -251,6 +269,16 @@ export default function Home() {
                     className="w-full bg-transparent placeholder:text-white/40 focus:outline-none"
                   />
                 </label>
+                {isAuthenticated && (
+                  <Button
+                    variant="custom"
+                    color="custom"
+                    className="shrink-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Link
+                  </Button>
+                )}
               </div>
             </div>
           </div>
