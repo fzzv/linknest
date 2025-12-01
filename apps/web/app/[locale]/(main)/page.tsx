@@ -8,6 +8,7 @@ import { Menu, Plus, Search } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { fetchCategories } from "@/services/categories";
+import { fetchLinks, type LinkItem } from "@/services/links";
 import { Avatar, Button, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -18,63 +19,14 @@ type SidebarItem = {
   id: number;
 };
 
-const linkCards: LinkCardData[] = [
-  {
-    title: "DaisyUI Docs",
-    description: "The most popular component library for Tailwind CSS.",
-    icon: "/window.svg",
-    iconBg: "from-[#fde7d4] via-[#f9d3cc] to-[#f2c9d5]",
-  },
-  {
-    title: "Figma Community",
-    description: "Explore thousands of community-made templates and UI kits.",
-    icon: "/cover.svg",
-    iconBg: "from-[#f6f1ff] via-[#f6f1ff] to-[#e9e4fb]",
-  },
-  {
-    title: "React Official Website",
-    description: "The library for building modern web and native interfaces.",
-    icon: "/window.svg",
-    iconBg: "from-[#eefeea] via-[#d9f6e4] to-[#dbeed7]",
-  },
-  {
-    title: "MDN Web Docs",
-    description: "Resources for developers, by developers on web standards.",
-    icon: "/window.svg",
-    iconBg: "from-[#d7eafd] via-[#d9f4ff] to-[#cfe0ff]",
-  },
-  {
-    title: "Dribbble Inspiration",
-    description: "The go-to community to discover work from creative people.",
-    icon: "/cover.svg",
-    iconBg: "from-[#f0f2ff] via-[#e7ecff] to-[#dae2ff]",
-  },
-  {
-    title: "GitHub",
-    description: "Where the world builds software and collaborates together.",
-    icon: "/window.svg",
-    iconBg: "from-[#f7f7f9] via-[#d7dae2] to-[#cacfd9]",
-  },
-  {
-    title: "Tailwind CSS",
-    description: "A utility-first CSS framework for rapid UI development.",
-    icon: "/window.svg",
-    iconBg: "from-[#d9f7f9] via-[#bff1f3] to-[#9be2ea]",
-  },
-  {
-    title: "Unsplash",
-    description: "Photos for everyone. Discover and download free images.",
-    icon: "/cover.svg",
-    iconBg: "from-[#d7e9ff] via-[#c8ddff] to-[#b8d2ff]",
-  },
-];
-
 export default function Home() {
   const [message, messageHolder] = useMessage({ placement: 'top' });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
+  const [links, setLinks] = useState<LinkCardData[]>([]);
+  const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
 
   useEffect(() => {
@@ -131,6 +83,49 @@ export default function Home() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (activeCategoryId === undefined) {
+      setLinks([]);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadLinks = async () => {
+      setIsLoadingLinks(true);
+      try {
+        const data = await fetchLinks(activeCategoryId);
+        if (cancelled) return;
+
+        const mapped: LinkCardData[] = data.map((link: LinkItem, index) => ({
+          id: link.id,
+          title: link.title,
+          description: link.description ?? '',
+          url: link.url,
+          icon: link.icon ?? link.cover ?? undefined,
+        }));
+
+        setLinks(mapped);
+      } catch (error) {
+        if (cancelled) return;
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load links';
+        message.error(errorMessage);
+        setLinks([]);
+      } finally {
+        if (!cancelled) {
+          setIsLoadingLinks(false);
+        }
+      }
+    };
+
+    void loadLinks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCategoryId, message]);
 
   const toggleSidebar = () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
@@ -237,7 +232,7 @@ export default function Home() {
               <div>
                 <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">All Bookmarks</h1>
                 <p className="mt-3 text-base text-white/70">
-                  Showing all your saved links. {linkCards.length} items found.
+                  Showing all your saved links. {links.length} items found.
                 </p>
               </div>
               <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
@@ -261,9 +256,22 @@ export default function Home() {
           </div>
 
           <section className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {linkCards.map((link) => (
-              <LinkCard key={link.title} link={link} />
-            ))}
+            {isLoadingLinks
+              ? Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-[110px] rounded-2xl border border-white/5 bg-white/3"
+                >
+                  <div className="h-full w-full animate-pulse rounded-2xl bg-white/5" />
+                </div>
+              ))
+              : links.length > 0
+                ? links.map((link) => <LinkCard key={link.id ?? link.title} link={link} />)
+                : (
+                  <p className="text-sm text-white/60 md:col-span-2 xl:col-span-3">
+                    No links found in this category.
+                  </p>
+                )}
           </section>
         </main>
       </div>
