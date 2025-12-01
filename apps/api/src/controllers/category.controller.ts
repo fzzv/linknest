@@ -9,22 +9,36 @@ import { CategoryService } from 'src/services/category.service';
 @ApiBearerAuth()
 @Controller('categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Get()
-  @PublicApi()
   @ApiOperation({ summary: '获取分类列表' })
   @ApiOkResponse({ type: CategoryDto, isArray: true })
-  getCategories(@CurrentUser('userId') userId?: number) {
+  getCategories(@CurrentUser('userId') userId: number) {
     return this.categoryService.list(userId);
   }
 
   @Get('/tree')
-  @PublicApi()
   @ApiOperation({ summary: '获取分类树（包含子分类与链接）' })
   @ApiOkResponse({ type: CategoryTreeDto, isArray: true })
-  getCategoriesTree(@CurrentUser('userId') userId?: number) {
+  getCategoriesTree(@CurrentUser('userId') userId: number) {
     return this.categoryService.listTree(userId);
+  }
+
+  @Get('/public')
+  @PublicApi()
+  @ApiOperation({ summary: '获取默认公开分类列表' })
+  @ApiOkResponse({ type: CategoryDto, isArray: true })
+  getPublicCategories() {
+    return this.categoryService.listPublic();
+  }
+
+  @Get('/public/tree')
+  @PublicApi()
+  @ApiOperation({ summary: '获取默认公开分类树（包含子分类与链接）' })
+  @ApiOkResponse({ type: CategoryTreeDto, isArray: true })
+  getPublicCategoriesTree() {
+    return this.categoryService.listPublicTree();
   }
 
   @Get(':id')

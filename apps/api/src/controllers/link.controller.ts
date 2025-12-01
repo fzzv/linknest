@@ -2,13 +2,14 @@ import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateLinkDto, LinkDto, MessageResponseDto, UpdateLinkDto } from 'src/dtos';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { PublicApi } from 'src/decorators/public-api.decorator';
 import { LinkService } from 'src/services/link.service';
 
 @ApiTags('链接')
 @ApiBearerAuth()
 @Controller('links')
 export class LinkController {
-  constructor(private readonly linkService: LinkService) {}
+  constructor(private readonly linkService: LinkService) { }
 
   @Get()
   @ApiOperation({ summary: '获取链接列表' })
@@ -20,6 +21,19 @@ export class LinkController {
       throw new BadRequestException('categoryId must be a number');
     }
     return this.linkService.list(userId, parsedCategoryId);
+  }
+
+  @Get('/public')
+  @PublicApi()
+  @ApiOperation({ summary: '获取公开链接列表（默认分类）' })
+  @ApiQuery({ name: 'categoryId', required: false, type: Number, description: '按公开分类筛选' })
+  @ApiOkResponse({ type: LinkDto, isArray: true })
+  getPublicLinks(@Query('categoryId') categoryId?: string) {
+    const parsedCategoryId = categoryId ? Number(categoryId) : undefined;
+    if (categoryId && Number.isNaN(parsedCategoryId)) {
+      throw new BadRequestException('categoryId must be a number');
+    }
+    return this.linkService.listPublic(parsedCategoryId);
   }
 
   @Get(':id')
