@@ -37,5 +37,19 @@
     "createAccount": "Create Account",
     "alreadyHaveAccount": "Already have an account?",
     "login": "Log In"
+  },
+  "Home": {
+    "dashboard": "Dashboard",
+    "login": "Log In",
+    "logout": "Log Out",
+    "allBookmarks": "All Bookmarks",
+    "showAllYourSavedLinks": "Showing all your saved links. {count} items found",
+    "searchBookmarks": "Search bookmarks...",
+    "noLinksFoundInThisCategory": "No links found in this category.",
+    "logoutSuccess": "Logged out successfully."
+  },
+  "Sidebar": {
+    "yourBookmarkHub": "Your Bookmark Hub",
+    "newCategory": "New Category"
   }
 }

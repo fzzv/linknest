@@ -37,5 +37,19 @@
     "createAccount": "创建账户",
     "alreadyHaveAccount": "已经有账户？",
     "login": "登录"
+  },
+  "Home": {
+    "dashboard": "首页",
+    "login": "登录",
+    "logout": "退出",
+    "allBookmarks": "所有收藏",
+    "showAllYourSavedLinks": "显示所有您的收藏。已找到 {count} 个项目",
+    "searchBookmarks": "搜索收藏...",
+    "noLinksFoundInThisCategory": "此分类下没有收藏。",
+    "logoutSuccess": "退出成功"
+  },
+  "Sidebar": {
+    "yourBookmarkHub": "您的收藏中心",
+    "newCategory": "新建分类"
   }
 }

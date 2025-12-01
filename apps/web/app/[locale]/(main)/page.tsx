@@ -11,6 +11,7 @@ import { fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { fetchLinks, fetchPublicLinks, type LinkItem } from "@/services/links";
 import { Avatar, Button, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
+import { useTranslations } from "next-intl";
 
 type SidebarItem = {
   label: string;
@@ -28,6 +29,7 @@ export default function Home() {
   const [links, setLinks] = useState<LinkCardData[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
+  const t = useTranslations('Home');
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -147,7 +149,7 @@ export default function Home() {
   };
   const handleLogout = () => {
     logout();
-    message.success("已退出登录");
+    message.success(t('logoutSuccess'));
   };
 
   return (
@@ -192,68 +194,63 @@ export default function Home() {
           </Button>
           <span>LinkNest</span>
           <div className="ml-auto flex items-center gap-3">
-            <Button
-              variant="custom"
-              color="custom"
-              className="shrink-0"
-            >
-              <Plus className="h-5 w-5" />
-              Bookmark
-            </Button>
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <Avatar
-                  src={user?.avatar ?? undefined}
-                  alt={user?.nickname ?? user?.email ?? "User"}
-                  size="sm"
-                />
+              <>
                 <Button
-                  variant="ghost"
+                  variant="custom"
                   color="custom"
-                  size="sm"
-                  className="border border-white/10"
-                  onClick={handleLogout}
+                  className="shrink-0"
                 >
-                  退出
+                  <Plus className="h-4 w-4" />
+                  Link
                 </Button>
-              </div>
+                <div className="flex items-center gap-2">
+                  <Avatar
+                    src={user?.avatar ?? undefined}
+                    alt={user?.nickname ?? user?.email ?? "User"}
+                    size="sm"
+                  />
+                  <Button
+                    variant="ghost"
+                    color="custom"
+                    size="sm"
+                    className="border border-white/10"
+                    onClick={handleLogout}
+                  >
+                    {t('logout')}
+                  </Button>
+                </div>
+              </>
             ) : (
               <Link
                 href="/login"
                 className="rounded-2xl border border-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               >
-                登录
+                {t('login')}
               </Link>
             )}
           </div>
         </nav>
 
         <main className="flex-1 px-4 py-10 sm:px-8 lg:px-14">
-          <div className="max-w-6xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/40">Dashboard</p>
+          <div className="w-full">
+            <p className="text-xs uppercase tracking-[0.35em] text-white/40">{t('dashboard')}</p>
             <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div>
-                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">All Bookmarks</h1>
+                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">{activeCategoryId ? sidebarItems.find(item => item.id === activeCategoryId)?.label : t('allBookmarks')}</h1>
                 <p className="mt-3 text-base text-white/70">
-                  Showing all your saved links. {links.length} items found.
+                  {t('showAllYourSavedLinks', { count: links.length })}
                 </p>
               </div>
-              <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+              <div className="w-full flex flex-col gap-3 md:w-auto md:flex-row md:items-center">
                 <label className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/80 focus-within:border-white/30 md:w-72">
                   <Search className="h-4 w-4 text-white/50" />
                   <input
                     type="text"
-                    placeholder="Search bookmarks..."
+                    placeholder={t('searchBookmarks')}
                     className="w-full bg-transparent placeholder:text-white/40 focus:outline-none"
                   />
                 </label>
-                <Button
-                  variant="outline"
-                  className="border-0 text-sm font-semibold"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add New Bookmark
-                </Button>
               </div>
             </div>
           </div>
@@ -272,7 +269,7 @@ export default function Home() {
                 ? links.map((link) => <LinkCard key={link.id ?? link.title} link={link} />)
                 : (
                   <p className="text-sm text-white/60 md:col-span-2 xl:col-span-3">
-                    No links found in this category.
+                    {t('noLinksFoundInThisCategory')}
                   </p>
                 )}
           </section>
