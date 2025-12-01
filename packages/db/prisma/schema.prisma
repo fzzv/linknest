@@ -56,8 +56,8 @@ model Category {
   icon      String? @db.VarChar(255) // 分类图标
 
   // --- 关联用户 ---
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // --- 关联父级分类 (实现无限嵌套) ---
   parentId Int? // 根目录的 parentId 为 null
@@ -97,8 +97,8 @@ model Link {
 
   // --- 关联用户 ---
   // 虽然可以通过 Category 找到 User，但直接关联 User 方便做“我的所有书签”查询
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
