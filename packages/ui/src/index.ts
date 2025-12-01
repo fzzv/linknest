@@ -4,3 +4,4 @@ export * from './code';
 export * from './avatar';
 export * from './text-field';
 export * from './message';
+export * from './select';
