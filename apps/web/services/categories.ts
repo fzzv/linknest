@@ -8,3 +8,4 @@ export interface Category {
 }
 
 export const fetchCategories = () => apiClient<Category[]>('/categories');
+export const fetchPublicCategories = () => apiClient<Category[]>('/categories/public');

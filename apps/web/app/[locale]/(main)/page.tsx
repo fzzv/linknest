@@ -7,8 +7,8 @@ import Link from "next/link";
 import { Menu, Plus, Search } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
-import { fetchCategories } from "@/services/categories";
-import { fetchLinks, type LinkItem } from "@/services/links";
+import { fetchCategories, fetchPublicCategories } from "@/services/categories";
+import { fetchLinks, fetchPublicLinks, type LinkItem } from "@/services/links";
 import { Avatar, Button, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -59,7 +59,7 @@ export default function Home() {
 
     (async () => {
       try {
-        const categories = await fetchCategories();
+        const categories = isAuthenticated ? await fetchCategories() : await fetchPublicCategories();
         if (!mounted) return;
 
         const mapped = categories.map((category) => ({
@@ -70,19 +70,20 @@ export default function Home() {
         }));
 
         setSidebarItems(mapped);
-        if (mapped.length) {
-          setActiveCategoryId(mapped[0]?.id);
-        }
+        setActiveCategoryId(mapped.length ? mapped[0]?.id : undefined);
       } catch (error) {
+        if (!mounted) return;
         message.error("Failed to load categories");
         console.error("Failed to load categories", error);
+        setSidebarItems([]);
+        setActiveCategoryId(undefined);
       }
     })();
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isAuthenticated, message]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +97,9 @@ export default function Home() {
     const loadLinks = async () => {
       setIsLoadingLinks(true);
       try {
-        const data = await fetchLinks(activeCategoryId);
+        const data = isAuthenticated
+          ? await fetchLinks(activeCategoryId)
+          : await fetchPublicLinks(activeCategoryId);
         if (cancelled) return;
 
         const mapped: LinkCardData[] = data.map((link: LinkItem, index) => ({
