@@ -6,3 +6,4 @@ export * from './user-response.dto';
 export * from './category.dto';
 export * from './link.dto';
 export * from './import-bookmarks.dto';
+export * from './upload-link-icon.dto';

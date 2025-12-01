@@ -1,15 +1,21 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CreateLinkDto, LinkDto, MessageResponseDto, UpdateLinkDto } from 'src/dtos';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import { CreateLinkDto, LinkDto, MessageResponseDto, UpdateLinkDto, UploadLinkIconResponseDto } from 'src/dtos';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { PublicApi } from 'src/decorators/public-api.decorator';
+import { LinkIconService } from 'src/services/link-icon.service';
 import { LinkService } from 'src/services/link.service';
 
 @ApiTags('链接')
 @ApiBearerAuth()
 @Controller('links')
 export class LinkController {
-  constructor(private readonly linkService: LinkService) { }
+  constructor(
+    private readonly linkService: LinkService,
+    private readonly linkIconService: LinkIconService,
+  ) { }
 
   @Get()
   @ApiOperation({ summary: '获取链接列表' })
@@ -66,5 +72,24 @@ export class LinkController {
   @ApiOkResponse({ description: '删除成功', type: MessageResponseDto })
   deleteLink(@Param('id', ParseIntPipe) id: number, @CurrentUser('userId') userId: number) {
     return this.linkService.remove(id, userId);
+  }
+
+  @Post('upload-icon')
+  @ApiOperation({ summary: '上传链接图标' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: '上传链接图标文件',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary', description: '图标文件（仅支持图片）' },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiOkResponse({ type: UploadLinkIconResponseDto })
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  uploadLinkIcon(@UploadedFile() file: Express.Multer.File) {
+    return this.linkIconService.upload(file);
   }
 }
