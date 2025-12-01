@@ -1,11 +1,12 @@
 import { cn } from "@linknest/utils/lib";
+import { Tooltip } from "@linknest/ui";
 import { API_BASE_URL } from "@/lib/env";
 
 export type LinkCardData = {
   id?: number;
   title: string;
-  description?: string | null;
-  icon?: string | null;
+  description?: string | undefined;
+  icon?: string | undefined;
   url?: string;
 };
 
@@ -13,7 +14,7 @@ type LinkCardProps = {
   link: LinkCardData;
 };
 
-function buildIconSrc(icon?: string | null) {
+function buildIconSrc(icon?: string | undefined) {
   if (!icon) return '';
   const trimmed = icon.trim();
   if (!trimmed) return '';
@@ -36,7 +37,7 @@ const LinkCard = ({ link }: LinkCardProps) => {
       href={link.url}
       target={link.url ? "_blank" : undefined}
       rel={link.url ? "noopener noreferrer" : undefined}
-      className="group relative flex items-start gap-4 rounded-2xl border border-white/5 bg-white/3 px-5 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.28)] transition duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-white/6"
+      className="group relative flex items-start gap-4 rounded-2xl border border-white/5 bg-white/3 px-5 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.28)] hover:border-white/15 hover:bg-white/6"
     >
       <div
         className={cn(
@@ -57,13 +58,17 @@ const LinkCard = ({ link }: LinkCardProps) => {
           </span>
         )}
       </div>
-      <div className="space-y-1.5">
-        <h3 className="text-base font-semibold leading-tight text-white group-hover:text-white">
-          {link.title}
-        </h3>
-        <p className="text-sm leading-relaxed text-white/60 line-clamp-2">
-          {link.description}
-        </p>
+      <div className="space-y-1.5 min-w-0">
+        <Tooltip content={link.title} className="block w-full" variant="primary">
+          <h3 className="text-base font-semibold leading-tight text-white group-hover:text-white line-clamp-1">
+            {link.title}
+          </h3>
+        </Tooltip>
+        <Tooltip content={link.description} className="block w-full">
+          <p className="text-sm leading-relaxed text-white/60 line-clamp-1">
+            {link.description}
+          </p>
+        </Tooltip>
       </div>
     </Wrapper>
   );
