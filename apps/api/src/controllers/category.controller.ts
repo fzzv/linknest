@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from 
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { CategoryDto, CategoryTreeDto, CreateCategoryDto, MessageResponseDto, UpdateCategoryDto } from 'src/dtos';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { PublicApi } from 'src/decorators/public-api.decorator';
 import { CategoryService } from 'src/services/category.service';
 
 @ApiTags('分类')
@@ -11,16 +12,18 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get()
+  @PublicApi()
   @ApiOperation({ summary: '获取分类列表' })
   @ApiOkResponse({ type: CategoryDto, isArray: true })
-  getCategories(@CurrentUser('userId') userId: number) {
+  getCategories(@CurrentUser('userId') userId?: number) {
     return this.categoryService.list(userId);
   }
 
   @Get('/tree')
+  @PublicApi()
   @ApiOperation({ summary: '获取分类树（包含子分类与链接）' })
   @ApiOkResponse({ type: CategoryTreeDto, isArray: true })
-  getCategoriesTree(@CurrentUser('userId') userId: number) {
+  getCategoriesTree(@CurrentUser('userId') userId?: number) {
     return this.categoryService.listTree(userId);
   }
 
