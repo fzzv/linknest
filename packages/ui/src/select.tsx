@@ -18,7 +18,7 @@ const selectSizes = {
 } as const;
 
 const selectVariants = {
-  solid: 'border border-white/10 text-white/90 placeholder:text-white/60 focus:border-white/30 focus:ring-2 focus:ring-white/15',
+  solid: 'border',
   ghost: 'select-ghost',
 } as const;
 
@@ -71,10 +71,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           'select',
           selectSizes[size],
           selectVariants[variant],
-          selectColors[color],
+          selectColors[error ? 'error' : color],
           fullWidth && 'w-full',
-          error && 'select-error',
           className,
+          error && 'focus:outline-none focus:ring-1 focus:ring-error'
         )}
         aria-invalid={Boolean(error)}
         {...props}

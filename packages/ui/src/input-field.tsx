@@ -12,7 +12,7 @@ const inputSizes = {
 } as const;
 
 const inputVariants = {
-  solid: 'border border-white/10 text-white/90 placeholder:text-white/60 focus:border-white/30 focus:ring-2 focus:ring-white/15',
+  solid: 'border',
   ghost: 'input-ghost',
 } as const;
 
@@ -70,10 +70,10 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function
           'input',
           inputSizes[size],
           inputVariants[variant],
-          inputColors[color],
           fullWidth && 'w-full',
-          error && 'input-error ring-0',
           className,
+          inputColors[error ? 'error' : color],
+          error && 'focus:outline-none focus:ring-1 focus:ring-error'
         )}
         aria-invalid={Boolean(error)}
         {...props}

@@ -56,8 +56,7 @@ export const FileInput = forwardRef<HTMLInputElement, FileInputProps>(function F
         className={cn(
           'file-input',
           inputSizes[size],
-          inputColors[color],
-          error && 'file-input-error ring-0',
+          inputColors[error ? 'error' : color],
           fullWidth && 'w-full',
           className,
         )}

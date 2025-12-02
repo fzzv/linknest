@@ -45,12 +45,12 @@ export const Modal = ({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'modal-box rounded-md border border-white/10 bg-[#0b111e] text-white shadow-2xl backdrop-blur',
+          'modal-box flex max-h-[90vh] flex-col rounded-md border border-white/10 bg-neutral text-white shadow-2xl backdrop-blur',
           widthClassName,
           contentClassName,
         )}
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex shrink-0 items-center justify-between gap-4">
           {title ? <h3 className="text-xl font-semibold text-white">{title}</h3> : null}
           {closable ? (
             <button
@@ -64,9 +64,9 @@ export const Modal = ({
           ) : null}
         </div>
 
-        <div className="mt-4">{children}</div>
+        <div className="mt-4 px-2 flex-1 overflow-y-auto">{children}</div>
 
-        {footer ? <div className="modal-action mt-6">{footer}</div> : null}
+        {footer ? <div className="modal-action mt-6 shrink-0">{footer}</div> : null}
       </div>
 
       <div
