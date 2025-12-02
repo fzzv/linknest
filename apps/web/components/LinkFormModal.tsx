@@ -9,7 +9,7 @@ import { createLink, fetchLinkDetail, updateLink, uploadLinkIcon } from '@/servi
 import { useTranslations } from 'next-intl';
 import { createAddLinkSchema, type AddLinkFormInput, type AddLinkFormValues } from '@/schemas/link';
 
-type AddLinkModalProps = {
+type LinkFormModalProps = {
   open: boolean;
   onClose: () => void;
   activeCategoryId?: number;
@@ -20,7 +20,7 @@ type AddLinkModalProps = {
   messageApi?: MessageApi;
 };
 
-export const AddLinkModal = ({
+export const LinkFormModal = ({
   open,
   onClose,
   activeCategoryId,
@@ -29,8 +29,8 @@ export const AddLinkModal = ({
   mode = 'create',
   linkId,
   messageApi,
-}: AddLinkModalProps) => {
-  const t = useTranslations('AddLinkModal');
+}: LinkFormModalProps) => {
+  const t = useTranslations('LinkFormModal');
   const isEditMode = mode === 'edit';
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -40,6 +40,17 @@ export const AddLinkModal = ({
   const message = messageApi ?? internalMessage;
 
   const schema = useMemo(() => createAddLinkSchema((key) => t(key)), [t]);
+  const defaultValues = useMemo(
+    () => ({
+      title: '',
+      url: '',
+      description: '',
+      icon: undefined as string | undefined,
+      sortOrder: undefined as number | undefined,
+      categoryId: activeCategoryId ?? 0,
+    }),
+    [activeCategoryId],
+  );
 
   const {
     register,
@@ -51,14 +62,7 @@ export const AddLinkModal = ({
     watch,
   } = useForm<AddLinkFormInput, unknown, AddLinkFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      title: '',
-      url: '',
-      description: '',
-      icon: undefined,
-      sortOrder: undefined,
-      categoryId: activeCategoryId ?? 0,
-    },
+    defaultValues,
   });
 
   const iconValue = watch('icon');
@@ -95,18 +99,6 @@ export const AddLinkModal = ({
   }, [activeCategoryId, isEditMode, open, setValue]);
 
   useEffect(() => {
-    if (!open || isEditMode) return;
-    reset({
-      title: '',
-      url: '',
-      description: '',
-      icon: undefined,
-      sortOrder: undefined,
-      categoryId: activeCategoryId ?? 0,
-    });
-  }, [open, activeCategoryId, isEditMode, reset]);
-
-  useEffect(() => {
     if (!open || !isEditMode || !linkId) return;
 
     const fetchLink = async () => {
@@ -124,21 +116,14 @@ export const AddLinkModal = ({
       } catch (error) {
         const messageText = error instanceof Error ? error.message : t('loadDetailFailed');
         message.error(messageText);
-        reset({
-          title: '',
-          url: '',
-          description: '',
-          icon: undefined,
-          sortOrder: undefined,
-          categoryId: activeCategoryId ?? 0,
-        });
+        reset(defaultValues);
       } finally {
         setIsLoadingLink(false);
       }
     };
 
     void fetchLink();
-  }, [open, isEditMode, linkId, activeCategoryId, message, reset, t]);
+  }, [open, isEditMode, linkId, activeCategoryId, message, reset, t, defaultValues]);
 
   const categoryOptions = useMemo(
     () => categories.map((category) => ({ value: category.id, label: category.name })),
@@ -164,6 +149,11 @@ export const AddLinkModal = ({
     }
   };
 
+  const handleClose = () => {
+    reset(defaultValues);
+    onClose();
+  };
+
   const onSubmit = async (values: AddLinkFormValues) => {
     if (isLoadingLink) return;
 
@@ -187,16 +177,8 @@ export const AddLinkModal = ({
         });
         message.success(t('createSuccess'));
         onCreated?.();
-        reset({
-          title: '',
-          url: '',
-          description: '',
-          icon: undefined,
-          sortOrder: undefined,
-          categoryId: values.categoryId,
-        });
       }
-      onClose();
+      handleClose();
     } catch (error) {
       const messageText = error instanceof Error
         ? error.message
@@ -210,13 +192,13 @@ export const AddLinkModal = ({
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title={modalTitle}
       draggable={true}
       dragHandleClassName="ln-modal-drag-handle"
       footer={(
         <>
-          <Button type="button" variant="outline" color="primary" onClick={onClose}>
+          <Button type="button" variant="outline" color="primary" onClick={handleClose}>
             {t('cancel')}
           </Button>
           <Button
@@ -317,4 +299,4 @@ export const AddLinkModal = ({
   );
 };
 
-export default AddLinkModal;
+export default LinkFormModal;

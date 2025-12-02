@@ -13,7 +13,7 @@ import { Avatar, Button, ContextMenu, Modal, Select, useMessage } from "@linknes
 import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import AddLinkModal from "@/components/AddLinkModal";
+import LinkFormModal from "@/components/LinkFormModal";
 
 type SidebarItem = {
   label: string;
@@ -30,8 +30,11 @@ export default function Home() {
   const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
   const [links, setLinks] = useState<LinkCardData[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
-  const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
-  const [editingLinkId, setEditingLinkId] = useState<number | null>(null);
+  const [linkModal, setLinkModal] = useState<{ open: boolean; mode: 'create' | 'edit'; linkId?: number }>({
+    open: false,
+    mode: 'create',
+    linkId: undefined,
+  });
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
 
@@ -182,7 +185,7 @@ export default function Home() {
   };
   const handleEditLink = (id?: number) => {
     if (!id) return;
-    setEditingLinkId(id);
+    setLinkModal({ open: true, mode: 'edit', linkId: id });
   };
   const handleDeleteLink = (id?: number) => {
     if (!id || !isAuthenticated) return;
@@ -211,6 +214,9 @@ export default function Home() {
       },
     });
   };
+
+  const openCreateLinkModal = () => setLinkModal({ open: true, mode: 'create', linkId: undefined });
+  const closeLinkModal = () => setLinkModal((prev) => ({ ...prev, open: false, linkId: undefined, mode: 'create' }));
 
   return (
     <div className="min-h-screen bg-[#030712] text-white">
@@ -317,7 +323,7 @@ export default function Home() {
                     variant="custom"
                     color="custom"
                     className="shrink-0"
-                    onClick={() => setIsAddLinkOpen(true)}
+                    onClick={openCreateLinkModal}
                   >
                     <Plus className="h-4 w-4" />
                     {t('addLink')}
@@ -373,19 +379,13 @@ export default function Home() {
         </main>
       </div>
 
-      <AddLinkModal
-        open={isAddLinkOpen}
-        onClose={() => setIsAddLinkOpen(false)}
+      <LinkFormModal
+        open={linkModal.open}
+        mode={linkModal.mode}
+        linkId={linkModal.linkId}
+        onClose={closeLinkModal}
         activeCategoryId={activeCategoryId}
         onCreated={handleLinkCreated}
-        messageApi={message}
-      />
-      <AddLinkModal
-        open={Boolean(editingLinkId)}
-        onClose={() => setEditingLinkId(null)}
-        activeCategoryId={activeCategoryId}
-        mode="edit"
-        linkId={editingLinkId ?? undefined}
         onUpdated={handleLinkUpdated}
         messageApi={message}
       />

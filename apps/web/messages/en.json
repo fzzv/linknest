@@ -63,7 +63,7 @@
     "yourBookmarkHub": "Your Bookmark Hub",
     "newCategory": "New Category"
   },
-  "AddLinkModal": {
+  "LinkFormModal": {
     "title": "Add Link",
     "submit": "Create",
     "cancel": "Cancel",

@@ -63,7 +63,7 @@
     "yourBookmarkHub": "您的收藏中心",
     "newCategory": "新建分类"
   },
-  "AddLinkModal": {
+  "LinkFormModal": {
     "title": "添加链接",
     "submit": "创建",
     "cancel": "取消",
