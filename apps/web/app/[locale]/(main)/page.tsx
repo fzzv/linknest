@@ -9,7 +9,7 @@ import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, type LinkItem } from "@/services/links";
-import { Avatar, Button, ContextMenu, Select, useMessage } from "@linknest/ui";
+import { Avatar, Button, ContextMenu, Modal, Select, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -184,21 +184,32 @@ export default function Home() {
     if (!id) return;
     setEditingLinkId(id);
   };
-  const handleDeleteLink = async (id?: number) => {
+  const handleDeleteLink = (id?: number) => {
     if (!id || !isAuthenticated) return;
-    const confirmed = window.confirm(t('deleteConfirm'));
-    if (!confirmed) return;
 
-    try {
-      await deleteLink(id);
-      message.success(t('deleteSuccess'));
-      if (activeCategoryId !== undefined) {
-        void loadLinks(activeCategoryId);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t('deleteFailed');
-      message.error(errorMessage);
-    }
+    Modal.confirm({
+      icon: <Trash2 className="h-5 w-5 text-error" />,
+      title: t('delete'),
+      content: (
+        <p className="text-sm text-white/80">{t('deleteConfirm')}</p>
+      ),
+      okText: t('delete'),
+      cancelText: t('cancel'),
+      closable: true,
+      onOk: async () => {
+        try {
+          await deleteLink(id);
+          message.success(t('deleteSuccess'));
+          if (activeCategoryId !== undefined) {
+            await loadLinks(activeCategoryId);
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : t('deleteFailed');
+          message.error(errorMessage);
+          return false;
+        }
+      },
+    });
   };
 
   return (
@@ -345,7 +356,7 @@ export default function Home() {
                           label: t('delete'),
                           icon: <Trash2 className="h-4 w-4" />,
                           danger: true,
-                          onSelect: () => void handleDeleteLink(link.id),
+                          onSelect: () => handleDeleteLink(link.id),
                         },
                       ]}
                       className="flex"

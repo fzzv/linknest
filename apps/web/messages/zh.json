@@ -53,9 +53,11 @@
     "addLink": "添加链接",
     "edit": "编辑",
     "delete": "删除",
+    "cancel": "取消",
     "deleteConfirm": "确认删除该链接？",
     "deleteSuccess": "删除成功",
-    "deleteFailed": "删除失败"
+    "deleteFailed": "删除失败",
+    "deleteCancelled": "删除取消"
   },
   "Sidebar": {
     "yourBookmarkHub": "您的收藏中心",

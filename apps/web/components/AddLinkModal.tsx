@@ -212,6 +212,8 @@ export const AddLinkModal = ({
       open={open}
       onClose={onClose}
       title={modalTitle}
+      draggable={true}
+      dragHandleClassName="ln-modal-drag-handle"
       footer={(
         <>
           <Button type="button" variant="outline" color="primary" onClick={onClose}>

@@ -53,9 +53,11 @@
     "addLink": "Add Link",
     "edit": "Edit",
     "delete": "Delete",
+    "cancel": "Cancel",
     "deleteConfirm": "Delete this link?",
     "deleteSuccess": "Link deleted",
-    "deleteFailed": "Failed to delete link"
+    "deleteFailed": "Failed to delete link",
+    "deleteCancelled": "Delete cancelled"
   },
   "Sidebar": {
     "yourBookmarkHub": "Your Bookmark Hub",
