@@ -6,3 +6,6 @@ export * from './text-field';
 export * from './message';
 export * from './select';
 export * from './tooltip';
+export * from './file-input';
+export * from './modal';
+export * from './input-field';

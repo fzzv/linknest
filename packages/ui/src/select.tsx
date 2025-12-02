@@ -18,7 +18,7 @@ const selectSizes = {
 } as const;
 
 const selectVariants = {
-  solid: 'border border-white/10 bg-white/10 text-white/90 placeholder:text-white/60 focus:border-white/30 focus:ring-2 focus:ring-white/15',
+  solid: 'border border-white/10 text-white/90 placeholder:text-white/60 focus:border-white/30 focus:ring-2 focus:ring-white/15',
   ghost: 'select-ghost',
 } as const;
 
@@ -62,13 +62,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   ref,
 ) {
   return (
-    <label className={cn('form-control gap-1', fullWidth && 'w-full', wrapperClassName)}>
+    <label className={cn('flex flex-col gap-2', fullWidth && 'w-full', wrapperClassName)}>
       {label ? <span className="text-sm font-medium text-slate-200">{label}</span> : null}
 
       <select
         ref={ref}
         className={cn(
-          'select rounded-2xl text-sm font-semibold transition focus:outline-none',
+          'select',
           selectSizes[size],
           selectVariants[variant],
           selectColors[color],
