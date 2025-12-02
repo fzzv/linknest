@@ -49,10 +49,38 @@
     "showAllYourSavedLinks": "Showing all your saved links. {count} items found",
     "searchBookmarks": "Search bookmarks...",
     "noLinksFoundInThisCategory": "No links found in this category.",
-    "logoutSuccess": "Logged out successfully."
+    "logoutSuccess": "Logged out successfully.",
+    "addLink": "Add Link"
   },
   "Sidebar": {
     "yourBookmarkHub": "Your Bookmark Hub",
     "newCategory": "New Category"
+  },
+  "AddLinkModal": {
+    "title": "Add Link",
+    "submit": "Create",
+    "cancel": "Cancel",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Enter a title",
+    "urlLabel": "URL",
+    "urlPlaceholder": "Enter a link URL",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe this link",
+    "iconLabel": "Icon",
+    "iconHelper": "Upload an icon to use for this link",
+    "iconSelected": "Selected",
+    "sortOrderLabel": "Sort Order",
+    "sortOrderPlaceholder": "Optional order (number)",
+    "categoryLabel": "Category",
+    "titleRequired": "Please enter a title",
+    "urlInvalid": "Please enter a valid URL",
+    "descriptionRequired": "Please enter a description",
+    "categoryRequired": "Please choose a category",
+    "sortOrderInvalid": "Sort order must be a number",
+    "uploadSuccess": "Icon uploaded",
+    "uploadFailed": "Failed to upload icon",
+    "loadCategoryFailed": "Failed to load categories",
+    "createSuccess": "Link created",
+    "createFailed": "Failed to create link"
   }
 }

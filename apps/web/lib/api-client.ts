@@ -52,6 +52,8 @@ function getCurrentLocale(fallback: string = 'en'): string {
 export async function apiClient<T>(path: string, options: RequestOptions = {}) {
   const { token, headers, locale, body, ...rest } = options;
   let authToken = token;
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  const isBlob = typeof Blob !== 'undefined' && body instanceof Blob;
 
   // 判断是否需要登录才能请求
   if (!authToken && !isPublicPath(path) && typeof window !== 'undefined') {
@@ -63,10 +65,28 @@ export async function apiClient<T>(path: string, options: RequestOptions = {}) {
   }
 
   const requestHeaders: HeadersInit = {
-    'Content-Type': 'application/json',
-    'Accept-Language': locale || getCurrentLocale(),
+    'Accept-Language': locale || getCurrentLocale(), // 用于后端的i18n国际化
     ...headers,
   };
+
+  const shouldSetJsonContentType =
+    !isFormData &&
+    !isBlob &&
+    body !== undefined &&
+    body !== null &&
+    typeof body !== 'string';
+
+  // 判断是否需要设置Content-Type为application/json
+  if (shouldSetJsonContentType && !('Content-Type' in requestHeaders)) {
+    (requestHeaders as Record<string, string>)['Content-Type'] = 'application/json';
+  }
+
+  // 如果body是对象，则转换为JSON字符串
+  const resolvedBody =
+    shouldSetJsonContentType && typeof body !== 'string'
+      ? JSON.stringify(body)
+      : body ?? undefined;
+
   if (authToken) {
     (requestHeaders as Record<string, string>).Authorization = `Bearer ${authToken}`;
   }
@@ -74,7 +94,7 @@ export async function apiClient<T>(path: string, options: RequestOptions = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...rest,
     headers: requestHeaders,
-    body: body && typeof body !== 'string' ? JSON.stringify(body) : body,
+    body: resolvedBody,
   });
 
   const parseJson = async () => {

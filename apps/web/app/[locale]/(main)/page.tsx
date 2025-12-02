@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useEffect, useState } from "react";
+import { type ChangeEvent, useCallback, useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData } from "@/components/LinkCard";
 import Link from "next/link";
@@ -13,6 +13,7 @@ import { Avatar, Button, Select, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
+import AddLinkModal from "@/components/AddLinkModal";
 
 type SidebarItem = {
   label: string;
@@ -29,6 +30,7 @@ export default function Home() {
   const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
   const [links, setLinks] = useState<LinkCardData[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
+  const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
 
@@ -47,6 +49,41 @@ export default function Home() {
 
     router.replace(pathname, { locale: nextLocale });
   };
+
+  const loadLinks = useCallback(async (categoryId?: number, cancelToken?: { cancelled: boolean }) => {
+    if (categoryId === undefined) {
+      setLinks([]);
+      setIsLoadingLinks(false);
+      return;
+    }
+
+    setIsLoadingLinks(true);
+    try {
+      const data = isAuthenticated
+        ? await fetchLinks(categoryId)
+        : await fetchPublicLinks(categoryId);
+      if (cancelToken?.cancelled) return;
+
+      const mapped: LinkCardData[] = data.map((link: LinkItem) => ({
+        id: link.id,
+        title: link.title,
+        description: link.description ?? '',
+        url: link.url,
+        icon: link.icon ?? link.cover ?? undefined,
+      }));
+
+      setLinks(mapped);
+    } catch (error) {
+      if (cancelToken?.cancelled) return;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load links';
+      message.error(errorMessage);
+      setLinks([]);
+    } finally {
+      if (!cancelToken?.cancelled) {
+        setIsLoadingLinks(false);
+      }
+    }
+  }, [isAuthenticated, message]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -105,49 +142,13 @@ export default function Home() {
   }, [isAuthenticated, message]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (activeCategoryId === undefined) {
-      setLinks([]);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const loadLinks = async () => {
-      setIsLoadingLinks(true);
-      try {
-        const data = isAuthenticated
-          ? await fetchLinks(activeCategoryId)
-          : await fetchPublicLinks(activeCategoryId);
-        if (cancelled) return;
-
-        const mapped: LinkCardData[] = data.map((link: LinkItem, index) => ({
-          id: link.id,
-          title: link.title,
-          description: link.description ?? '',
-          url: link.url,
-          icon: link.icon ?? link.cover ?? undefined,
-        }));
-
-        setLinks(mapped);
-      } catch (error) {
-        if (cancelled) return;
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load links';
-        message.error(errorMessage);
-        setLinks([]);
-      } finally {
-        if (!cancelled) {
-          setIsLoadingLinks(false);
-        }
-      }
-    };
-
-    void loadLinks();
+    const cancelToken = { cancelled: false };
+    void loadLinks(activeCategoryId, cancelToken);
 
     return () => {
-      cancelled = true;
+      cancelToken.cancelled = true;
     };
-  }, [activeCategoryId, message]);
+  }, [activeCategoryId, loadLinks]);
 
   const toggleSidebar = () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
@@ -167,6 +168,11 @@ export default function Home() {
   const handleLogout = () => {
     logout();
     message.success(t('logoutSuccess'));
+  };
+  const handleLinkCreated = () => {
+    if (activeCategoryId !== undefined) {
+      void loadLinks(activeCategoryId);
+    }
   };
 
   return (
@@ -274,9 +280,10 @@ export default function Home() {
                     variant="custom"
                     color="custom"
                     className="shrink-0"
+                    onClick={() => setIsAddLinkOpen(true)}
                   >
                     <Plus className="h-4 w-4" />
-                    Link
+                    {t('addLink')}
                   </Button>
                 )}
               </div>
@@ -303,6 +310,14 @@ export default function Home() {
           </section>
         </main>
       </div>
+
+      <AddLinkModal
+        open={isAddLinkOpen}
+        onClose={() => setIsAddLinkOpen(false)}
+        activeCategoryId={activeCategoryId}
+        onCreated={handleLinkCreated}
+        messageApi={message}
+      />
     </div>
   );
 }
