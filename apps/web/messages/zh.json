@@ -50,7 +50,12 @@
     "searchBookmarks": "搜索收藏...",
     "noLinksFoundInThisCategory": "此分类下没有收藏。",
     "logoutSuccess": "退出成功",
-    "addLink": "添加链接"
+    "addLink": "添加链接",
+    "edit": "编辑",
+    "delete": "删除",
+    "deleteConfirm": "确认删除该链接？",
+    "deleteSuccess": "删除成功",
+    "deleteFailed": "删除失败"
   },
   "Sidebar": {
     "yourBookmarkHub": "您的收藏中心",
@@ -81,6 +86,12 @@
     "uploadFailed": "图标上传失败",
     "loadCategoryFailed": "获取分类失败",
     "createSuccess": "创建成功",
-    "createFailed": "创建失败"
+    "createFailed": "创建失败",
+    "editTitle": "编辑链接",
+    "save": "保存",
+    "loadingDetail": "正在加载链接信息…",
+    "loadDetailFailed": "获取链接详情失败",
+    "updateSuccess": "更新成功",
+    "updateFailed": "更新失败"
   }
 }

@@ -4,12 +4,12 @@ import { type ChangeEvent, useCallback, useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData } from "@/components/LinkCard";
 import Link from "next/link";
-import { Menu, Plus, Search } from "lucide-react";
+import { Menu, PencilLine, Plus, Search, Trash2 } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { fetchCategories, fetchPublicCategories } from "@/services/categories";
-import { fetchLinks, fetchPublicLinks, type LinkItem } from "@/services/links";
-import { Avatar, Button, Select, useMessage } from "@linknest/ui";
+import { deleteLink, fetchLinks, fetchPublicLinks, type LinkItem } from "@/services/links";
+import { Avatar, Button, ContextMenu, Select, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -31,6 +31,7 @@ export default function Home() {
   const [links, setLinks] = useState<LinkCardData[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
+  const [editingLinkId, setEditingLinkId] = useState<number | null>(null);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
 
@@ -174,6 +175,31 @@ export default function Home() {
       void loadLinks(activeCategoryId);
     }
   };
+  const handleLinkUpdated = () => {
+    if (activeCategoryId !== undefined) {
+      void loadLinks(activeCategoryId);
+    }
+  };
+  const handleEditLink = (id?: number) => {
+    if (!id) return;
+    setEditingLinkId(id);
+  };
+  const handleDeleteLink = async (id?: number) => {
+    if (!id || !isAuthenticated) return;
+    const confirmed = window.confirm(t('deleteConfirm'));
+    if (!confirmed) return;
+
+    try {
+      await deleteLink(id);
+      message.success(t('deleteSuccess'));
+      if (activeCategoryId !== undefined) {
+        void loadLinks(activeCategoryId);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t('deleteFailed');
+      message.error(errorMessage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#030712] text-white">
@@ -301,7 +327,32 @@ export default function Home() {
                 </div>
               ))
               : links.length > 0
-                ? links.map((link) => <LinkCard key={link.id ?? link.title} link={link} />)
+                ? links.map((link) =>
+                  (!isAuthenticated || !link.id) ? (
+                    <LinkCard key={link.id ?? link.title} link={link} />
+                  ) : (
+                    <ContextMenu
+                      key={link.id}
+                      items={[
+                        {
+                          key: 'edit',
+                          label: t('edit'),
+                          icon: <PencilLine className="h-4 w-4" />,
+                          onSelect: () => handleEditLink(link.id),
+                        },
+                        {
+                          key: 'delete',
+                          label: t('delete'),
+                          icon: <Trash2 className="h-4 w-4" />,
+                          danger: true,
+                          onSelect: () => void handleDeleteLink(link.id),
+                        },
+                      ]}
+                      className="flex"
+                    >
+                      <LinkCard link={link} />
+                    </ContextMenu>
+                  ))
                 : (
                   <p className="text-sm text-white/60 md:col-span-2 xl:col-span-3">
                     {t('noLinksFoundInThisCategory')}
@@ -316,6 +367,15 @@ export default function Home() {
         onClose={() => setIsAddLinkOpen(false)}
         activeCategoryId={activeCategoryId}
         onCreated={handleLinkCreated}
+        messageApi={message}
+      />
+      <AddLinkModal
+        open={Boolean(editingLinkId)}
+        onClose={() => setEditingLinkId(null)}
+        activeCategoryId={activeCategoryId}
+        mode="edit"
+        linkId={editingLinkId ?? undefined}
+        onUpdated={handleLinkUpdated}
         messageApi={message}
       />
     </div>

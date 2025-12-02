@@ -31,6 +31,25 @@ export const createLink = (payload: AddLinkFormValues) =>
     body: payload,
   });
 
+export const fetchLinkDetail = (id: number) => apiClient<LinkItem>(`/links/${id}`);
+
+export type UpdateLinkPayload = Partial<AddLinkFormValues>;
+
+export const updateLink = (id: number, payload: UpdateLinkPayload) =>
+  apiClient<LinkItem>(`/links/${id}`, {
+    method: 'PATCH',
+    body: payload,
+  });
+
+export interface MessageResponse {
+  message: string;
+}
+
+export const deleteLink = (id: number) =>
+  apiClient<MessageResponse>(`/links/${id}`, {
+    method: 'DELETE',
+  });
+
 export interface UploadLinkIconResponse {
   url: string;
 }

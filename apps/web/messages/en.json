@@ -50,7 +50,12 @@
     "searchBookmarks": "Search bookmarks...",
     "noLinksFoundInThisCategory": "No links found in this category.",
     "logoutSuccess": "Logged out successfully.",
-    "addLink": "Add Link"
+    "addLink": "Add Link",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this link?",
+    "deleteSuccess": "Link deleted",
+    "deleteFailed": "Failed to delete link"
   },
   "Sidebar": {
     "yourBookmarkHub": "Your Bookmark Hub",
@@ -81,6 +86,12 @@
     "uploadFailed": "Failed to upload icon",
     "loadCategoryFailed": "Failed to load categories",
     "createSuccess": "Link created",
-    "createFailed": "Failed to create link"
+    "createFailed": "Failed to create link",
+    "editTitle": "Edit Link",
+    "save": "Save",
+    "loadingDetail": "Loading link details…",
+    "loadDetailFailed": "Failed to load link",
+    "updateSuccess": "Link updated",
+    "updateFailed": "Failed to update link"
   }
 }

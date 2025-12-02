@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, FileInput, InputField, Modal, Select, useMessage, type MessageApi } from '@linknest/ui';
 import { fetchCategories, type Category } from '@/services/categories';
-import { createLink, uploadLinkIcon } from '@/services/links';
+import { createLink, fetchLinkDetail, updateLink, uploadLinkIcon } from '@/services/links';
 import { useTranslations } from 'next-intl';
 import { createAddLinkSchema, type AddLinkFormInput, type AddLinkFormValues } from '@/schemas/link';
 
@@ -14,6 +14,9 @@ type AddLinkModalProps = {
   onClose: () => void;
   activeCategoryId?: number;
   onCreated?: () => void;
+  onUpdated?: () => void;
+  mode?: 'create' | 'edit';
+  linkId?: number;
   messageApi?: MessageApi;
 };
 
@@ -22,12 +25,17 @@ export const AddLinkModal = ({
   onClose,
   activeCategoryId,
   onCreated,
+  onUpdated,
+  mode = 'create',
+  linkId,
   messageApi,
 }: AddLinkModalProps) => {
   const t = useTranslations('AddLinkModal');
+  const isEditMode = mode === 'edit';
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [isLoadingLink, setIsLoadingLink] = useState(false);
   const [internalMessage, messageHolder] = useMessage({ placement: 'top' });
   const message = messageApi ?? internalMessage;
 
@@ -54,6 +62,8 @@ export const AddLinkModal = ({
   });
 
   const iconValue = watch('icon');
+  const modalTitle = isEditMode ? t('editTitle') : t('title');
+  const submitLabel = isEditMode ? t('save') : t('submit');
 
   useEffect(() => {
     if (!open) return;
@@ -64,7 +74,7 @@ export const AddLinkModal = ({
         const data = await fetchCategories();
         setCategories(data);
 
-        const defaultCategoryId = activeCategoryId ?? data[0]?.id;
+        const defaultCategoryId = isEditMode ? undefined : activeCategoryId ?? data[0]?.id;
         if (defaultCategoryId) {
           setValue('categoryId', defaultCategoryId, { shouldValidate: true });
         }
@@ -77,15 +87,15 @@ export const AddLinkModal = ({
     };
 
     void fetchData();
-  }, [open, activeCategoryId, message, setValue, t]);
+  }, [open, activeCategoryId, isEditMode, message, setValue, t]);
 
   useEffect(() => {
-    if (!open || !activeCategoryId) return;
+    if (!open || !activeCategoryId || isEditMode) return;
     setValue('categoryId', activeCategoryId, { shouldValidate: true });
-  }, [activeCategoryId, open, setValue]);
+  }, [activeCategoryId, isEditMode, open, setValue]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || isEditMode) return;
     reset({
       title: '',
       url: '',
@@ -94,7 +104,41 @@ export const AddLinkModal = ({
       sortOrder: undefined,
       categoryId: activeCategoryId ?? 0,
     });
-  }, [open, activeCategoryId, reset]);
+  }, [open, activeCategoryId, isEditMode, reset]);
+
+  useEffect(() => {
+    if (!open || !isEditMode || !linkId) return;
+
+    const fetchLink = async () => {
+      setIsLoadingLink(true);
+      try {
+        const data = await fetchLinkDetail(linkId);
+        reset({
+          title: data.title ?? '',
+          url: data.url ?? '',
+          description: data.description ?? '',
+          icon: data.icon ?? undefined,
+          sortOrder: data.sortOrder ?? undefined,
+          categoryId: data.categoryId ?? activeCategoryId ?? 0,
+        });
+      } catch (error) {
+        const messageText = error instanceof Error ? error.message : t('loadDetailFailed');
+        message.error(messageText);
+        reset({
+          title: '',
+          url: '',
+          description: '',
+          icon: undefined,
+          sortOrder: undefined,
+          categoryId: activeCategoryId ?? 0,
+        });
+      } finally {
+        setIsLoadingLink(false);
+      }
+    };
+
+    void fetchLink();
+  }, [open, isEditMode, linkId, activeCategoryId, message, reset, t]);
 
   const categoryOptions = useMemo(
     () => categories.map((category) => ({ value: category.id, label: category.name })),
@@ -102,6 +146,8 @@ export const AddLinkModal = ({
   );
 
   const handleUploadIcon = async (files?: FileList | null) => {
+    if (isLoadingLink) return;
+
     const file = files?.[0];
     if (!file) return;
 
@@ -119,28 +165,44 @@ export const AddLinkModal = ({
   };
 
   const onSubmit = async (values: AddLinkFormValues) => {
+    if (isLoadingLink) return;
+
     try {
-      await createLink({
-        title: values.title,
-        url: values.url,
-        description: values.description,
-        icon: values.icon,
-        sortOrder: values.sortOrder,
-        categoryId: values.categoryId,
-      });
-      message.success(t('createSuccess'));
-      onCreated?.();
+      if (isEditMode) {
+        if (!linkId) {
+          message.error(t('loadDetailFailed'));
+          return;
+        }
+        await updateLink(linkId, values);
+        message.success(t('updateSuccess'));
+        onUpdated?.();
+      } else {
+        await createLink({
+          title: values.title,
+          url: values.url,
+          description: values.description,
+          icon: values.icon,
+          sortOrder: values.sortOrder,
+          categoryId: values.categoryId,
+        });
+        message.success(t('createSuccess'));
+        onCreated?.();
+        reset({
+          title: '',
+          url: '',
+          description: '',
+          icon: undefined,
+          sortOrder: undefined,
+          categoryId: values.categoryId,
+        });
+      }
       onClose();
-      reset({
-        title: '',
-        url: '',
-        description: '',
-        icon: undefined,
-        sortOrder: undefined,
-        categoryId: values.categoryId,
-      });
     } catch (error) {
-      const messageText = error instanceof Error ? error.message : t('createFailed');
+      const messageText = error instanceof Error
+        ? error.message
+        : isEditMode
+          ? t('updateFailed')
+          : t('createFailed');
       message.error(messageText);
     }
   };
@@ -149,14 +211,21 @@ export const AddLinkModal = ({
     <Modal
       open={open}
       onClose={onClose}
-      title={t('title')}
+      title={modalTitle}
       footer={(
         <>
           <Button type="button" variant="outline" color="primary" onClick={onClose}>
             {t('cancel')}
           </Button>
-          <Button type="submit" form="add-link-form" variant="custom" color="primary" isLoading={isSubmitting}>
-            {t('submit')}
+          <Button
+            type="submit"
+            form="add-link-form"
+            variant="custom"
+            color="primary"
+            isLoading={isSubmitting}
+            disabled={isLoadingLink}
+          >
+            {submitLabel}
           </Button>
         </>
       )}
@@ -167,12 +236,20 @@ export const AddLinkModal = ({
         className="grid grid-cols-1 gap-4"
         onSubmit={handleSubmit(onSubmit)}
       >
+        {isEditMode && isLoadingLink ? (
+          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm text-white/70">
+            <span className="loading loading-spinner loading-sm" aria-hidden="true" />
+            <span>{t('loadingDetail')}</span>
+          </div>
+        ) : null}
+
         <InputField
           label={t('titleLabel')}
           placeholder={t('titlePlaceholder')}
           {...register('title')}
           fullWidth
           error={errors.title?.message}
+          disabled={isLoadingLink}
         />
         <InputField
           label={t('urlLabel')}
@@ -180,6 +257,7 @@ export const AddLinkModal = ({
           {...register('url')}
           fullWidth
           error={errors.url?.message}
+          disabled={isLoadingLink}
         />
         <InputField
           label={t('descriptionLabel')}
@@ -187,6 +265,7 @@ export const AddLinkModal = ({
           {...register('description')}
           fullWidth
           error={errors.description?.message}
+          disabled={isLoadingLink}
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -199,7 +278,7 @@ export const AddLinkModal = ({
                 value={field.value as number}
                 onChange={(event) => field.onChange(Number(event.target.value))}
                 options={categoryOptions}
-                disabled={loadingCategories}
+                disabled={loadingCategories || isLoadingLink}
                 name={field.name}
                 fullWidth
                 error={errors.categoryId?.message}
@@ -215,6 +294,7 @@ export const AddLinkModal = ({
             placeholder={t('sortOrderPlaceholder')}
             {...register('sortOrder')}
             error={errors.sortOrder?.message}
+            disabled={isLoadingLink}
           />
         </div>
 
@@ -223,7 +303,7 @@ export const AddLinkModal = ({
             label={t('iconLabel')}
             accept="image/*"
             onChange={(event) => handleUploadIcon(event.target.files)}
-            disabled={isUploadingIcon}
+            disabled={isUploadingIcon || isLoadingLink}
             helperText={iconValue ? `${t('iconSelected')}: ${iconValue}` : t('iconHelper')}
             error={errors.icon?.message}
             fullWidth

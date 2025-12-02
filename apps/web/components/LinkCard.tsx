@@ -1,5 +1,6 @@
 import { cn } from "@linknest/utils/lib";
 import { Tooltip } from "@linknest/ui";
+import { useState, type MouseEventHandler } from "react";
 import { API_BASE_URL } from "@/lib/env";
 
 export type LinkCardData = {
@@ -12,6 +13,8 @@ export type LinkCardData = {
 
 type LinkCardProps = {
   link: LinkCardData;
+  className?: string;
+  onContextMenu?: MouseEventHandler<HTMLElement>;
 };
 
 function buildIconSrc(icon?: string | undefined) {
@@ -26,9 +29,11 @@ function buildIconSrc(icon?: string | undefined) {
   return `${base}${path}`;
 }
 
-const LinkCard = ({ link }: LinkCardProps) => {
+const LinkCard = ({ link, className, onContextMenu }: LinkCardProps) => {
   const fallbackInitial = (link.title || "?").trim().charAt(0).toUpperCase();
   const iconSrc = buildIconSrc(link.icon);
+  // 便于图片加载错误处理
+  const [finalIconSrc, setFinalIconSrc] = useState(iconSrc);
 
   const Wrapper: React.ElementType = link.url ? "a" : "div";
 
@@ -37,28 +42,28 @@ const LinkCard = ({ link }: LinkCardProps) => {
       href={link.url}
       target={link.url ? "_blank" : undefined}
       rel={link.url ? "noopener noreferrer" : undefined}
-      className="group relative flex items-start gap-4 rounded-2xl border border-white/5 bg-white/3 px-5 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.28)] hover:border-white/15 hover:bg-white/6"
+      className={cn(
+        "card card-side bg-base-100 shadow-sm",
+        className,
+      )}
+      onContextMenu={onContextMenu}
     >
-      <div
-        className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-br",
-          "border border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.35)]",
-        )}
-      >
+      <figure className="shrink-0 basis-24">
         {iconSrc ? (
           <img
-            src={iconSrc}
+            src={finalIconSrc}
             alt={link.title}
             loading="lazy"
-            className="h-7 w-7 rounded-lg object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.25)]"
+            className="h-24 w-24 rounded-lg object-cover"
+            onError={() => setFinalIconSrc('/ghost.svg')}
           />
         ) : (
-          <span className="text-base font-semibold text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,0.25)]">
+          <span className="flex h-24 w-24 items-center justify-center text-2xl font-semibold text-white/90 shadow-sm">
             {fallbackInitial}
           </span>
         )}
-      </div>
-      <div className="space-y-1.5 min-w-0">
+      </figure>
+      <div className="card-body">
         <Tooltip content={link.title} className="block w-full" variant="primary">
           <h3 className="text-base font-semibold leading-tight text-white group-hover:text-white line-clamp-1">
             {link.title}
