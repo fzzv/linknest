@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useCallback, useEffect, useState } from "react";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData } from "@/components/LinkCard";
 import Link from "next/link";
@@ -30,9 +30,8 @@ export default function Home() {
   const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
   const [links, setLinks] = useState<LinkCardData[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
-  const [linkModal, setLinkModal] = useState<{ open: boolean; mode: 'create' | 'edit'; linkId?: number }>({
+  const [linkModal, setLinkModal] = useState<{ open: boolean; linkId?: number }>({
     open: false,
-    mode: 'create',
     linkId: undefined,
   });
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -54,6 +53,7 @@ export default function Home() {
     router.replace(pathname, { locale: nextLocale });
   };
 
+  // 加载link列表
   const loadLinks = useCallback(async (categoryId?: number, cancelToken?: { cancelled: boolean }) => {
     if (categoryId === undefined) {
       setLinks([]);
@@ -89,6 +89,46 @@ export default function Home() {
     }
   }, [isAuthenticated, message]);
 
+  // 加载分类列表
+  const loadCategories = useCallback(
+    async (
+      options?: {
+        preserveActive?: boolean;
+        cancelToken?: { cancelled: boolean };
+      },
+    ) => {
+      const { preserveActive = false, cancelToken } = options ?? {};
+      try {
+        const categories = isAuthenticated ? await fetchCategories() : await fetchPublicCategories();
+        if (cancelToken?.cancelled) return;
+
+        const mapped = categories.map((category) => ({
+          id: category.id,
+          label: category.name,
+          icon: (category.icon as IconName) || "Bookmark",
+          count: category.count ?? 0,
+        }));
+
+        setSidebarItems(mapped);
+        setActiveCategoryId((prev) => {
+          if (preserveActive && prev !== undefined && mapped.some((category) => category.id === prev)) {
+            return prev;
+          }
+          return mapped.length ? mapped[0]?.id : undefined;
+        });
+      } catch (error) {
+        if (cancelToken?.cancelled) return;
+        message.error("Failed to load categories");
+        setSidebarItems([]);
+        if (!preserveActive) {
+          setActiveCategoryId(undefined);
+        }
+        console.error("Failed to load categories", error);
+      }
+    },
+    [isAuthenticated, message],
+  );
+
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
     const syncState = (matches: boolean) => {
@@ -115,40 +155,16 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-
-    (async () => {
-      try {
-        const categories = isAuthenticated ? await fetchCategories() : await fetchPublicCategories();
-        if (!mounted) return;
-
-        const mapped = categories.map((category) => ({
-          id: category.id,
-          label: category.name,
-          icon: (category.icon as IconName) || "Bookmark",
-          count: category.count ?? 0,
-        }));
-
-        setSidebarItems(mapped);
-        setActiveCategoryId(mapped.length ? mapped[0]?.id : undefined);
-      } catch (error) {
-        if (!mounted) return;
-        message.error("Failed to load categories");
-        console.error("Failed to load categories", error);
-        setSidebarItems([]);
-        setActiveCategoryId(undefined);
-      }
-    })();
-
+    const cancelToken = { cancelled: false };
+    void loadCategories({ preserveActive: true, cancelToken });
     return () => {
-      mounted = false;
+      cancelToken.cancelled = true;
     };
-  }, [isAuthenticated, message]);
+  }, [loadCategories]);
 
   useEffect(() => {
     const cancelToken = { cancelled: false };
     void loadLinks(activeCategoryId, cancelToken);
-
     return () => {
       cancelToken.cancelled = true;
     };
@@ -173,19 +189,22 @@ export default function Home() {
     logout();
     message.success(t('logoutSuccess'));
   };
-  const handleLinkCreated = () => {
+  // 刷新链接列表和分类列表
+  const refreshAfterLinkChange = useCallback(async () => {
     if (activeCategoryId !== undefined) {
-      void loadLinks(activeCategoryId);
+      await loadLinks(activeCategoryId);
     }
-  };
-  const handleLinkUpdated = () => {
-    if (activeCategoryId !== undefined) {
-      void loadLinks(activeCategoryId);
-    }
-  };
+    await loadCategories({ preserveActive: true });
+  }, [activeCategoryId, loadLinks, loadCategories]);
+  // 获取当前分类名称
+  const activeCategoryLabel = useMemo(() => {
+    if (!activeCategoryId) return t('allBookmarks');
+    return sidebarItems.find(i => i.id === activeCategoryId)?.label ?? t('allBookmarks');
+  }, [activeCategoryId, sidebarItems, t]);
+
   const handleEditLink = (id?: number) => {
     if (!id) return;
-    setLinkModal({ open: true, mode: 'edit', linkId: id });
+    setLinkModal({ open: true, linkId: id });
   };
   const handleDeleteLink = (id?: number) => {
     if (!id || !isAuthenticated) return;
@@ -203,9 +222,7 @@ export default function Home() {
         try {
           await deleteLink(id);
           message.success(t('deleteSuccess'));
-          if (activeCategoryId !== undefined) {
-            await loadLinks(activeCategoryId);
-          }
+          await refreshAfterLinkChange();
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : t('deleteFailed');
           message.error(errorMessage);
@@ -215,8 +232,25 @@ export default function Home() {
     });
   };
 
-  const openCreateLinkModal = () => setLinkModal({ open: true, mode: 'create', linkId: undefined });
-  const closeLinkModal = () => setLinkModal((prev) => ({ ...prev, open: false, linkId: undefined, mode: 'create' }));
+  // 右击菜单items
+  const getLinkMenuItems = useCallback((id: number) => ([
+    {
+      key: 'edit',
+      label: t('edit'),
+      icon: <PencilLine className="h-4 w-4" />,
+      onSelect: () => handleEditLink(id),
+    },
+    {
+      key: 'delete',
+      label: t('delete'),
+      icon: <Trash2 className="h-4 w-4" />,
+      danger: true,
+      onSelect: () => handleDeleteLink(id),
+    },
+  ]), [t, handleDeleteLink, handleEditLink])
+
+  const openCreateLinkModal = () => setLinkModal({ open: true, linkId: undefined });
+  const closeLinkModal = () => setLinkModal((prev) => ({ ...prev, open: false, linkId: undefined }));
 
   return (
     <div className="min-h-screen bg-[#030712] text-white">
@@ -304,7 +338,7 @@ export default function Home() {
             <p className="text-xs uppercase tracking-[0.35em] text-white/40">{t('dashboard')}</p>
             <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div>
-                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">{activeCategoryId ? sidebarItems.find(item => item.id === activeCategoryId)?.label : t('allBookmarks')}</h1>
+                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">{activeCategoryLabel}</h1>
                 <p className="mt-3 text-base text-white/70">
                   {t('showAllYourSavedLinks', { count: links.length })}
                 </p>
@@ -350,21 +384,7 @@ export default function Home() {
                   ) : (
                     <ContextMenu
                       key={link.id}
-                      items={[
-                        {
-                          key: 'edit',
-                          label: t('edit'),
-                          icon: <PencilLine className="h-4 w-4" />,
-                          onSelect: () => handleEditLink(link.id),
-                        },
-                        {
-                          key: 'delete',
-                          label: t('delete'),
-                          icon: <Trash2 className="h-4 w-4" />,
-                          danger: true,
-                          onSelect: () => handleDeleteLink(link.id),
-                        },
-                      ]}
+                      items={getLinkMenuItems(link.id)}
                       className="flex"
                     >
                       <LinkCard link={link} />
@@ -381,12 +401,12 @@ export default function Home() {
 
       <LinkFormModal
         open={linkModal.open}
-        mode={linkModal.mode}
+        mode={linkModal.linkId ? 'edit' : 'create'}
         linkId={linkModal.linkId}
         onClose={closeLinkModal}
         activeCategoryId={activeCategoryId}
-        onCreated={handleLinkCreated}
-        onUpdated={handleLinkUpdated}
+        onCreated={refreshAfterLinkChange}
+        onUpdated={refreshAfterLinkChange}
         messageApi={message}
       />
     </div>
