@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { loginSchema, registerSchema, type RegisterFormValues } from '@/schemas/auth';
 import { registerAccount, sendVerificationCode } from '@/services/auth';
+import { useAuthStore } from '@/store/auth-store';
 import { useTranslations } from 'next-intl';
 
 export default function RegisterPage() {
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const [codeCooldown, setCodeCooldown] = useState(0);
   const [sendingCode, setSendingCode] = useState(false);
   const [message, messageHolder] = useMessage({ placement: 'top' });
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const t = useTranslations('Register');
 
@@ -35,6 +37,12 @@ export default function RegisterPage() {
       confirmPassword: '',
     },
   });
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    message.warning('请先退出登录！');
+    router.replace('/');
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     if (codeCooldown <= 0) {

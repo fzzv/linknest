@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, Transition } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMessage, TextField } from '@linknest/ui';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth';
@@ -20,8 +21,10 @@ const motionConfig = {
 export default function LoginPage() {
   const router = useRouter();
   const [message, messageHolder] = useMessage({ placement: 'top' });
-  const login = useAuthStore((state) => state.login);
   const t = useTranslations('Login');
+  // useAuthStore with separate selectors, avoiding object creation that trips the getServerSnapshot warning in server components
+  const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const {
     register,
@@ -47,7 +50,13 @@ export default function LoginPage() {
         message.error('登录失败，请稍后重试');
       }
     }
-  }
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    message.warning('请勿重复登录！');
+    router.replace('/');
+  }, [isAuthenticated, router]);
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 text-white bg-[#050b1a]">
