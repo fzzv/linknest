@@ -19,7 +19,7 @@ type SidebarItem = {
   label: string;
   icon?: IconName;
   count?: number;
-  id: number;
+  id?: number;
 };
 
 export default function Home() {
@@ -55,12 +55,6 @@ export default function Home() {
 
   // 加载link列表
   const loadLinks = useCallback(async (categoryId?: number, cancelToken?: { cancelled: boolean }) => {
-    if (categoryId === undefined) {
-      setLinks([]);
-      setIsLoadingLinks(false);
-      return;
-    }
-
     setIsLoadingLinks(true);
     try {
       const data = isAuthenticated
@@ -109,12 +103,29 @@ export default function Home() {
           count: category.count ?? 0,
         }));
 
-        setSidebarItems(mapped);
+        // 计算所有分类的链接总数
+        const totalCount = mapped.reduce((sum, category) => sum + (category.count ?? 0), 0);
+
+        const sidebarData: SidebarItem[] = [
+          // 默认分类
+          {
+            id: undefined,
+            label: t('allBookmarks'),
+            icon: 'SquareStar',
+            count: totalCount,
+          },
+          // 其他分类
+          ...mapped,
+        ];
+
+        setSidebarItems(sidebarData);
         setActiveCategoryId((prev) => {
-          if (preserveActive && prev !== undefined && mapped.some((category) => category.id === prev)) {
-            return prev;
+          if (preserveActive) {
+            const exists =
+              prev === undefined || mapped.some((category) => category.id === prev);
+            if (exists) return prev;
           }
-          return mapped.length ? mapped[0]?.id : undefined;
+          return sidebarData.length ? sidebarData[0]?.id : undefined;
         });
       } catch (error) {
         if (cancelToken?.cancelled) return;
@@ -126,7 +137,7 @@ export default function Home() {
         console.error("Failed to load categories", error);
       }
     },
-    [isAuthenticated, message],
+    [isAuthenticated, message, t],
   );
 
   useEffect(() => {
@@ -179,7 +190,7 @@ export default function Home() {
   };
 
   const closeSidebar = () => setIsSidebarOpen(false);
-  const handleSelectCategory = (id: number) => {
+  const handleSelectCategory = (id?: number) => {
     setActiveCategoryId(id);
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       closeSidebar();
@@ -191,9 +202,7 @@ export default function Home() {
   };
   // 刷新链接列表和分类列表
   const refreshAfterLinkChange = useCallback(async () => {
-    if (activeCategoryId !== undefined) {
-      await loadLinks(activeCategoryId);
-    }
+    await loadLinks(activeCategoryId);
     await loadCategories({ preserveActive: true });
   }, [activeCategoryId, loadLinks, loadCategories]);
   // 获取当前分类名称

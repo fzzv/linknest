@@ -16,7 +16,7 @@ interface SidebarProps {
   className?: string;
   sidebarItems: SidebarItem[];
   activeId?: number;
-  onSelect?: (id: number, item: SidebarItem) => void;
+  onSelect?: (id: number | undefined, item: SidebarItem) => void;
 }
 
 const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) => {
@@ -39,7 +39,7 @@ const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) 
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-5">
         {sidebarItems.map((item) => {
-          const isActive = item.id !== undefined && item.id === activeId;
+          const isActive = item.id === activeId;
 
           return (
             <Button
@@ -51,10 +51,7 @@ const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) 
                   ? "border-primary text-white"
                   : "text-white/70 hover:bg-white/5 hover:text-white",
               )}
-              onClick={() => {
-                if (item.id === undefined) return;
-                onSelect?.(item.id, item);
-              }}
+              onClick={() => onSelect?.(item.id, item)}
               aria-pressed={isActive}
             >
               {item.icon && <SvgIcon name={item.icon} className="h-5 w-5" />}
