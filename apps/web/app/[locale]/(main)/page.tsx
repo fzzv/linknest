@@ -1,6 +1,7 @@
 'use client';
 
-import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
@@ -23,6 +24,8 @@ type SidebarItem = {
   id?: number;
 };
 
+const VIRTUALIZE_MIN_ITEMS = 20;
+
 export default function Home() {
   const [message, messageHolder] = useMessage({ placement: 'top' });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,6 +40,8 @@ export default function Home() {
     open: false,
     linkId: undefined,
   });
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
+  const [columnCount, setColumnCount] = useState(1);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
 
@@ -118,6 +123,57 @@ export default function Home() {
     },
     [isAuthenticated, message, t],
   );
+
+  // 监听容器宽度，保持响应式列数与虚拟列表一致
+  useEffect(() => {
+    const container = listContainerRef.current;
+    if (!container) return;
+
+    const getColumnCountByWidth = (width: number) => {
+      if (width >= 1280) return 3;
+      if (width >= 768) return 2;
+      return 1;
+    };
+
+    const updateColumnCount = () => {
+      setColumnCount(getColumnCountByWidth(container.clientWidth || window.innerWidth));
+    };
+    // 初始化时立即计算一次列数，并监听窗口宽度变化
+    updateColumnCount();
+    const resizeObserver = new ResizeObserver(updateColumnCount);
+    resizeObserver.observe(container);
+    window.addEventListener("resize", updateColumnCount);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateColumnCount);
+    };
+  }, []);
+
+  // 是否启用虚拟列表
+  const shouldVirtualize = !isLoadingLinks && links.length > VIRTUALIZE_MIN_ITEMS;
+  // 总行数 = 向上取整( 总item数 / 列数 )
+  // 例如 70 个 item 且 3 列 → 24 行
+  const rowCount = Math.ceil(links.length / columnCount);
+  const gridTemplateColumnsStyle = useMemo(
+    () => ({ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }),
+    [columnCount],
+  );
+  // 每一行包含 columnCount 个 item
+  const rowVirtualizer = useVirtualizer({
+    count: shouldVirtualize ? rowCount : 0,
+    getScrollElement: () => listContainerRef.current,
+    // 每行的预估高度（px），在 translateY 处可以固定为120px，这样每次步进都是120px
+    estimateSize: () => 120,
+    // 预渲染行数，多渲染前后 6 行，避免快速滚动时出现空白
+    overscan: 6,
+  });
+
+  // 列数变化后，需要让虚拟器重新测量高度
+  useEffect(() => {
+    if (!shouldVirtualize) return;
+    rowVirtualizer.measure();
+  }, [columnCount, rowVirtualizer, shouldVirtualize]);
 
   // 加载分类列表
   const loadCategories = useCallback(
@@ -426,32 +482,85 @@ export default function Home() {
             </div>
           </div>
 
-          <section className="h-full overflow-y-auto grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {isLoadingLinks
-              ? Array.from({ length: 12 }).map((_, index) => (
-                <LinkCardSkeleton key={index} />
-              ))
-              : links.length > 0
-                ? links.map((link) =>
-                  (!isAuthenticated || !link.id) ? (
-                    <LinkCard key={link.id ?? link.title} link={link} />
-                  ) : (
-                    <ContextMenu
-                      key={link.id}
-                      items={getLinkMenuItems(link.id)}
-                      className="flex"
-                    >
-                      <LinkCard link={link} />
-                    </ContextMenu>
-                  ))
-                : (
-                  <div className="flex flex-col items-center justify-center gap-3 md:col-span-2 xl:col-span-3">
-                    <img src="/empty.svg" alt="Empty" className="h-60 w-60 opacity-80" />
-                    <p className="text-sm text-white/60">
-                      {searchTerm.trim() ? t('noSearchResults') : t('noLinksFoundInThisCategory')}
-                    </p>
-                  </div>
-                )}
+          {/* 链接列表 */}
+          <section
+            ref={listContainerRef}
+            className="h-full overflow-y-auto"
+          >
+            {isLoadingLinks ? (
+              <div className="grid gap-6" style={gridTemplateColumnsStyle}>
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <LinkCardSkeleton key={index} />
+                ))}
+              </div>
+            ) : links.length > 0 ? (
+              shouldVirtualize ? (
+                <div
+                  style={{
+                    height: rowVirtualizer.getTotalSize(),
+                    position: "relative",
+                  }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const rowLinks = links.slice(
+                      virtualRow.index * columnCount,
+                      virtualRow.index * columnCount + columnCount,
+                    );
+                    return (
+                      <div
+                        key={virtualRow.key}
+                        className="absolute left-0 top-0 w-full h-30"
+                        data-index={virtualRow.index}
+                        style={{
+                          transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                      >
+                        <div className="grid gap-6" style={gridTemplateColumnsStyle}>
+                          {rowLinks.map((link) =>
+                            (!isAuthenticated || !link.id) ? (
+                              <LinkCard key={link.id ?? link.title} link={link} />
+                            ) : (
+                              <ContextMenu
+                                key={link.id}
+                                items={getLinkMenuItems(link.id)}
+                                className="flex"
+                              >
+                                <LinkCard link={link} />
+                              </ContextMenu>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="grid gap-6" style={gridTemplateColumnsStyle}>
+                  {links.map((link) =>
+                    (!isAuthenticated || !link.id) ? (
+                      <LinkCard key={link.id ?? link.title} link={link} />
+                    ) : (
+                      <ContextMenu
+                        key={link.id}
+                        items={getLinkMenuItems(link.id)}
+                        className="flex"
+                      >
+                        <LinkCard link={link} />
+                      </ContextMenu>
+                    ),
+                  )}
+                </div>
+              )
+            ) : (
+              <div className="grid h-full gap-6" style={gridTemplateColumnsStyle}>
+                <div className="flex flex-col items-center justify-center gap-3 md:col-span-2 xl:col-span-3">
+                  <img src="/empty.svg" alt="Empty" className="h-60 w-60 opacity-80" />
+                  <p className="text-sm text-white/60">
+                    {searchTerm.trim() ? t('noSearchResults') : t('noLinksFoundInThisCategory')}
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
         </main>
       </div>
