@@ -390,8 +390,8 @@ export default function Home() {
           </div>
         </nav>
 
-        <main className="flex-1 px-4 py-10 sm:px-8 lg:px-14">
-          <div className="w-full">
+        <main className="px-4 py-5 sm:px-8 lg:px-14 flex flex-col gap-10 h-[calc(100vh-4rem)]">
+          <div className="w-full shrink-0">
             <p className="text-xs uppercase tracking-[0.35em] text-white/40">{t('dashboard')}</p>
             <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div>
@@ -426,7 +426,7 @@ export default function Home() {
             </div>
           </div>
 
-          <section className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <section className="h-full overflow-y-auto grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {isLoadingLinks
               ? Array.from({ length: 12 }).map((_, index) => (
                 <LinkCardSkeleton key={index} />
