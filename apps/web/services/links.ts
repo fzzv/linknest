@@ -25,6 +25,22 @@ export const fetchPublicLinks = (categoryId?: number) => {
   return apiClient<LinkItem[]>(`/links/public${search}`);
 };
 
+export const searchLinks = (keyword: string, categoryId?: number) => {
+  const params = new URLSearchParams({ q: keyword });
+  if (categoryId !== undefined) {
+    params.set('categoryId', String(categoryId));
+  }
+  return apiClient<LinkItem[]>(`/links/search?${params.toString()}`);
+};
+
+export const searchPublicLinks = (keyword: string, categoryId?: number) => {
+  const params = new URLSearchParams({ q: keyword });
+  if (categoryId !== undefined) {
+    params.set('categoryId', String(categoryId));
+  }
+  return apiClient<LinkItem[]>(`/links/public/search?${params.toString()}`);
+};
+
 export const createLink = (payload: AddLinkFormValues) =>
   apiClient<LinkItem>('/links', {
     method: 'POST',

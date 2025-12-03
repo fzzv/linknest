@@ -57,7 +57,9 @@
     "deleteConfirm": "Delete this link?",
     "deleteSuccess": "Link deleted",
     "deleteFailed": "Failed to delete link",
-    "deleteCancelled": "Delete cancelled"
+    "deleteCancelled": "Delete cancelled",
+    "searchFailed": "Failed to search links",
+    "noSearchResults": "No related links found."
   },
   "Sidebar": {
     "yourBookmarkHub": "Your Bookmark Hub",

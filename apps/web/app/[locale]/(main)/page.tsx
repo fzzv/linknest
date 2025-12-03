@@ -1,6 +1,7 @@
 'use client';
 
 import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData } from "@/components/LinkCard";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import { Menu, PencilLine, Plus, Search, Trash2 } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { fetchCategories, fetchPublicCategories } from "@/services/categories";
-import { deleteLink, fetchLinks, fetchPublicLinks, type LinkItem } from "@/services/links";
+import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
 import { Avatar, Button, ContextMenu, Modal, Select, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
@@ -30,6 +31,8 @@ export default function Home() {
   const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
   const [links, setLinks] = useState<LinkCardData[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [linkModal, setLinkModal] = useState<{ open: boolean; linkId?: number }>({
     open: false,
     linkId: undefined,
@@ -53,6 +56,19 @@ export default function Home() {
     router.replace(pathname, { locale: nextLocale });
   };
 
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const toCardData = (data: LinkItem[]): LinkCardData[] =>
+    data.map((link) => ({
+      id: link.id,
+      title: link.title,
+      description: link.description ?? "",
+      url: link.url,
+      icon: link.icon ?? link.cover ?? undefined,
+    }));
+
   // 加载link列表
   const loadLinks = useCallback(async (categoryId?: number, cancelToken?: { cancelled: boolean }) => {
     setIsLoadingLinks(true);
@@ -62,15 +78,7 @@ export default function Home() {
         : await fetchPublicLinks(categoryId);
       if (cancelToken?.cancelled) return;
 
-      const mapped: LinkCardData[] = data.map((link: LinkItem) => ({
-        id: link.id,
-        title: link.title,
-        description: link.description ?? '',
-        url: link.url,
-        icon: link.icon ?? link.cover ?? undefined,
-      }));
-
-      setLinks(mapped);
+      setLinks(toCardData(data));
     } catch (error) {
       if (cancelToken?.cancelled) return;
       const errorMessage = error instanceof Error ? error.message : 'Failed to load links';
@@ -82,6 +90,34 @@ export default function Home() {
       }
     }
   }, [isAuthenticated, message]);
+
+  // 搜索链接
+  const searchLinksByKeyword = useCallback(
+    async (keyword: string, cancelToken?: { cancelled: boolean }) => {
+      const query = keyword.trim();
+      if (!query) return;
+
+      setIsLoadingLinks(true);
+      try {
+        const data = isAuthenticated
+          ? await searchPrivateLinks(query)
+          : await searchPublicLinks(query);
+        if (cancelToken?.cancelled) return;
+
+        setLinks(toCardData(data));
+      } catch (error) {
+        if (cancelToken?.cancelled) return;
+        const errorMessage = error instanceof Error ? error.message : t('searchFailed');
+        message.error(errorMessage);
+        setLinks([]);
+      } finally {
+        if (!cancelToken?.cancelled) {
+          setIsLoadingLinks(false);
+        }
+      }
+    },
+    [isAuthenticated, message, t],
+  );
 
   // 加载分类列表
   const loadCategories = useCallback(
@@ -175,11 +211,16 @@ export default function Home() {
 
   useEffect(() => {
     const cancelToken = { cancelled: false };
-    void loadLinks(activeCategoryId, cancelToken);
+    const keyword = debouncedSearchTerm.trim();
+    if (keyword) {
+      void searchLinksByKeyword(keyword, cancelToken);
+    } else {
+      void loadLinks(activeCategoryId, cancelToken);
+    }
     return () => {
       cancelToken.cancelled = true;
     };
-  }, [activeCategoryId, loadLinks]);
+  }, [activeCategoryId, loadLinks, debouncedSearchTerm, searchLinksByKeyword]);
 
   const toggleSidebar = () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
@@ -202,14 +243,21 @@ export default function Home() {
   };
   // 刷新链接列表和分类列表
   const refreshAfterLinkChange = useCallback(async () => {
-    await loadLinks(activeCategoryId);
+    const keyword = debouncedSearchTerm.trim();
+    if (keyword) {
+      await searchLinksByKeyword(keyword);
+    } else {
+      await loadLinks(activeCategoryId);
+    }
     await loadCategories({ preserveActive: true });
-  }, [activeCategoryId, loadLinks, loadCategories]);
+  }, [activeCategoryId, loadLinks, loadCategories, searchLinksByKeyword, debouncedSearchTerm]);
   // 获取当前分类名称
-  const activeCategoryLabel = useMemo(() => {
-    if (!activeCategoryId) return t('allBookmarks');
-    return sidebarItems.find(i => i.id === activeCategoryId)?.label ?? t('allBookmarks');
-  }, [activeCategoryId, sidebarItems, t]);
+  const sidebarLabelMap = useMemo(() => {
+    const m = new Map<number | undefined, string>();
+    for (const item of sidebarItems) m.set(item.id, item.label);
+    return m;
+  }, [sidebarItems]);
+  const activeCategoryLabel = sidebarLabelMap.get(activeCategoryId) ?? t('allBookmarks');
 
   const handleEditLink = (id?: number) => {
     if (!id) return;
@@ -256,7 +304,7 @@ export default function Home() {
       danger: true,
       onSelect: () => handleDeleteLink(id),
     },
-  ]), [t, handleDeleteLink, handleEditLink])
+  ]), [t, handleDeleteLink, handleEditLink]);
 
   const openCreateLinkModal = () => setLinkModal({ open: true, linkId: undefined });
   const closeLinkModal = () => setLinkModal((prev) => ({ ...prev, open: false, linkId: undefined }));
@@ -272,7 +320,7 @@ export default function Home() {
           isDesktopSidebarCollapsed ? "lg:-translate-x-full" : "lg:translate-x-0",
         )}
         sidebarItems={sidebarItems}
-        activeId={activeCategoryId ?? undefined}
+        activeId={activeCategoryId}
         onSelect={handleSelectCategory}
       />
       {/* 蒙层 点击蒙层关闭侧边栏 */}
@@ -358,6 +406,8 @@ export default function Home() {
                   <input
                     type="text"
                     placeholder={t('searchBookmarks')}
+                    value={searchTerm}
+                    onChange={handleSearchChange}
                     className="w-full bg-transparent placeholder:text-white/40 focus:outline-none"
                   />
                 </label>
@@ -400,9 +450,12 @@ export default function Home() {
                     </ContextMenu>
                   ))
                 : (
-                  <p className="text-sm text-white/60 md:col-span-2 xl:col-span-3">
-                    {t('noLinksFoundInThisCategory')}
-                  </p>
+                  <div className="flex flex-col items-center justify-center gap-3 md:col-span-2 xl:col-span-3">
+                    <img src="/empty.svg" alt="Empty" className="h-60 w-60 opacity-80" />
+                    <p className="text-sm text-white/60">
+                      {searchTerm.trim() ? t('noSearchResults') : t('noLinksFoundInThisCategory')}
+                    </p>
+                  </div>
                 )}
           </section>
         </main>

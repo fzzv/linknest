@@ -57,7 +57,9 @@
     "deleteConfirm": "确认删除该链接？",
     "deleteSuccess": "删除成功",
     "deleteFailed": "删除失败",
-    "deleteCancelled": "删除取消"
+    "deleteCancelled": "删除取消",
+    "searchFailed": "搜索链接失败",
+    "noSearchResults": "没有搜索到相关链接"
   },
   "Sidebar": {
     "yourBookmarkHub": "您的收藏中心",
