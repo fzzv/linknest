@@ -31,6 +31,39 @@ export class LinkService {
     });
   }
 
+  async search(userId: number, keyword: string, categoryId?: number) {
+    return this.prisma.link.findMany({
+      where: {
+        userId,
+        ...(categoryId ? { categoryId } : {}),
+        OR: [
+          { title: { contains: keyword } },
+          { description: { contains: keyword } },
+        ],
+      },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    });
+  }
+
+  async searchPublic(keyword: string, categoryId?: number) {
+    if (categoryId) {
+      await this.ensurePublicCategory(categoryId);
+    }
+
+    return this.prisma.link.findMany({
+      where: {
+        userId: null,
+        ...(categoryId ? { categoryId } : {}),
+        category: { userId: null, isPublic: true },
+        OR: [
+          { title: { contains: keyword } },
+          { description: { contains: keyword } },
+        ],
+      },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    });
+  }
+
   async getById(id: number, userId: number) {
     return this.ensureOwnedLink(id, userId);
   }

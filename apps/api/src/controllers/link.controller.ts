@@ -25,7 +25,7 @@ export class LinkController {
     if (categoryId === undefined || categoryId === '') {
       return this.linkService.list(userId, undefined);
     }
-  
+
     const parsed = Number(categoryId);
     if (!Number.isInteger(parsed)) {
       throw new BadRequestException('categoryId must be an integer');
@@ -42,12 +42,63 @@ export class LinkController {
     if (categoryId === undefined || categoryId === '') {
       return this.linkService.listPublic(undefined);
     }
-  
+
     const parsed = Number(categoryId);
     if (!Number.isInteger(parsed)) {
       throw new BadRequestException('categoryId must be an integer');
     }
     return this.linkService.listPublic(parsed);
+  }
+
+  @Get('/search')
+  @ApiOperation({ summary: '搜索链接（用户私有）' })
+  @ApiQuery({ name: 'q', required: true, type: String, description: '搜索关键字（模糊匹配标题或描述）' })
+  @ApiQuery({ name: 'categoryId', required: false, type: Number, description: '按分类筛选' })
+  @ApiOkResponse({ type: LinkDto, isArray: true })
+  searchLinks(
+    @CurrentUser('userId') userId: number,
+    @Query('q') keyword?: string,
+    @Query('categoryId') categoryId?: string,
+  ) {
+    const trimmed = keyword?.trim();
+    if (!trimmed) {
+      throw new BadRequestException('q is required');
+    }
+
+    let parsedCategoryId: number | undefined;
+    if (categoryId !== undefined && categoryId !== '') {
+      const parsed = Number(categoryId);
+      if (!Number.isInteger(parsed)) {
+        throw new BadRequestException('categoryId must be an integer');
+      }
+      parsedCategoryId = parsed;
+    }
+
+    return this.linkService.search(userId, trimmed, parsedCategoryId);
+  }
+
+  @Get('/public/search')
+  @PublicApi()
+  @ApiOperation({ summary: '搜索公开链接' })
+  @ApiQuery({ name: 'q', required: true, type: String, description: '搜索关键字（模糊匹配标题或描述）' })
+  @ApiQuery({ name: 'categoryId', required: false, type: Number, description: '按公开分类筛选' })
+  @ApiOkResponse({ type: LinkDto, isArray: true })
+  searchPublicLinks(@Query('q') keyword?: string, @Query('categoryId') categoryId?: string) {
+    const trimmed = keyword?.trim();
+    if (!trimmed) {
+      throw new BadRequestException('q is required');
+    }
+
+    let parsedCategoryId: number | undefined;
+    if (categoryId !== undefined && categoryId !== '') {
+      const parsed = Number(categoryId);
+      if (!Number.isInteger(parsed)) {
+        throw new BadRequestException('categoryId must be an integer');
+      }
+      parsedCategoryId = parsed;
+    }
+
+    return this.linkService.searchPublic(trimmed, parsedCategoryId);
   }
 
   @Get(':id')
