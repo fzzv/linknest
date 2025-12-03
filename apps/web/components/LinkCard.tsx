@@ -80,3 +80,20 @@ const LinkCard = ({ link, className, onContextMenu }: LinkCardProps) => {
 };
 
 export default LinkCard;
+
+export const LinkCardSkeleton = ({ className, ...props }: { className?: string }) => (
+  <div
+    className={cn(
+      "card card-side bg-base-100 shadow-sm border border-white/5",
+      className,
+    )}
+    {...props}
+  >
+    <div className="skeleton h-24 w-24 rounded-lg m-3" />
+    <div className="card-body gap-3">
+      <div className="skeleton h-4 w-2/3 rounded-md" />
+      <div className="skeleton h-4 w-full rounded-md" />
+      <div className="skeleton h-4 w-3/4 rounded-md" />
+    </div>
+  </div>
+);

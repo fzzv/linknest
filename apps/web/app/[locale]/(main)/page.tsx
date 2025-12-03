@@ -3,7 +3,7 @@
 import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
-import LinkCard, { LinkCardData } from "@/components/LinkCard";
+import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import Link from "next/link";
 import { Menu, PencilLine, Plus, Search, Trash2 } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
@@ -428,13 +428,8 @@ export default function Home() {
 
           <section className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {isLoadingLinks
-              ? Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-[110px] rounded-2xl border border-white/5 bg-white/3"
-                >
-                  <div className="h-full w-full animate-pulse rounded-2xl bg-white/5" />
-                </div>
+              ? Array.from({ length: 12 }).map((_, index) => (
+                <LinkCardSkeleton key={index} />
               ))
               : links.length > 0
                 ? links.map((link) =>
