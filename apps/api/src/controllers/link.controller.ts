@@ -22,11 +22,15 @@ export class LinkController {
   @ApiQuery({ name: 'categoryId', required: false, type: Number, description: '按分类筛选' })
   @ApiOkResponse({ type: LinkDto, isArray: true })
   getLinks(@CurrentUser('userId') userId: number, @Query('categoryId') categoryId?: string) {
-    const parsedCategoryId = categoryId ? Number(categoryId) : undefined;
-    if (categoryId && Number.isNaN(parsedCategoryId)) {
-      throw new BadRequestException('categoryId must be a number');
+    if (categoryId === undefined || categoryId === '') {
+      return this.linkService.list(userId, undefined);
     }
-    return this.linkService.list(userId, parsedCategoryId);
+  
+    const parsed = Number(categoryId);
+    if (!Number.isInteger(parsed)) {
+      throw new BadRequestException('categoryId must be an integer');
+    }
+    return this.linkService.list(userId, parsed);
   }
 
   @Get('/public')
@@ -35,11 +39,15 @@ export class LinkController {
   @ApiQuery({ name: 'categoryId', required: false, type: Number, description: '按公开分类筛选' })
   @ApiOkResponse({ type: LinkDto, isArray: true })
   getPublicLinks(@Query('categoryId') categoryId?: string) {
-    const parsedCategoryId = categoryId ? Number(categoryId) : undefined;
-    if (categoryId && Number.isNaN(parsedCategoryId)) {
-      throw new BadRequestException('categoryId must be a number');
+    if (categoryId === undefined || categoryId === '') {
+      return this.linkService.listPublic(undefined);
     }
-    return this.linkService.listPublic(parsedCategoryId);
+  
+    const parsed = Number(categoryId);
+    if (!Number.isInteger(parsed)) {
+      throw new BadRequestException('categoryId must be an integer');
+    }
+    return this.linkService.listPublic(parsed);
   }
 
   @Get(':id')
