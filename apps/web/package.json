@@ -15,6 +15,7 @@
     "@linknest/ui": "workspace:*",
     "@linknest/utils": "workspace:^",
     "@tailwindcss/postcss": "^4.1.13",
+    "@tanstack/react-virtual": "^3.13.12",
     "daisyui": "^5.5.5",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.543.0",
