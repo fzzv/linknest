@@ -1,7 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
@@ -16,6 +15,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import LinkFormModal from "@/components/LinkFormModal";
+import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
 
 type SidebarItem = {
   label: string;
@@ -23,8 +23,6 @@ type SidebarItem = {
   count?: number;
   id?: number;
 };
-
-const VIRTUALIZE_MIN_ITEMS = 20;
 
 export default function Home() {
   const [message, messageHolder] = useMessage({ placement: 'top' });
@@ -40,8 +38,6 @@ export default function Home() {
     open: false,
     linkId: undefined,
   });
-  const listContainerRef = useRef<HTMLDivElement | null>(null);
-  const [columnCount, setColumnCount] = useState(1);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
 
@@ -124,56 +120,19 @@ export default function Home() {
     [isAuthenticated, message, t],
   );
 
-  // 监听容器宽度，保持响应式列数与虚拟列表一致
-  useEffect(() => {
-    const container = listContainerRef.current;
-    if (!container) return;
-
-    const getColumnCountByWidth = (width: number) => {
-      if (width >= 1280) return 3;
-      if (width >= 768) return 2;
-      return 1;
-    };
-
-    const updateColumnCount = () => {
-      setColumnCount(getColumnCountByWidth(container.clientWidth || window.innerWidth));
-    };
-    // 初始化时立即计算一次列数，并监听窗口宽度变化
-    updateColumnCount();
-    const resizeObserver = new ResizeObserver(updateColumnCount);
-    resizeObserver.observe(container);
-    window.addEventListener("resize", updateColumnCount);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", updateColumnCount);
-    };
-  }, []);
-
-  // 是否启用虚拟列表
-  const shouldVirtualize = !isLoadingLinks && links.length > VIRTUALIZE_MIN_ITEMS;
-  // 总行数 = 向上取整( 总item数 / 列数 )
-  // 例如 70 个 item 且 3 列 → 24 行
-  const rowCount = Math.ceil(links.length / columnCount);
-  const gridTemplateColumnsStyle = useMemo(
-    () => ({ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }),
-    [columnCount],
-  );
-  // 每一行包含 columnCount 个 item
-  const rowVirtualizer = useVirtualizer({
-    count: shouldVirtualize ? rowCount : 0,
-    getScrollElement: () => listContainerRef.current,
-    // 每行的预估高度（px），在 translateY 处可以固定为120px，这样每次步进都是120px
-    estimateSize: () => 120,
-    // 预渲染行数，多渲染前后 6 行，避免快速滚动时出现空白
+  const {
+    containerRef: listContainerRef,
+    gridTemplateColumnsStyle,
+    shouldVirtualize,
+    virtualRows,
+    totalHeight,
+  } = useVirtualizedMasonryGrid<LinkCardData>({
+    items: links,
+    isLoading: isLoadingLinks,
+    estimateRowHeight: 96,
+    rowGap: 24,
     overscan: 6,
   });
-
-  // 列数变化后，需要让虚拟器重新测量高度
-  useEffect(() => {
-    if (!shouldVirtualize) return;
-    rowVirtualizer.measure();
-  }, [columnCount, rowVirtualizer, shouldVirtualize]);
 
   // 加载分类列表
   const loadCategories = useCallback(
@@ -497,42 +456,35 @@ export default function Home() {
               shouldVirtualize ? (
                 <div
                   style={{
-                    height: rowVirtualizer.getTotalSize(),
+                    height: totalHeight,
                     position: "relative",
                   }}
                 >
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const rowLinks = links.slice(
-                      virtualRow.index * columnCount,
-                      virtualRow.index * columnCount + columnCount,
-                    );
-                    return (
-                      <div
-                        key={virtualRow.key}
-                        className="absolute left-0 top-0 w-full h-30"
-                        data-index={virtualRow.index}
-                        style={{
-                          transform: `translateY(${virtualRow.start}px)`,
-                        }}
-                      >
-                        <div className="grid gap-6" style={gridTemplateColumnsStyle}>
-                          {rowLinks.map((link) =>
-                            (!isAuthenticated || !link.id) ? (
-                              <LinkCard key={link.id ?? link.title} link={link} />
-                            ) : (
-                              <ContextMenu
-                                key={link.id}
-                                items={getLinkMenuItems(link.id)}
-                                className="flex"
-                              >
-                                <LinkCard link={link} />
-                              </ContextMenu>
-                            ),
-                          )}
-                        </div>
+                  {virtualRows.map((row) => (
+                    <div
+                      key={row.virtualItem.key}
+                      ref={row.measureElement}
+                      data-index={row.virtualItem.index}
+                      className="absolute left-0 top-0 w-full"
+                      style={row.style}
+                    >
+                      <div className="grid gap-6" style={gridTemplateColumnsStyle}>
+                        {row.items.map((link) =>
+                          (!isAuthenticated || !link.id) ? (
+                            <LinkCard key={link.id ?? link.title} link={link} />
+                          ) : (
+                            <ContextMenu
+                              key={link.id}
+                              items={getLinkMenuItems(link.id)}
+                              className="flex"
+                            >
+                              <LinkCard link={link} />
+                            </ContextMenu>
+                          ),
+                        )}
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="grid gap-6" style={gridTemplateColumnsStyle}>
