@@ -1,73 +1,30 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
-import BookmarkCard, { BookmarkCardData } from "@/components/BookmarkCard";
+import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import Link from "next/link";
-import { Menu, Plus, Search } from "lucide-react";
-import { cn } from "@linknest/utils/lib";
+import { Menu, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
+import { cn } from "@linknest/utils";
 import { IconName } from "@/components/SvgIcon";
-import { fetchCategories } from "@/services/categories";
-import { Avatar, Button, useMessage } from "@linknest/ui";
+import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
+import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
+import { Avatar, Button, ContextMenu, Modal, Select, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
+import { useLocale, useTranslations, type Locale } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import LinkFormModal from "@/components/LinkFormModal";
+import CategoryFormModal from "@/components/CategoryFormModal";
+import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
+import ImportBookmarksModal from "@/components/ImportBookmarksModal";
 
 type SidebarItem = {
   label: string;
   icon?: IconName;
   count?: number;
-  id: number;
+  id?: number;
 };
-
-const bookmarkCards: BookmarkCardData[] = [
-  {
-    title: "DaisyUI Docs",
-    description: "The most popular component library for Tailwind CSS.",
-    image: "/window.svg",
-    class: "from-[#fde7d4] via-[#f9d3cc] to-[#f2c9d5]",
-  },
-  {
-    title: "Figma Community",
-    description: "Explore thousands of community-made templates and UI kits.",
-    image: "/cover.svg",
-    class: "from-[#f6f1ff] via-[#f6f1ff] to-[#e9e4fb]",
-  },
-  {
-    title: "React Official Website",
-    description: "The library for building modern web and native interfaces.",
-    image: "/window.svg",
-    class: "from-[#eefeea] via-[#d9f6e4] to-[#dbeed7]",
-  },
-  {
-    title: "MDN Web Docs",
-    description: "Resources for developers, by developers on web standards.",
-    image: "/window.svg",
-    class: "from-[#d7eafd] via-[#d9f4ff] to-[#cfe0ff]",
-  },
-  {
-    title: "Dribbble Inspiration",
-    description: "The go-to community to discover work from creative people.",
-    image: "/cover.svg",
-    class: "from-[#f0f2ff] via-[#e7ecff] to-[#dae2ff]",
-  },
-  {
-    title: "GitHub",
-    description: "Where the world builds software and collaborates together.",
-    image: "/window.svg",
-    class: "from-[#f7f7f9] via-[#d7dae2] to-[#cacfd9]",
-  },
-  {
-    title: "Framer Templates",
-    description: "Production-ready landing pages to launch ideas fast.",
-    image: "/cover.svg",
-    class: "from-[#fff6ec] via-[#ffe5d3] to-[#f7caa4]",
-  },
-  {
-    title: "Product Hunt",
-    description: "Daily leaderboard of new products and creative projects.",
-    image: "/window.svg",
-    class: "from-[#fde9de] via-[#f7d5c8] to-[#f2beb3]",
-  },
-];
 
 export default function Home() {
   const [message, messageHolder] = useMessage({ placement: 'top' });
@@ -75,7 +32,180 @@ export default function Home() {
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined);
+  const [links, setLinks] = useState<LinkCardData[]>([]);
+  const [isLoadingLinks, setIsLoadingLinks] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [categoryModal, setCategoryModal] = useState<{ open: boolean; categoryId?: number }>({
+    open: false,
+    categoryId: undefined,
+  });
+  const [linkModal, setLinkModal] = useState<{ open: boolean; linkId?: number }>({
+    open: false,
+    linkId: undefined,
+  });
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
+  const t = useTranslations('Home');
+  const tSidebar = useTranslations('Sidebar');
+
+  // 语言切换
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const languageOptions = [
+    { value: 'en', label: t('languageEnglish') },
+    { value: 'zh', label: t('languageChinese') },
+  ];
+
+  const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextLocale = event.target.value as Locale;
+    if (nextLocale === locale) return;
+
+    router.replace(pathname, { locale: nextLocale });
+  };
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const toCardData = (data: LinkItem[]): LinkCardData[] =>
+    data.map((link) => ({
+      id: link.id,
+      title: link.title,
+      description: link.description ?? "",
+      url: link.url,
+      icon: link.icon ?? link.cover ?? undefined,
+    }));
+
+  // 加载link列表
+  const loadLinks = useCallback(async (categoryId?: number, cancelToken?: { cancelled: boolean }) => {
+    setIsLoadingLinks(true);
+    try {
+      const data = isAuthenticated
+        ? await fetchLinks(categoryId)
+        : await fetchPublicLinks(categoryId);
+      if (cancelToken?.cancelled) return;
+
+      setLinks(toCardData(data));
+    } catch (error) {
+      if (cancelToken?.cancelled) return;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load links';
+      message.error(errorMessage);
+      setLinks([]);
+    } finally {
+      if (!cancelToken?.cancelled) {
+        setIsLoadingLinks(false);
+      }
+    }
+  }, [isAuthenticated, message]);
+
+  // 搜索链接
+  const searchLinksByKeyword = useCallback(
+    async (keyword: string, cancelToken?: { cancelled: boolean }) => {
+      const query = keyword.trim();
+      if (!query) return;
+
+      setIsLoadingLinks(true);
+      try {
+        const data = isAuthenticated
+          ? await searchPrivateLinks(query)
+          : await searchPublicLinks(query);
+        if (cancelToken?.cancelled) return;
+
+        setLinks(toCardData(data));
+      } catch (error) {
+        if (cancelToken?.cancelled) return;
+        const errorMessage = error instanceof Error ? error.message : t('searchFailed');
+        message.error(errorMessage);
+        setLinks([]);
+      } finally {
+        if (!cancelToken?.cancelled) {
+          setIsLoadingLinks(false);
+        }
+      }
+    },
+    [isAuthenticated, message, t],
+  );
+
+  const {
+    containerRef: listContainerRef,
+    gridTemplateColumnsStyle,
+    shouldVirtualize,
+    virtualRows,
+    totalHeight,
+  } = useVirtualizedMasonryGrid<LinkCardData>({
+    items: links,
+    isLoading: isLoadingLinks,
+    estimateRowHeight: 96,
+    rowGap: 24,
+    overscan: 6,
+  });
+
+  // 加载分类列表
+  const loadCategories = useCallback(
+    async (
+      options?: {
+        preserveActive?: boolean;
+        cancelToken?: { cancelled: boolean };
+      },
+    ) => {
+      const { preserveActive = false, cancelToken } = options ?? {};
+      try {
+        const categories = isAuthenticated ? await fetchCategories() : await fetchPublicCategories();
+        if (cancelToken?.cancelled) return;
+
+        const mapped = categories.map((category) => ({
+          id: category.id,
+          label: category.name,
+          icon: (category.icon as IconName) || "Bookmark",
+          count: category.count ?? 0,
+        }));
+
+        // 计算所有分类的链接总数
+        const totalCount = mapped.reduce((sum, category) => sum + (category.count ?? 0), 0);
+
+        const sidebarData: SidebarItem[] = [
+          // 默认分类
+          {
+            id: undefined,
+            label: t('allBookmarks'),
+            icon: 'SquareStar',
+            count: totalCount,
+          },
+          // 其他分类
+          ...mapped,
+        ];
+
+        setSidebarItems(sidebarData);
+        setActiveCategoryId((prev) => {
+          if (preserveActive) {
+            const exists =
+              prev === undefined || mapped.some((category) => category.id === prev);
+            if (exists) return prev;
+          }
+          return sidebarData.length ? sidebarData[0]?.id : undefined;
+        });
+      } catch (error) {
+        if (cancelToken?.cancelled) return;
+        message.error("Failed to load categories");
+        setSidebarItems([]);
+        if (!preserveActive) {
+          setActiveCategoryId(undefined);
+        }
+        console.error("Failed to load categories", error);
+      }
+    },
+    [isAuthenticated, message, t],
+  );
+
+  const openCreateCategoryModal = () => setCategoryModal({ open: true, categoryId: undefined });
+  const openEditCategoryModal = (id: number) => setCategoryModal({ open: true, categoryId: id });
+  const closeCategoryModal = () => setCategoryModal({ open: false, categoryId: undefined });
+  const handleCategoryCreated = useCallback(async (categoryId: number) => {
+    setActiveCategoryId(categoryId);
+    await loadCategories({ preserveActive: true });
+  }, [loadCategories]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -103,34 +233,25 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-
-    (async () => {
-      try {
-        const categories = await fetchCategories();
-        if (!mounted) return;
-
-        const mapped = categories.map((category) => ({
-          id: category.id,
-          label: category.name,
-          icon: (category.icon as IconName) || "Bookmark",
-          count: category.count ?? 0,
-        }));
-
-        setSidebarItems(mapped);
-        if (mapped.length) {
-          setActiveCategoryId(mapped[0]?.id);
-        }
-      } catch (error) {
-        message.error("Failed to load categories");
-        console.error("Failed to load categories", error);
-      }
-    })();
-
+    const cancelToken = { cancelled: false };
+    void loadCategories({ preserveActive: true, cancelToken });
     return () => {
-      mounted = false;
+      cancelToken.cancelled = true;
     };
-  }, []);
+  }, [loadCategories]);
+
+  useEffect(() => {
+    const cancelToken = { cancelled: false };
+    const keyword = debouncedSearchTerm.trim();
+    if (keyword) {
+      void searchLinksByKeyword(keyword, cancelToken);
+    } else {
+      void loadLinks(activeCategoryId, cancelToken);
+    }
+    return () => {
+      cancelToken.cancelled = true;
+    };
+  }, [activeCategoryId, loadLinks, debouncedSearchTerm, searchLinksByKeyword]);
 
   const toggleSidebar = () => {
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
@@ -141,7 +262,7 @@ export default function Home() {
   };
 
   const closeSidebar = () => setIsSidebarOpen(false);
-  const handleSelectCategory = (id: number) => {
+  const handleSelectCategory = (id?: number) => {
     setActiveCategoryId(id);
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       closeSidebar();
@@ -149,8 +270,112 @@ export default function Home() {
   };
   const handleLogout = () => {
     logout();
-    message.success("已退出登录");
+    message.success(t('logoutSuccess'));
   };
+  // 刷新链接列表和分类列表
+  const refreshAfterLinkChange = useCallback(async () => {
+    const keyword = debouncedSearchTerm.trim();
+    if (keyword) {
+      await searchLinksByKeyword(keyword);
+    } else {
+      await loadLinks(activeCategoryId);
+    }
+    await loadCategories({ preserveActive: true });
+  }, [activeCategoryId, loadLinks, loadCategories, searchLinksByKeyword, debouncedSearchTerm]);
+  const handleCategoryUpdated = useCallback(async () => {
+    await refreshAfterLinkChange();
+  }, [refreshAfterLinkChange]);
+
+  const openImportModal = () => setImportModalOpen(true);
+  const closeImportModal = () => setImportModalOpen(false);
+  // 导入后刷新列表数据
+  const handleBookmarksImported = useCallback(async () => {
+    await refreshAfterLinkChange();
+  }, [refreshAfterLinkChange]);
+  
+  // 获取当前分类名称
+  const sidebarLabelMap = useMemo(() => {
+    const m = new Map<number | undefined, string>();
+    for (const item of sidebarItems) m.set(item.id, item.label);
+    return m;
+  }, [sidebarItems]);
+  const activeCategoryLabel = sidebarLabelMap.get(activeCategoryId) ?? t('allBookmarks');
+
+  const handleEditLink = (id?: number) => {
+    if (!id) return;
+    setLinkModal({ open: true, linkId: id });
+  };
+  const handleDeleteLink = (id?: number) => {
+    if (!id || !isAuthenticated) return;
+
+    Modal.confirm({
+      icon: <Trash2 className="h-5 w-5 text-error" />,
+      title: t('delete'),
+      content: (
+        <p className="text-sm text-white/80">{t('deleteConfirm')}</p>
+      ),
+      okText: t('delete'),
+      cancelText: t('cancel'),
+      closable: true,
+      onOk: async () => {
+        try {
+          await deleteLink(id);
+          message.success(t('deleteSuccess'));
+          await refreshAfterLinkChange();
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : t('deleteFailed');
+          message.error(errorMessage);
+          return false;
+        }
+      },
+    });
+  };
+
+  const handleDeleteCategory = (id?: number) => {
+    if (!id || !isAuthenticated) return;
+
+    Modal.confirm({
+      icon: <Trash2 className="h-5 w-5 text-error" />,
+      title: tSidebar('delete'),
+      content: (
+        <p className="text-sm text-white/80">{tSidebar('deleteConfirm')}</p>
+      ),
+      okText: tSidebar('delete'),
+      cancelText: t('cancel'),
+      closable: true,
+      onOk: async () => {
+        try {
+          await deleteCategory(id);
+          message.success(tSidebar('deleteSuccess'));
+          await loadCategories({ preserveActive: true });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : tSidebar('deleteFailed');
+          message.error(errorMessage);
+          return false;
+        }
+      },
+    });
+  };
+
+  // 右击菜单items
+  const getLinkMenuItems = useCallback((id: number) => ([
+    {
+      key: 'edit',
+      label: t('edit'),
+      icon: <PencilLine className="h-4 w-4" />,
+      onSelect: () => handleEditLink(id),
+    },
+    {
+      key: 'delete',
+      label: t('delete'),
+      icon: <Trash2 className="h-4 w-4" />,
+      danger: true,
+      onSelect: () => handleDeleteLink(id),
+    },
+  ]), [t, handleDeleteLink, handleEditLink]);
+
+  const openCreateLinkModal = () => setLinkModal({ open: true, linkId: undefined });
+  const closeLinkModal = () => setLinkModal((prev) => ({ ...prev, open: false, linkId: undefined }));
 
   return (
     <div className="min-h-screen bg-[#030712] text-white">
@@ -163,8 +388,11 @@ export default function Home() {
           isDesktopSidebarCollapsed ? "lg:-translate-x-full" : "lg:translate-x-0",
         )}
         sidebarItems={sidebarItems}
-        activeId={activeCategoryId ?? undefined}
+        activeId={activeCategoryId}
         onSelect={handleSelectCategory}
+        onCreateCategory={openCreateCategoryModal}
+        onEditCategory={openEditCategoryModal}
+        onDeleteCategory={handleDeleteCategory}
       />
       {/* 蒙层 点击蒙层关闭侧边栏 */}
       {isSidebarOpen && (
@@ -194,79 +422,193 @@ export default function Home() {
           </Button>
           <span>LinkNest</span>
           <div className="ml-auto flex items-center gap-3">
-            <Button
-              variant="custom"
-              color="custom"
-              className="shrink-0"
-            >
-              <Plus className="h-5 w-5" />
-              Bookmark
-            </Button>
+            <Select
+              size="sm"
+              value={locale}
+              variant="solid"
+              onChange={handleLanguageChange}
+              options={languageOptions}
+              aria-label={t('language')}
+              wrapperClassName="w-auto"
+              className="min-w-30 pl-5"
+            />
+
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <Avatar
-                  src={user?.avatar ?? undefined}
-                  alt={user?.nickname ?? user?.email ?? "User"}
-                  size="sm"
-                />
+              <>
                 <Button
                   variant="ghost"
                   color="custom"
                   size="sm"
                   className="border border-white/10"
-                  onClick={handleLogout}
+                  onClick={openImportModal}
                 >
-                  退出
+                  <UploadIcon className="h-4 w-4" />
+                  {t('importBookmarks')}
                 </Button>
-              </div>
+                <div className="flex items-center gap-2">
+                  <Avatar
+                    src={user?.avatar ?? undefined}
+                    alt={user?.nickname ?? user?.email ?? "User"}
+                    size="sm"
+                  />
+                  <Button
+                    variant="ghost"
+                    color="custom"
+                    size="sm"
+                    className="border border-white/10"
+                    onClick={handleLogout}
+                  >
+                    {t('logout')}
+                  </Button>
+                </div>
+              </>
             ) : (
               <Link
                 href="/login"
                 className="rounded-2xl border border-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               >
-                登录
+                {t('login')}
               </Link>
             )}
           </div>
         </nav>
 
-        <main className="flex-1 px-4 py-10 sm:px-8 lg:px-14">
-          <div className="max-w-6xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/40">Dashboard</p>
+        <main className="px-4 py-5 sm:px-8 lg:px-14 flex flex-col gap-10 h-[calc(100vh-4rem)]">
+          <div className="w-full shrink-0">
+            <p className="text-xs uppercase tracking-[0.35em] text-white/40">{t('dashboard')}</p>
             <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div>
-                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">All Bookmarks</h1>
+                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">{activeCategoryLabel}</h1>
                 <p className="mt-3 text-base text-white/70">
-                  Showing all your saved links. {bookmarkCards.length} items found.
+                  {t('showAllYourSavedLinks', { count: links.length })}
                 </p>
               </div>
-              <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+              <div className="w-full flex gap-3 md:w-auto md:flex-row md:items-center">
                 <label className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/80 focus-within:border-white/30 md:w-72">
                   <Search className="h-4 w-4 text-white/50" />
                   <input
                     type="text"
-                    placeholder="Search bookmarks..."
+                    placeholder={t('searchBookmarks')}
+                    value={searchTerm}
+                    onChange={handleSearchChange}
                     className="w-full bg-transparent placeholder:text-white/40 focus:outline-none"
                   />
                 </label>
-                <Button
-                  variant="outline"
-                  className="border-0 text-sm font-semibold"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add New Bookmark
-                </Button>
+                {isAuthenticated && (
+                  <Button
+                    variant="custom"
+                    color="custom"
+                    className="shrink-0"
+                    onClick={openCreateLinkModal}
+                  >
+                    <Plus className="h-4 w-4" />
+                    {t('addLink')}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
 
-          <section className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {bookmarkCards.map((bookmark) => (
-              <BookmarkCard key={bookmark.title} card={bookmark} />
-            ))}
+          {/* 链接列表 */}
+          <section
+            ref={listContainerRef}
+            className="h-full overflow-y-auto"
+          >
+            {isLoadingLinks ? (
+              <div className="grid gap-6" style={gridTemplateColumnsStyle}>
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <LinkCardSkeleton key={index} />
+                ))}
+              </div>
+            ) : links.length > 0 ? (
+              shouldVirtualize ? (
+                <div
+                  style={{
+                    height: totalHeight,
+                    position: "relative",
+                  }}
+                >
+                  {virtualRows.map((row) => (
+                    <div
+                      key={row.virtualItem.key}
+                      ref={row.measureElement}
+                      data-index={row.virtualItem.index}
+                      className="absolute left-0 top-0 w-full"
+                      style={row.style}
+                    >
+                      <div className="grid gap-6" style={gridTemplateColumnsStyle}>
+                        {row.items.map((link) =>
+                          (!isAuthenticated || !link.id) ? (
+                            <LinkCard key={link.id ?? link.title} link={link} />
+                          ) : (
+                            <ContextMenu
+                              key={link.id}
+                              items={getLinkMenuItems(link.id)}
+                              className="flex"
+                            >
+                              <LinkCard link={link} />
+                            </ContextMenu>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid gap-6" style={gridTemplateColumnsStyle}>
+                  {links.map((link) =>
+                    (!isAuthenticated || !link.id) ? (
+                      <LinkCard key={link.id ?? link.title} link={link} />
+                    ) : (
+                      <ContextMenu
+                        key={link.id}
+                        items={getLinkMenuItems(link.id)}
+                        className="flex"
+                      >
+                        <LinkCard link={link} />
+                      </ContextMenu>
+                    ),
+                  )}
+                </div>
+              )
+            ) : (
+              <div className="grid h-full gap-6" style={gridTemplateColumnsStyle}>
+                <div className="flex flex-col items-center justify-center gap-3 md:col-span-2 xl:col-span-3">
+                  <img src="/empty.svg" alt="Empty" className="h-60 w-60 opacity-80" />
+                  <p className="text-sm text-white/60">
+                    {searchTerm.trim() ? t('noSearchResults') : t('noLinksFoundInThisCategory')}
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
         </main>
       </div>
+
+      <CategoryFormModal
+        open={categoryModal.open}
+        mode={categoryModal.categoryId ? 'edit' : 'create'}
+        categoryId={categoryModal.categoryId}
+        onClose={closeCategoryModal}
+        onCreated={handleCategoryCreated}
+        onUpdated={handleCategoryUpdated}
+        messageApi={message}
+      />
+      <LinkFormModal
+        open={linkModal.open}
+        mode={linkModal.linkId ? 'edit' : 'create'}
+        linkId={linkModal.linkId}
+        onClose={closeLinkModal}
+        activeCategoryId={activeCategoryId}
+        onCreated={refreshAfterLinkChange}
+        onUpdated={refreshAfterLinkChange}
+        messageApi={message}
+      />
+      <ImportBookmarksModal
+        open={importModalOpen}
+        onClose={closeImportModal}
+        onImported={handleBookmarksImported}
+      />
     </div>
   );
 }

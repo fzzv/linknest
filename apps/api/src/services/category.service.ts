@@ -7,7 +7,7 @@ type CategoryTreeNode = Category & { children: CategoryTreeNode[]; links: Link[]
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * 获取分类列表
@@ -61,6 +61,48 @@ export class CategoryService {
     return roots;
   }
 
+  async listPublic(): Promise<CategoryWithCount[]> {
+    const categories = await this.prisma.category.findMany({
+      where: { isPublic: true, userId: null },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      include: { _count: { select: { links: true } } },
+    });
+
+    return categories.map(({ _count, ...category }) => ({
+      ...category,
+      count: _count.links,
+    }));
+  }
+
+  async listPublicTree(): Promise<CategoryTreeNode[]> {
+    const categories = await this.prisma.category.findMany({
+      where: { isPublic: true, userId: null },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      include: {
+        links: {
+          where: { userId: null },
+          orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+        },
+      },
+    });
+
+    const map = new Map<number, CategoryTreeNode>();
+    categories.forEach((category) => {
+      map.set(category.id, { ...category, children: [], count: category.links.length });
+    });
+
+    const roots: CategoryTreeNode[] = [];
+    map.forEach((category) => {
+      if (category.parentId && map.has(category.parentId)) {
+        map.get(category.parentId)!.children.push(category);
+      } else {
+        roots.push(category);
+      }
+    });
+
+    return roots;
+  }
+
   async getById(id: number, userId: number) {
     const category = await this.prisma.category.findFirst({
       where: { id, userId },
@@ -81,6 +123,7 @@ export class CategoryService {
         name: dto.name,
         sortOrder: dto.sortOrder ?? 0,
         isPublic: dto.isPublic ?? false,
+        icon: dto.icon ?? null,
         parentId: dto.parentId ?? null,
         userId,
       },
@@ -111,6 +154,7 @@ export class CategoryService {
         sortOrder: dto.sortOrder,
         isPublic: dto.isPublic,
         parentId,
+        ...(dto.icon !== undefined ? { icon: dto.icon } : {}),
       },
       include: { _count: { select: { links: true } } },
     }).then((category) => this.mapWithCount(category));

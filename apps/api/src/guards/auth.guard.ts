@@ -20,12 +20,13 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    const request = context.switchToHttp().getRequest<Request>();
     if (isPublic) {
+      await this.attachUserFromHeaderIfPresent(request);
       return true;
     }
 
     // 提取请求头中的 token
-    const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException('Authorization header is required');
@@ -47,6 +48,27 @@ export class AuthGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  /**
+   * 公共接口尝试读取 Authorization，不抛错，只在 token 合法时注入用户信息
+   */
+  private async attachUserFromHeaderIfPresent(request: Request) {
+    const token = this.extractTokenFromHeader(request);
+    if (!token) {
+      return;
+    }
+    try {
+      const payload = await this.jwtService.verifyAsync<AuthUser>(token, {
+        secret: this.configurationService.jwtSecret,
+      });
+      if (payload.tokenType && payload.tokenType !== 'access') {
+        return;
+      }
+      (request as Request & { user?: AuthUser }).user = payload;
+    } catch {
+      // 忽略错误，保持公共接口可用
+    }
   }
 
   /**

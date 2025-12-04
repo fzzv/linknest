@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
-import { cn } from '@linknest/utils/lib';
+import { cn } from '@linknest/utils';
 
 export interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;

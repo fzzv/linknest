@@ -1,6 +1,9 @@
-import { cn } from "@linknest/utils/lib";
-import { Button } from "@linknest/ui";
+import { cn } from "@linknest/utils";
+import { Button, ContextMenu } from "@linknest/ui";
 import SvgIcon, { IconName } from "@/components/SvgIcon";
+import { useAuthStore } from "@/store/auth-store";
+import { useTranslations } from "next-intl";
+import { PencilLine, Trash2 } from "lucide-react";
 
 interface SidebarItem {
   label: string;
@@ -14,29 +17,63 @@ interface SidebarProps {
   className?: string;
   sidebarItems: SidebarItem[];
   activeId?: number;
-  onSelect?: (id: number, item: SidebarItem) => void;
+  onSelect?: (id: number | undefined, item: SidebarItem) => void;
+  onCreateCategory?: () => void;
+  onEditCategory?: (id: number) => void;
+  onDeleteCategory?: (id: number) => void;
 }
 
-const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) => {
+const Sidebar = ({
+  className,
+  sidebarItems,
+  activeId,
+  onSelect,
+  onCreateCategory,
+  onEditCategory,
+  onDeleteCategory,
+}: SidebarProps) => {
+  const { isAuthenticated } = useAuthStore();
+  const t = useTranslations('Sidebar');
+
   return (
     <aside className={cn("flex h-screen w-64 flex-col border-r border-white/5 bg-[#050b16] text-white/80", className)}>
-      <header className="px-6 pt-10">
+      <header className="px-6 py-5">
         <div className="flex items-center gap-4 rounded-3xl border border-white/5 bg-white/2 px-4 py-3">
           <div className="relative h-12 w-12 rounded-2xl bg-primary flex items-center justify-center">
             <span className="text-2xl font-bold">LN</span>
           </div>
           <div>
             <p className="text-lg font-semibold text-white">LinkNest</p>
-            <p className="text-xs text-white/50">Your Bookmark Hub</p>
+            <p className="text-xs text-white/50">{t('yourBookmarkHub')}</p>
           </div>
         </div>
       </header>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-10">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-5">
         {sidebarItems.map((item) => {
-          const isActive = item.id !== undefined && item.id === activeId;
+          const isActive = item.id === activeId;
+          // 未登录的用户和公共分类不能使用右键菜单
+          const canUseContextMenu = isAuthenticated && item.id !== undefined;
 
-          return (
+          const menuItems = canUseContextMenu
+            ? [
+              {
+                key: 'edit',
+                label: t('edit'),
+                icon: <PencilLine className="h-4 w-4" />,
+                onSelect: () => onEditCategory?.(item.id!),
+              },
+              {
+                key: 'delete',
+                label: t('delete'),
+                icon: <Trash2 className="h-4 w-4" />,
+                danger: true,
+                onSelect: () => onDeleteCategory?.(item.id!),
+              },
+            ]
+            : undefined;
+
+          const button = (
             <Button
               key={item.id ?? item.label}
               variant="custom"
@@ -46,10 +83,7 @@ const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) 
                   ? "border-primary text-white"
                   : "text-white/70 hover:bg-white/5 hover:text-white",
               )}
-              onClick={() => {
-                if (item.id === undefined) return;
-                onSelect?.(item.id, item);
-              }}
+              onClick={() => onSelect?.(item.id, item)}
               aria-pressed={isActive}
             >
               {item.icon && <SvgIcon name={item.icon} className="h-5 w-5" />}
@@ -59,17 +93,28 @@ const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) 
               )}
             </Button>
           );
+
+          if (canUseContextMenu && menuItems) {
+            return (
+              <ContextMenu key={item.id ?? item.label} items={menuItems} className="flex">
+                {button}
+              </ContextMenu>
+            );
+          }
+
+          return button;
         })}
       </nav>
 
-      <div className="px-4 pb-8">
-        <Button
+      <div className="px-4 py-4">
+        {isAuthenticated && <Button
           variant="outline"
           color="primary"
           className="w-full rounded-2xl py-3 text-sm font-semibold transition"
+          onClick={onCreateCategory}
         >
-          New Category
-        </Button>
+          {t('newCategory')}
+        </Button>}
       </div>
     </aside>
   );

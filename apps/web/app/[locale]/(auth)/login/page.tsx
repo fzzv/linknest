@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, Transition } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMessage, TextField } from '@linknest/ui';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth';
@@ -20,8 +21,11 @@ const motionConfig = {
 export default function LoginPage() {
   const router = useRouter();
   const [message, messageHolder] = useMessage({ placement: 'top' });
-  const login = useAuthStore((state) => state.login);
   const t = useTranslations('Login');
+  // useAuthStore with separate selectors, avoiding object creation that trips the getServerSnapshot warning in server components
+  const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasJustLoggedInRef = useRef(false);
 
   const {
     register,
@@ -38,16 +42,26 @@ export default function LoginPage() {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       const data = await loginRequest(values);
+      hasJustLoggedInRef.current = true;
+      message.success(t('loginSuccess'));
       login(data);
       router.push('/');
     } catch (error) {
       if (error instanceof Error) {
         message.error(error.message);
       } else {
-        message.error('登录失败，请稍后重试');
+        message.error(t('loginFailed'));
       }
     }
-  }
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    // 如果是登录操作，不需要提示
+    if (hasJustLoggedInRef.current) return;
+    message.warning(t('doNotRepeatLogin'));
+    router.replace('/');
+  }, [isAuthenticated, router]);
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 text-white bg-[#050b1a]">

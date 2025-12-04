@@ -15,6 +15,7 @@
     "@linknest/ui": "workspace:*",
     "@linknest/utils": "workspace:^",
     "@tailwindcss/postcss": "^4.1.13",
+    "@tanstack/react-virtual": "^3.13.12",
     "daisyui": "^5.5.5",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.543.0",
@@ -25,6 +26,7 @@
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.66.1",
     "tailwindcss": "^4.1.13",
+    "use-debounce": "^10.0.6",
     "zod": "^4.1.13",
     "zustand": "^5.0.8"
   },

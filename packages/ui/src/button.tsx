@@ -1,7 +1,7 @@
 'use client';
 
 import { ButtonHTMLAttributes, ReactNode } from "react";
-import { cn } from "@linknest/utils/lib";
+import { cn } from "@linknest/utils";
 
 const buttonVariants = {
   soft: "btn-soft",

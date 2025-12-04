@@ -10,6 +10,15 @@ export class ImportBookmarksDto {
   @IsOptional()
   @IsString()
   html?: string;
+
+  @ApiProperty({
+    description: '书签 JSON 内容（不上传文件时使用此字段）',
+    required: false,
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  json?: string;
 }
 
 export class ImportBookmarksResultDto {
