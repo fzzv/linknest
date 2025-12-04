@@ -17,9 +17,10 @@ interface SidebarProps {
   sidebarItems: SidebarItem[];
   activeId?: number;
   onSelect?: (id: number | undefined, item: SidebarItem) => void;
+  onCreateCategory?: () => void;
 }
 
-const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) => {
+const Sidebar = ({ className, sidebarItems, activeId, onSelect, onCreateCategory }: SidebarProps) => {
   const { isAuthenticated } = useAuthStore();
   const t = useTranslations('Sidebar');
 
@@ -69,6 +70,7 @@ const Sidebar = ({ className, sidebarItems, activeId, onSelect }: SidebarProps) 
           variant="outline"
           color="primary"
           className="w-full rounded-2xl py-3 text-sm font-semibold transition"
+          onClick={onCreateCategory}
         >
           {t('newCategory')}
         </Button>}

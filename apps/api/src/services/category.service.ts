@@ -123,6 +123,7 @@ export class CategoryService {
         name: dto.name,
         sortOrder: dto.sortOrder ?? 0,
         isPublic: dto.isPublic ?? false,
+        icon: dto.icon ?? null,
         parentId: dto.parentId ?? null,
         userId,
       },
@@ -153,6 +154,7 @@ export class CategoryService {
         sortOrder: dto.sortOrder,
         isPublic: dto.isPublic,
         parentId,
+        ...(dto.icon !== undefined ? { icon: dto.icon } : {}),
       },
       include: { _count: { select: { links: true } } },
     }).then((category) => this.mapWithCount(category));

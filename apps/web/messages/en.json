@@ -97,5 +97,21 @@
     "loadDetailFailed": "Failed to load link",
     "updateSuccess": "Link updated",
     "updateFailed": "Failed to update link"
+  },
+  "CategoryFormModal": {
+    "title": "New Category",
+    "submit": "Save",
+    "cancel": "Cancel",
+    "nameLabel": "Category Name",
+    "namePlaceholder": "Enter a category name",
+    "iconLabel": "Icon",
+    "iconHelper": "Pick an icon from common Lucide icons",
+    "sortOrderLabel": "Sort Order",
+    "sortOrderPlaceholder": "Optional order (number)",
+    "createSuccess": "Category created",
+    "createFailed": "Failed to create category",
+    "nameRequired": "Please enter a category name",
+    "iconRequired": "Please choose an icon",
+    "sortOrderInvalid": "Sort order must be a number"
   }
 }

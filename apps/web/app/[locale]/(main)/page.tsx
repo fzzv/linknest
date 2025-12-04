@@ -15,6 +15,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import LinkFormModal from "@/components/LinkFormModal";
+import CategoryFormModal from "@/components/CategoryFormModal";
 import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
 
 type SidebarItem = {
@@ -34,6 +35,7 @@ export default function Home() {
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [linkModal, setLinkModal] = useState<{ open: boolean; linkId?: number }>({
     open: false,
     linkId: undefined,
@@ -191,6 +193,13 @@ export default function Home() {
     [isAuthenticated, message, t],
   );
 
+  const openCreateCategoryModal = () => setCategoryModalOpen(true);
+  const closeCategoryModal = () => setCategoryModalOpen(false);
+  const handleCategoryCreated = useCallback(async (categoryId: number) => {
+    setActiveCategoryId(categoryId);
+    await loadCategories({ preserveActive: true });
+  }, [loadCategories]);
+
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
     const syncState = (matches: boolean) => {
@@ -337,6 +346,7 @@ export default function Home() {
         sidebarItems={sidebarItems}
         activeId={activeCategoryId}
         onSelect={handleSelectCategory}
+        onCreateCategory={openCreateCategoryModal}
       />
       {/* 蒙层 点击蒙层关闭侧边栏 */}
       {isSidebarOpen && (
@@ -517,6 +527,12 @@ export default function Home() {
         </main>
       </div>
 
+      <CategoryFormModal
+        open={categoryModalOpen}
+        onClose={closeCategoryModal}
+        onCreated={handleCategoryCreated}
+        messageApi={message}
+      />
       <LinkFormModal
         open={linkModal.open}
         mode={linkModal.linkId ? 'edit' : 'create'}

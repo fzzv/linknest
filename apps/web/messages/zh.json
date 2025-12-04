@@ -97,5 +97,21 @@
     "loadDetailFailed": "获取链接详情失败",
     "updateSuccess": "更新成功",
     "updateFailed": "更新失败"
+  },
+  "CategoryFormModal": {
+    "title": "新建分类",
+    "submit": "保存",
+    "cancel": "取消",
+    "nameLabel": "分类名",
+    "namePlaceholder": "请输入分类名称",
+    "iconLabel": "图标",
+    "iconHelper": "从常用的图标中选择一个",
+    "sortOrderLabel": "排序值",
+    "sortOrderPlaceholder": "可选的排序数字",
+    "createSuccess": "分类创建成功",
+    "createFailed": "分类创建失败",
+    "nameRequired": "请输入分类名称",
+    "iconRequired": "请选择一个图标",
+    "sortOrderInvalid": "排序值必须是数字"
   }
 }

@@ -18,6 +18,11 @@ export class CreateCategoryDto {
   @IsBoolean()
   isPublic?: boolean;
 
+  @ApiProperty({ example: 'Bookmark', required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  icon?: string | null;
+
   @ApiProperty({ example: 1, required: false, nullable: true })
   @ValidateIf((_, value) => value !== null && value !== undefined)
   @IsInt()
@@ -36,6 +41,9 @@ export class CategoryDto {
 
   @ApiProperty({ example: 0 })
   sortOrder!: number;
+
+  @ApiProperty({ example: 'Bookmark', nullable: true })
+  icon!: string | null;
 
   @ApiProperty({ example: false })
   isPublic!: boolean;
