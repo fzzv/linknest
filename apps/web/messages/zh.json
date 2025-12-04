@@ -61,6 +61,7 @@
     "noLinksFoundInThisCategory": "此分类下没有收藏。",
     "logoutSuccess": "退出成功",
     "addLink": "添加链接",
+    "importBookmarks": "导入书签",
     "edit": "编辑",
     "delete": "删除",
     "cancel": "取消",
@@ -134,5 +135,20 @@
     "save": "保存",
     "loadDetailFailed": "获取分类详情失败",
     "loadingDetail": "正在加载分类信息…"
+  },
+  "ImportBookmarks": {
+    "title": "导入书签",
+    "description": "上传浏览器导出的 HTML 或 JSON 书签文件，快速同步到 LinkNest。",
+    "dropTitle": "点击或拖拽文件到此处",
+    "dropDescription": "支持 HTML（.html/.htm）和 JSON 文件。",
+    "hint": "我们会解析分类和链接，自动跳过重复内容。",
+    "remove": "移除",
+    "filePlaceholder": "请选择一个 HTML 或 JSON 文件。",
+    "invalidType": "仅支持上传 HTML 或 JSON 文件。",
+    "fileRequired": "请先选择要导入的文件。",
+    "success": "导入完成！新增/更新 {categories} 个分类，{links} 个链接。",
+    "failed": "导入失败，请稍后重试。",
+    "start": "开始导入",
+    "cancel": "取消"
   }
 }

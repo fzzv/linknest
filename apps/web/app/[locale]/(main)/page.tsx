@@ -5,7 +5,7 @@ import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import Link from "next/link";
-import { Menu, PencilLine, Plus, Search, Trash2 } from "lucide-react";
+import { Menu, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
 import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
@@ -17,6 +17,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import LinkFormModal from "@/components/LinkFormModal";
 import CategoryFormModal from "@/components/CategoryFormModal";
 import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
+import ImportBookmarksModal from "@/components/ImportBookmarksModal";
 
 type SidebarItem = {
   label: string;
@@ -43,6 +44,7 @@ export default function Home() {
     open: false,
     linkId: undefined,
   });
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
   const tSidebar = useTranslations('Sidebar');
@@ -283,6 +285,14 @@ export default function Home() {
   const handleCategoryUpdated = useCallback(async () => {
     await refreshAfterLinkChange();
   }, [refreshAfterLinkChange]);
+
+  const openImportModal = () => setImportModalOpen(true);
+  const closeImportModal = () => setImportModalOpen(false);
+  // 导入后刷新列表数据
+  const handleBookmarksImported = useCallback(async () => {
+    await refreshAfterLinkChange();
+  }, [refreshAfterLinkChange]);
+  
   // 获取当前分类名称
   const sidebarLabelMap = useMemo(() => {
     const m = new Map<number | undefined, string>();
@@ -424,22 +434,34 @@ export default function Home() {
             />
 
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <Avatar
-                  src={user?.avatar ?? undefined}
-                  alt={user?.nickname ?? user?.email ?? "User"}
-                  size="sm"
-                />
+              <>
                 <Button
                   variant="ghost"
                   color="custom"
                   size="sm"
                   className="border border-white/10"
-                  onClick={handleLogout}
+                  onClick={openImportModal}
                 >
-                  {t('logout')}
+                  <UploadIcon className="h-4 w-4" />
+                  {t('importBookmarks')}
                 </Button>
-              </div>
+                <div className="flex items-center gap-2">
+                  <Avatar
+                    src={user?.avatar ?? undefined}
+                    alt={user?.nickname ?? user?.email ?? "User"}
+                    size="sm"
+                  />
+                  <Button
+                    variant="ghost"
+                    color="custom"
+                    size="sm"
+                    className="border border-white/10"
+                    onClick={handleLogout}
+                  >
+                    {t('logout')}
+                  </Button>
+                </div>
+              </>
             ) : (
               <Link
                 href="/login"
@@ -581,6 +603,11 @@ export default function Home() {
         onCreated={refreshAfterLinkChange}
         onUpdated={refreshAfterLinkChange}
         messageApi={message}
+      />
+      <ImportBookmarksModal
+        open={importModalOpen}
+        onClose={closeImportModal}
+        onImported={handleBookmarksImported}
       />
     </div>
   );

@@ -61,6 +61,7 @@
     "noLinksFoundInThisCategory": "No links found in this category.",
     "logoutSuccess": "Logged out successfully.",
     "addLink": "Add Link",
+    "importBookmarks": "Import",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
@@ -134,5 +135,20 @@
     "save": "Save",
     "loadDetailFailed": "Failed to load category",
     "loadingDetail": "Loading category details…"
+  },
+  "ImportBookmarks": {
+    "title": "Import Bookmarks",
+    "description": "Upload your exported HTML or JSON bookmark file to merge it into LinkNest.",
+    "dropTitle": "Click or drag file to this area",
+    "dropDescription": "Supports HTML (.html/.htm) and JSON files from browsers or backups.",
+    "hint": "We will parse categories and links and skip duplicates automatically.",
+    "remove": "Remove",
+    "filePlaceholder": "Choose an HTML or JSON file to start importing.",
+    "invalidType": "Please upload an HTML or JSON file.",
+    "fileRequired": "Please choose a file before importing.",
+    "success": "Import complete! {categories} categories, {links} links updated.",
+    "failed": "Import failed, please try again later.",
+    "start": "Import",
+    "cancel": "Cancel"
   }
 }
