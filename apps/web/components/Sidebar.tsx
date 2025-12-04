@@ -1,8 +1,9 @@
 import { cn } from "@linknest/utils/lib";
-import { Button } from "@linknest/ui";
+import { Button, ContextMenu } from "@linknest/ui";
 import SvgIcon, { IconName } from "@/components/SvgIcon";
 import { useAuthStore } from "@/store/auth-store";
 import { useTranslations } from "next-intl";
+import { PencilLine, Trash2 } from "lucide-react";
 
 interface SidebarItem {
   label: string;
@@ -18,9 +19,19 @@ interface SidebarProps {
   activeId?: number;
   onSelect?: (id: number | undefined, item: SidebarItem) => void;
   onCreateCategory?: () => void;
+  onEditCategory?: (id: number) => void;
+  onDeleteCategory?: (id: number) => void;
 }
 
-const Sidebar = ({ className, sidebarItems, activeId, onSelect, onCreateCategory }: SidebarProps) => {
+const Sidebar = ({
+  className,
+  sidebarItems,
+  activeId,
+  onSelect,
+  onCreateCategory,
+  onEditCategory,
+  onDeleteCategory,
+}: SidebarProps) => {
   const { isAuthenticated } = useAuthStore();
   const t = useTranslations('Sidebar');
 
@@ -41,8 +52,28 @@ const Sidebar = ({ className, sidebarItems, activeId, onSelect, onCreateCategory
       <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-5">
         {sidebarItems.map((item) => {
           const isActive = item.id === activeId;
+          // 未登录的用户和公共分类不能使用右键菜单
+          const canUseContextMenu = isAuthenticated && item.id !== undefined;
 
-          return (
+          const menuItems = canUseContextMenu
+            ? [
+              {
+                key: 'edit',
+                label: t('edit'),
+                icon: <PencilLine className="h-4 w-4" />,
+                onSelect: () => onEditCategory?.(item.id!),
+              },
+              {
+                key: 'delete',
+                label: t('delete'),
+                icon: <Trash2 className="h-4 w-4" />,
+                danger: true,
+                onSelect: () => onDeleteCategory?.(item.id!),
+              },
+            ]
+            : undefined;
+
+          const button = (
             <Button
               key={item.id ?? item.label}
               variant="custom"
@@ -62,6 +93,16 @@ const Sidebar = ({ className, sidebarItems, activeId, onSelect, onCreateCategory
               )}
             </Button>
           );
+
+          if (canUseContextMenu && menuItems) {
+            return (
+              <ContextMenu key={item.id ?? item.label} items={menuItems} className="flex">
+                {button}
+              </ContextMenu>
+            );
+          }
+
+          return button;
         })}
       </nav>
 

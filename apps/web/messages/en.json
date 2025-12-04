@@ -63,7 +63,12 @@
   },
   "Sidebar": {
     "yourBookmarkHub": "Your Bookmark Hub",
-    "newCategory": "New Category"
+    "newCategory": "New Category",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this category?",
+    "deleteSuccess": "Category deleted",
+    "deleteFailed": "Failed to delete category"
   },
   "LinkFormModal": {
     "title": "Add Link",
@@ -110,8 +115,14 @@
     "sortOrderPlaceholder": "Optional order (number)",
     "createSuccess": "Category created",
     "createFailed": "Failed to create category",
+    "updateSuccess": "Category updated",
+    "updateFailed": "Failed to update category",
     "nameRequired": "Please enter a category name",
     "iconRequired": "Please choose an icon",
-    "sortOrderInvalid": "Sort order must be a number"
+    "sortOrderInvalid": "Sort order must be a number",
+    "editTitle": "Edit Category",
+    "save": "Save",
+    "loadDetailFailed": "Failed to load category",
+    "loadingDetail": "Loading category details…"
   }
 }

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Menu, PencilLine, Plus, Search, Trash2 } from "lucide-react";
 import { cn } from "@linknest/utils/lib";
 import { IconName } from "@/components/SvgIcon";
-import { fetchCategories, fetchPublicCategories } from "@/services/categories";
+import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
 import { Avatar, Button, ContextMenu, Modal, Select, useMessage } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
@@ -35,13 +35,17 @@ export default function Home() {
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [categoryModal, setCategoryModal] = useState<{ open: boolean; categoryId?: number }>({
+    open: false,
+    categoryId: undefined,
+  });
   const [linkModal, setLinkModal] = useState<{ open: boolean; linkId?: number }>({
     open: false,
     linkId: undefined,
   });
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
+  const tSidebar = useTranslations('Sidebar');
 
   // 语言切换
   const locale = useLocale();
@@ -193,8 +197,9 @@ export default function Home() {
     [isAuthenticated, message, t],
   );
 
-  const openCreateCategoryModal = () => setCategoryModalOpen(true);
-  const closeCategoryModal = () => setCategoryModalOpen(false);
+  const openCreateCategoryModal = () => setCategoryModal({ open: true, categoryId: undefined });
+  const openEditCategoryModal = (id: number) => setCategoryModal({ open: true, categoryId: id });
+  const closeCategoryModal = () => setCategoryModal({ open: false, categoryId: undefined });
   const handleCategoryCreated = useCallback(async (categoryId: number) => {
     setActiveCategoryId(categoryId);
     await loadCategories({ preserveActive: true });
@@ -275,6 +280,9 @@ export default function Home() {
     }
     await loadCategories({ preserveActive: true });
   }, [activeCategoryId, loadLinks, loadCategories, searchLinksByKeyword, debouncedSearchTerm]);
+  const handleCategoryUpdated = useCallback(async () => {
+    await refreshAfterLinkChange();
+  }, [refreshAfterLinkChange]);
   // 获取当前分类名称
   const sidebarLabelMap = useMemo(() => {
     const m = new Map<number | undefined, string>();
@@ -306,6 +314,32 @@ export default function Home() {
           await refreshAfterLinkChange();
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : t('deleteFailed');
+          message.error(errorMessage);
+          return false;
+        }
+      },
+    });
+  };
+
+  const handleDeleteCategory = (id?: number) => {
+    if (!id || !isAuthenticated) return;
+
+    Modal.confirm({
+      icon: <Trash2 className="h-5 w-5 text-error" />,
+      title: tSidebar('delete'),
+      content: (
+        <p className="text-sm text-white/80">{tSidebar('deleteConfirm')}</p>
+      ),
+      okText: tSidebar('delete'),
+      cancelText: t('cancel'),
+      closable: true,
+      onOk: async () => {
+        try {
+          await deleteCategory(id);
+          message.success(tSidebar('deleteSuccess'));
+          await loadCategories({ preserveActive: true });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : tSidebar('deleteFailed');
           message.error(errorMessage);
           return false;
         }
@@ -347,6 +381,8 @@ export default function Home() {
         activeId={activeCategoryId}
         onSelect={handleSelectCategory}
         onCreateCategory={openCreateCategoryModal}
+        onEditCategory={openEditCategoryModal}
+        onDeleteCategory={handleDeleteCategory}
       />
       {/* 蒙层 点击蒙层关闭侧边栏 */}
       {isSidebarOpen && (
@@ -528,9 +564,12 @@ export default function Home() {
       </div>
 
       <CategoryFormModal
-        open={categoryModalOpen}
+        open={categoryModal.open}
+        mode={categoryModal.categoryId ? 'edit' : 'create'}
+        categoryId={categoryModal.categoryId}
         onClose={closeCategoryModal}
         onCreated={handleCategoryCreated}
+        onUpdated={handleCategoryUpdated}
         messageApi={message}
       />
       <LinkFormModal
