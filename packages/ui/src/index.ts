@@ -10,3 +10,4 @@ export * from './file-input';
 export * from './modal';
 export * from './input-field';
 export * from './context-menu';
+export * from './upload';
