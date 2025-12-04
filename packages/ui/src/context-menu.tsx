@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 export type ContextMenuItem = {
   key: string;
@@ -51,6 +52,12 @@ export function ContextMenu({
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const popperInstance = useRef<Instance | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   const virtualReference = useMemo<VirtualElement | null>(() => {
     if (!position) return null;
@@ -158,42 +165,45 @@ export function ContextMenu({
     });
   }, [children, className, handleContextMenu]);
 
+  const menu = (
+    <div
+      ref={menuRef}
+      className={cn(
+        'z-1200 rounded-xl border border-white/10 bg-neutral text-white shadow-2xl backdrop-blur',
+        'origin-top-left p-1',
+        'max-h-[60vh] overflow-y-auto',
+        menuClassName,
+      )}
+      role="menu"
+      aria-label="Context menu"
+    >
+      <ul className="menu menu-sm gap-1 text-sm text-white">
+        {items.map((item) => (
+          <li key={item.key} className="w-full">
+            <button
+              type="button"
+              className={cn(
+                'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition hover:bg-white/10',
+                item.danger && 'text-error hover:text-error',
+                item.disabled && 'cursor-not-allowed opacity-60 hover:bg-transparent',
+              )}
+              role="menuitem"
+              onClick={() => handleItemClick(item)}
+              disabled={item.disabled}
+            >
+              {item.icon ? <span className="text-base">{item.icon}</span> : null}
+              <span className="flex-1">{item.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   return (
     <>
       {trigger}
-      {isOpen ? (
-        <div
-          ref={menuRef}
-          className={cn(
-            'z-1200 rounded-xl border border-white/10 bg-neutral text-white shadow-2xl backdrop-blur',
-            'origin-top-left p-1',
-            menuClassName,
-          )}
-          role="menu"
-          aria-label="Context menu"
-        >
-          <ul className="menu menu-sm gap-1 text-sm text-white">
-            {items.map((item) => (
-              <li key={item.key} className="w-full">
-                <button
-                  type="button"
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition hover:bg-white/10',
-                    item.danger && 'text-error hover:text-error',
-                    item.disabled && 'cursor-not-allowed opacity-60 hover:bg-transparent',
-                  )}
-                  role="menuitem"
-                  onClick={() => handleItemClick(item)}
-                  disabled={item.disabled}
-                >
-                  {item.icon ? <span className="text-base">{item.icon}</span> : null}
-                  <span className="flex-1">{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      {isOpen && mounted ? createPortal(menu, document.body) : null}
     </>
   );
 }
