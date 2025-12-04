@@ -6,7 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import Link from "next/link";
 import { Menu, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
-import { cn } from "@linknest/utils/lib";
+import { cn } from "@linknest/utils";
 import { IconName } from "@/components/SvgIcon";
 import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";

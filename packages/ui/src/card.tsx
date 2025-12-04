@@ -1,4 +1,4 @@
-import { cn } from '@linknest/utils/lib';
+import { cn } from '@linknest/utils';
 import { type JSX } from 'react';
 
 export function Card({

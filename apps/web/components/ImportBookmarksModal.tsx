@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Modal, Upload, useMessage } from '@linknest/ui';
 import { useTranslations } from 'next-intl';
 import { importBookmarks, type ImportBookmarksResult } from '@/services/bookmarks';
-import { formatFileSize } from '@linknest/utils/utils';
+import { formatFileSize } from '@linknest/utils';
 
 type ImportBookmarksModalProps = {
   open: boolean;

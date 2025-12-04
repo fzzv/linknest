@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { cn } from "@linknest/utils/lib";
+import { cn } from "@linknest/utils";
 
 export interface BookmarkCardData {
   title: string;

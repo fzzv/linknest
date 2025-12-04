@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, type ReactNode, type SelectHTMLAttributes } from 'react';
-import { cn } from '@linknest/utils/lib';
+import { cn } from '@linknest/utils';
 
 export type SelectOption = {
   value: string | number;

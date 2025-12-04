@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@linknest/utils/lib';
+import { cn } from '@linknest/utils';
 import Draggable from 'react-draggable';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';

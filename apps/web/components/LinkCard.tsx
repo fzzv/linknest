@@ -1,4 +1,4 @@
-import { cn } from "@linknest/utils/lib";
+import { cn } from "@linknest/utils";
 import { Tooltip } from "@linknest/ui";
 import { useState, type MouseEventHandler } from "react";
 import { API_BASE_URL } from "@/lib/env";

@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@linknest/utils/lib';
+import { cn } from '@linknest/utils';
 import { type ImgHTMLAttributes, type ReactNode } from 'react';
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';

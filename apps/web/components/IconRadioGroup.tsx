@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@linknest/utils/lib';
+import { cn } from '@linknest/utils';
 import SvgIcon, { IconName } from './SvgIcon';
 
 const COMMON_ICON_NAMES: IconName[] = [

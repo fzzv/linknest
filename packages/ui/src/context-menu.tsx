@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@linknest/utils/lib';
+import { cn } from '@linknest/utils';
 import { createPopper, type Instance, type Placement, type VirtualElement } from '@popperjs/core';
 import {
   cloneElement,

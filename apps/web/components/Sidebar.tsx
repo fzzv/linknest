@@ -1,4 +1,4 @@
-import { cn } from "@linknest/utils/lib";
+import { cn } from "@linknest/utils";
 import { Button, ContextMenu } from "@linknest/ui";
 import SvgIcon, { IconName } from "@/components/SvgIcon";
 import { useAuthStore } from "@/store/auth-store";
