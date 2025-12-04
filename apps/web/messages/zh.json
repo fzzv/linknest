@@ -14,7 +14,10 @@
     "forgotPassword": "忘记密码？",
     "login": "登录",
     "signUp": "注册",
-    "dontHaveAccount": "没有账户？"
+    "dontHaveAccount": "没有账户？",
+    "loginSuccess": "登录成功。",
+    "loginFailed": "登录失败，请稍后再试。",
+    "doNotRepeatLogin": "请勿重复登录！"
   },
   "Register": {
     "title": "创建您的 LinkNest 账户",
@@ -36,7 +39,14 @@
     "creatingAccount": "创建账户中…",
     "createAccount": "创建账户",
     "alreadyHaveAccount": "已经有账户？",
-    "login": "登录"
+    "login": "登录",
+    "formError": "请检查表单输入。",
+    "registerSuccess": "注册成功，即将跳转至登录页...",
+    "registerFailed": "注册失败，请稍后再试。",
+    "pleaseLogOutFirst": "请先退出登录！",
+    "pleaseEnterValidEmail": "请输入正确的邮箱地址。",
+    "codeSent": "验证码已发送，请检查您的邮箱。",
+    "codeSendingFailed": "验证码发送失败，请稍后再试。"
   },
   "Home": {
     "dashboard": "首页",

@@ -5,7 +5,7 @@ import { useMessage, TextField } from '@linknest/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { loginSchema, registerSchema, type RegisterFormValues } from '@/schemas/auth';
 import { registerAccount, sendVerificationCode } from '@/services/auth';
@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [sendingCode, setSendingCode] = useState(false);
   const [message, messageHolder] = useMessage({ placement: 'top' });
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasJustRegisteredRef = useRef(false);
 
   const t = useTranslations('Register');
 
@@ -40,7 +41,9 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    message.warning('请先退出登录！');
+    // 如果是注册操作，不需要提示
+    if (hasJustRegisteredRef.current) return;
+    message.warning(t('pleaseLogOutFirst'));
     router.replace('/');
   }, [isAuthenticated, router]);
 
@@ -62,16 +65,16 @@ export default function RegisterPage() {
     const email = getValues('email');
     const result = emailValidationSchema.safeParse({ email });
     if (!result.success) {
-      setError('email', { message: result.error.issues[0]?.message || '请输入正确的邮箱地址' });
+      setError('email', { message: result.error.issues[0]?.message || t('pleaseEnterValidEmail') });
       return;
     }
     try {
       setSendingCode(true);
       await sendVerificationCode(email);
       setCodeCooldown(60);
-      message.success('验证码已发送，请检查邮箱');
+      message.success(t('codeSent'));
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '验证码发送失败');
+      message.error(error instanceof Error ? error.message : t('codeSendingFailed'));
     } finally {
       setSendingCode(false);
     }
@@ -81,15 +84,16 @@ export default function RegisterPage() {
     async (values) => {
       try {
         await registerAccount(values);
-        message.success('注册成功，即将跳转至登录页');
+        hasJustRegisteredRef.current = true;
+        message.success(t('registerSuccess'));
         setTimeout(() => router.push('/login'), 1200);
       } catch (error) {
-        message.error(error instanceof Error ? error.message : '注册失败，请稍后再试');
+        message.error(error instanceof Error ? error.message : t('registerFailed'));
       }
     },
     (formErrors) => {
       const firstError = Object.values(formErrors)[0];
-      const msg = typeof firstError?.message === 'string' ? firstError.message : '请检查表单输入';
+      const msg = typeof firstError?.message === 'string' ? firstError.message : t('formError');
       message.error(msg);
     },
   );

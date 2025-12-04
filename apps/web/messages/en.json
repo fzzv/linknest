@@ -14,7 +14,10 @@
     "forgotPassword": "Forgot Password?",
     "login": "Login",
     "signUp": "Sign Up",
-    "dontHaveAccount": "Don't have an account?"
+    "dontHaveAccount": "Don't have an account?",
+    "loginSuccess": "Logged in successfully.",
+    "loginFailed": "Failed to log in, please try again later.",
+    "doNotRepeatLogin": "Do not repeat login!"
   },
   "Register": {
     "title": "Create Your LinkNest Account",
@@ -36,7 +39,14 @@
     "creatingAccount": "Creating Account…",
     "createAccount": "Create Account",
     "alreadyHaveAccount": "Already have an account?",
-    "login": "Log In"
+    "login": "Log In",
+    "formError": "Please check the form input.",
+    "registerSuccess": "Registered successfully, redirecting to login page...",
+    "registerFailed": "Failed to register, please try again later.",
+    "pleaseLogOutFirst": "Please log out first!",
+    "pleaseEnterValidEmail": "Please enter a valid email address.",
+    "codeSent": "Code sent, please check your email.",
+    "codeSendingFailed": "Failed to send code, please try again later."
   },
   "Home": {
     "dashboard": "Dashboard",
