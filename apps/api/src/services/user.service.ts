@@ -51,7 +51,7 @@ export class UserService {
     await this.mailService.sendVerificationCode(email, code, this.verificationCodeTtlMinutes);
     await this.verificationCodeService.setCode(email, code, this.verificationCodeTtlMinutes * 60 * 1000);
 
-    return { message: this.i18n.t('sendVerificationCode') };
+    return { message: this.i18n.t('messages.sendVerificationCode') };
   }
 
   async register({ email, password, code, nickname }: RegisterUserDto) {

@@ -3,6 +3,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, posix } from 'node:path';
+import { I18nService } from 'nestjs-i18n';
 
 type BookmarkNode = FolderNode | LinkNode;
 
@@ -26,12 +27,24 @@ type Stats = { categories: number; links: number };
 
 @Injectable()
 export class BookmarkImportService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly i18n: I18nService
+  ) { }
 
   async importFromHtml(userId: number, html: string) {
     const nodes = this.parseHtml(html);
+    return this.importNodes(userId, nodes);
+  }
+
+  async importFromJson(userId: number, json: string) {
+    const nodes = this.parseJson(json);
+    return this.importNodes(userId, nodes);
+  }
+
+  private async importNodes(userId: number, nodes: BookmarkNode[]) {
     if (!nodes.length) {
-      throw new BadRequestException('未解析到书签内容');
+      throw new BadRequestException(this.i18n.t('bookmark.noContent'));
     }
 
     const stats: Stats = { categories: 0, links: 0 };
@@ -77,7 +90,7 @@ export class BookmarkImportService {
         const attrs = this.parseAttributes(h3Attrs ?? '');
         const folder: FolderNode = {
           type: 'folder',
-          title: this.decodeHtml(h3Title?.trim() ?? '未命名分类'),
+          title: this.decodeHtml(h3Title?.trim() ?? this.i18n.t('bookmark.unnamedCategory')),
           addDate: attrs.ADD_DATE ? Number(attrs.ADD_DATE) : undefined,
           lastModified: attrs.LAST_MODIFIED ? Number(attrs.LAST_MODIFIED) : undefined,
           children: [],
@@ -106,6 +119,88 @@ export class BookmarkImportService {
     }
 
     return root.children;
+  }
+
+  private parseJson(json: string): BookmarkNode[] {
+    let payload: unknown;
+    try {
+      payload = JSON.parse(json);
+    } catch (error) {
+      throw new BadRequestException(this.i18n.t('bookmark.jsonParseError'));
+    }
+
+    const rootNodes = this.getRootNodes(payload);
+    return rootNodes.map((node, index) => this.normalizeJsonNode(node, `root[${index}]`));
+  }
+
+  private getRootNodes(payload: unknown) {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+    if (payload && typeof payload === 'object' && Array.isArray((payload as Record<string, unknown>).children)) {
+      return (payload as Record<string, unknown>).children as unknown[];
+    }
+    throw new BadRequestException(this.i18n.t('bookmark.invalidFormat'));
+  }
+
+  private normalizeJsonNode(input: unknown, path: string): BookmarkNode {
+    if (!input || typeof input !== 'object') {
+      throw new BadRequestException(this.i18n.t('bookmark.invalidObject', { args: { path } }));
+    }
+
+    const node = input as Record<string, unknown>;
+    if (node.type === 'folder') {
+      const childrenInput = Array.isArray(node.children) ? node.children : [];
+      return {
+        type: 'folder',
+        title: this.normalizeTitle(node.title, this.i18n.t('bookmark.unnamedCategory')),
+        addDate: this.normalizeTimestamp(node.addDate),
+        lastModified: this.normalizeTimestamp(node.lastModified),
+        children: childrenInput.map((child, index) =>
+          this.normalizeJsonNode(child, `${path}.children[${index}]`),
+        ),
+      };
+    }
+
+    if (node.type === 'link') {
+      const url = this.normalizeUrl(node.url, path);
+      return {
+        type: 'link',
+        title: this.normalizeTitle(node.title ?? url, url),
+        url,
+        addDate: this.normalizeTimestamp(node.addDate),
+        icon: typeof node.icon === 'string' ? node.icon : undefined,
+      };
+    }
+
+    throw new BadRequestException(this.i18n.t('bookmark.missingType', { args: { path } }));
+  }
+
+  private normalizeTitle(value: unknown, fallback: string) {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+    return fallback;
+  }
+
+  private normalizeTimestamp(value: unknown) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim()) {
+      const num = Number(value);
+      if (Number.isFinite(num)) {
+        return num;
+      }
+    }
+    return undefined;
+  }
+
+  private normalizeUrl(value: unknown, path: string) {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+    throw new BadRequestException(this.i18n.t('bookmark.missingUrl', { args: { path } }));
   }
 
   private parseAttributes(raw: string) {
@@ -147,7 +242,7 @@ export class BookmarkImportService {
       if (node.type === 'folder') {
         const category = await tx.category.create({
           data: {
-            name: node.title || '未命名分类',
+            name: node.title || this.i18n.t('bookmark.unnamedCategory'),
             parentId: parentCategoryId,
             userId,
             sortOrder: node.addDate ?? 0,
@@ -200,7 +295,7 @@ export class BookmarkImportService {
     }
 
     const existing = await tx.category.findFirst({
-      where: { userId, name: 'Imported Bookmarks', parentId: null },
+      where: { userId, name: this.i18n.t('bookmark.defaultFolderName'), parentId: null },
     });
     if (existing) {
       ref.value = existing.id;
@@ -209,7 +304,7 @@ export class BookmarkImportService {
 
     const category = await tx.category.create({
       data: {
-        name: 'Imported Bookmarks',
+        name: this.i18n.t('bookmark.defaultFolderName'),
         parentId: null,
         userId,
         sortOrder: 0,
