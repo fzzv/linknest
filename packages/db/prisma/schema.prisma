@@ -32,6 +32,7 @@ model User {
   // --- 新增关联 ---
   categories Category[] // 用户拥有的分类
   links      Link[] // 用户拥有的链接（方便统计总数或全局搜索）
+  files      File[]
 }
 
 model VerificationCode {
@@ -105,4 +106,69 @@ model Link {
 
   @@index([categoryId]) // 查找分类下的链接
   @@index([userId]) // 查找用户的所有链接
+}
+
+// --------------------------------------
+// 通用文件表：存储所有上传文件的元数据
+// --------------------------------------
+model File {
+  id           Int    @id @default(autoincrement())
+  // 原始文件名（用户上传时的名称）
+  originalName String @db.VarChar(255)
+  // 保存到磁盘时使用的文件名（通常会加 UUID）
+  filename     String @db.VarChar(255)
+
+  // MIME 类型，例如 image/png、application/pdf
+  mimeType String @db.VarChar(255)
+  // 文件大小（字节数）
+  size     Int
+
+  // 文件扩展名（可选），如 "png" / "pdf"
+  ext String? @db.VarChar(50)
+
+  // 逻辑存储目录（业务上的分类），例如：avatars、covers、imports/bookmarks
+  dir  String @db.VarChar(255)
+  // 磁盘上的相对路径或绝对路径，例如：uploads/avatars/xxx.png
+  path String @db.VarChar(1024)
+  // 对外访问 URL，例如：https://cdn.xxx.com/avatars/xxx.png 或 /uploads/avatars/xxx.png
+  url  String @db.VarChar(2048)
+
+  // 上传者（可选）
+  uploaderId Int?
+  uploader   User? @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime         @default(now())
+  fileAttachments FileAttachment[]
+
+  // 索引：常按目录或上传者查询
+  @@index([dir])
+  @@index([uploaderId])
+}
+
+// --------------------------------------
+// 文件关联表：实现文件与任意业务实体的多态关联
+// 例如：User 头像、Link 封面、导入书签的原始文件等
+// --------------------------------------
+model FileAttachment {
+  id Int @id @default(autoincrement())
+
+  // 关联的文件
+  fileId Int
+  file   File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  // 通用关联字段（多态）
+  // entityType 用来存实体类型，如：'User' | 'Link' | 'Category' | 'BookmarkImport' 等
+  entityType String @db.VarChar(100)
+  // entityId 对应实体表的主键 ID
+  entityId   Int
+
+  // 用途：如 'avatar' | 'cover' | 'import_source' 等（可选）
+  usage String? @db.VarChar(100)
+
+  createdAt DateTime @default(now())
+
+  // 常见查询：查某个实体的所有文件
+  @@index([entityType, entityId])
+  // 查某个文件被挂在哪些实体上（用于清理）
+  @@index([fileId])
 }
