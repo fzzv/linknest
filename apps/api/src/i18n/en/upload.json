@@ -1,0 +1,4 @@
+{
+  "atLeastOneFile": "At least one file is required",
+  "entityTypeAndIdRequired": "entityType and entityId are required"
+}

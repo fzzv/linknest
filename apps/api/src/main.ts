@@ -22,6 +22,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor(), new ResponseInterceptor());
   // 配置静态资源目录
   app.useStaticAssets(join(__dirname, '..', 'linkicons'), { prefix: '/linkicons/' });
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads/' });
 
   // Swagger 文档
   const swaggerConfig = new DocumentBuilder()
