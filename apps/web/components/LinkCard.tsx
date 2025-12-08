@@ -64,7 +64,7 @@ const LinkCard = ({ link, className, onContextMenu }: LinkCardProps) => {
         )}
       </figure>
       <div className="card-body">
-        <Tooltip content={link.title} className="block w-full" variant="primary">
+        <Tooltip content={link.title} className="block w-full" variant="primary" placement="bottom">
           <h3 className="text-base font-semibold leading-tight text-white group-hover:text-white line-clamp-1">
             {link.title}
           </h3>
