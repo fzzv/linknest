@@ -9,6 +9,7 @@ import { LinkService } from 'src/services/link.service';
 import { BookmarkImportService } from 'src/services/bookmark-import.service';
 import { LinkIconService } from 'src/services/link-icon.service';
 import { UploadService } from 'src/services/upload.service';
+import { BookmarkExportService } from 'src/services/bookmark-export.service';
 
 export const services: Provider[] = [
   ConfigurationService,
@@ -21,4 +22,5 @@ export const services: Provider[] = [
   BookmarkImportService,
   LinkIconService,
   UploadService,
+  BookmarkExportService,
 ];
