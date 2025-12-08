@@ -318,7 +318,7 @@ export class BookmarkImportService {
   }
 
   /**
-   * 将书签的图标保存到本地 linkicons 文件夹下
+   * 将书签的图标保存到本地 uploads/linkicons 文件夹下
    * @param icon 
    * @returns 保存后的文件路径
    */
@@ -367,11 +367,11 @@ export class BookmarkImportService {
       }
     }
 
-    return posix.join('/linkicons', filename);
+    return posix.join('/uploads', 'linkicons', filename);
   }
 
   private getIconDir() {
-    return join(__dirname, '..', '..', 'linkicons');
+    return join(__dirname, '..', '..', 'uploads', 'linkicons');
   }
 
   /**

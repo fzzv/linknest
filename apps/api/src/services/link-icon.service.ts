@@ -36,11 +36,11 @@ export class LinkIconService {
       }
     }
 
-    return { url: posix.join('/linkicons', filename) };
+    return { url: posix.join('/uploads', 'linkicons', filename) };
   }
 
   private getIconDir() {
-    return join(__dirname, '..', '..', 'linkicons');
+    return join(__dirname, '..', '..', 'uploads', 'linkicons');
   }
 
   private getExtensionFromMime(mime: string) {
