@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Patch, Post } from "@nestjs/common";
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
   AuthResponseDto,
   LoginDto,
@@ -8,9 +8,11 @@ import {
   RegisterResponseDto,
   RegisterUserDto,
   SendVerificationCodeDto,
+  UpdateUserDto,
   UserDto
 } from "src/dtos";
 import { PublicApi } from "src/decorators/public-api.decorator";
+import { CurrentUser } from "src/decorators/current-user.decorator";
 import { UserService } from "src/services/user.service";
 
 @ApiTags('用户')
@@ -59,5 +61,13 @@ export class UserController {
   @PublicApi()
   refresh(@Body() dto: RefreshTokenDto) {
     return this.userService.refreshTokens(dto);
+  }
+
+  @Patch('me')
+  @ApiOperation({ summary: '更新当前用户信息' })
+  @ApiOkResponse({ description: '更新成功', type: UserDto })
+  @ApiBearerAuth()
+  updateProfile(@Body() dto: UpdateUserDto, @CurrentUser('userId') userId: number) {
+    return this.userService.updateProfile(userId, dto);
   }
 }

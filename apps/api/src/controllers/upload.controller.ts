@@ -11,6 +11,12 @@ import { ensureUploadDir, sanitizeDir } from 'src/utils/upload.utils';
 import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import type { Request } from 'express';
 
+type UploadRequest = Request & {
+  __uploadDir?: string;
+  body?: Record<string, unknown> & { dir?: string };
+  query?: Record<string, unknown> & { dir?: string };
+};
+
 // 允许的 MIME 前缀和类型
 const allowedMimePrefixes = ['image/', 'video/', 'audio/', 'text/'];
 const allowedMimeTypes = new Set([
@@ -34,21 +40,30 @@ function isMimeAllowed(mime: string) {
   return allowedMimePrefixes.some((prefix) => mime.startsWith(prefix)) || allowedMimeTypes.has(mime);
 }
 
-// 从请求中获取目录
-function getDirFromRequest(req: Request) {
-  const bodyDir = Array.isArray((req.body as Record<string, unknown>)?.dir)
-    ? (req.body as Record<string, unknown>).dir[0]
-    : (req.body as Record<string, unknown>)?.dir;
-  if (typeof bodyDir === 'string') {
-    return bodyDir;
+// 提取 dir 字段的工具函数
+const extractDir = (value: string | string[]) => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || undefined;
   }
 
-  const queryDir = req.query?.dir;
+  if (Array.isArray(value) && typeof value[0] === 'string') {
+    const trimmed = value[0].trim();
+    return trimmed || undefined;
+  }
+
+  return undefined;
+};
+
+export function getDirFromRequest(req: UploadRequest, defaultDir = 'default'): string {
+  // 优先级：body > query > preset > default
   const dir =
-    typeof queryDir === 'string'
-      ? queryDir
-      : 'default';
-  return dir
+    extractDir(req.body?.dir) ??
+    extractDir(req.query?.dir) ??
+    extractDir(req.__uploadDir) ??
+    defaultDir;
+
+  return sanitizeDir(dir);
 }
 
 // Multer 配置
@@ -56,6 +71,7 @@ const uploadMulterOptions: MulterOptions = {
   storage: diskStorage({
     destination: (req, _file, cb) => {
       try {
+        // FIXME: 现在FormData中，dir必须放在files前，否则读取不到dir
         const dir = sanitizeDir(getDirFromRequest(req));
         // __uploadDir 用于存储上传目录，以便在后续请求中使用
         req.__uploadDir = dir;

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UploadRequestDto {
@@ -15,6 +16,7 @@ export class UploadRequestDto {
   @ApiProperty({ description: '可选：关联的实体 ID（与 entityType 一起使用）', required: false, example: 1 })
   @IsOptional()
   @IsInt()
+  @Type(() => Number) // String自动转成Number
   @Min(1)
   entityId?: number;
 

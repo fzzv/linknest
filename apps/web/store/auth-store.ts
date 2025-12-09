@@ -8,6 +8,7 @@ type AuthState = {
   isAuthenticated: boolean;
   login: (payload: AuthResponse) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
 };
 
 const initialState = {
@@ -28,6 +29,11 @@ export const useAuthStore = create<AuthState>()(
         },
         isAuthenticated: true,
       }),
+      updateUser: (user) =>
+        set((state) => ({
+          user,
+          isAuthenticated: state.isAuthenticated || Boolean(user),
+        })),
       logout: () => set({ ...initialState, isAuthenticated: false }),
     }),
     {

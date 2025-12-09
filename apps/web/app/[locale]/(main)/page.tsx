@@ -19,6 +19,7 @@ import CategoryFormModal from "@/components/CategoryFormModal";
 import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
 import ImportBookmarksModal from "@/components/ImportBookmarksModal";
 import { exportBookmarks } from "@/services/bookmarks";
+import UserProfileModal from "@/components/UserProfileModal";
 
 type SidebarItem = {
   label: string;
@@ -46,9 +47,11 @@ export default function Home() {
     linkId: undefined,
   });
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
   const tSidebar = useTranslations('Sidebar');
+  const tProfile = useTranslations('UserProfileModal');
 
   // 语言切换
   const locale = useLocale();
@@ -271,6 +274,7 @@ export default function Home() {
   };
   const handleLogout = () => {
     logout();
+    setProfileModalOpen(false);
     message.success(t('logoutSuccess'));
   };
   // 刷新链接列表和分类列表
@@ -289,6 +293,8 @@ export default function Home() {
 
   const openImportModal = () => setImportModalOpen(true);
   const closeImportModal = () => setImportModalOpen(false);
+  const openProfileModal = () => setProfileModalOpen(true);
+  const closeProfileModal = () => setProfileModalOpen(false);
   // 导出书签
   const handleExportBookmarks = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -427,7 +433,7 @@ export default function Home() {
           isDesktopSidebarCollapsed ? "lg:pl-0" : "lg:pl-64",
         )}
       >
-        <nav className="flex h-16 items-center gap-3 border-b border-white/5 bg-[#050b16] px-4 text-sm font-semibold lg:hidden">
+        <nav className="flex h-16 items-center gap-3 border-b border-white/5 bg-[#050b16] px-4 text-sm font-semibold">
           <Button
             variant="ghost"
             size="icon"
@@ -474,11 +480,22 @@ export default function Home() {
                   {t('exportBookmarks')}
                 </Button>
                 <div className="flex items-center gap-2">
-                  <Avatar
-                    src={user?.avatar ?? undefined}
-                    alt={user?.nickname ?? user?.email ?? "User"}
-                    size="sm"
-                  />
+                  <button
+                    type="button"
+                    title={t('updateUserInfo')}
+                    onClick={openProfileModal}
+                    className={cn(
+                      "rounded-full border border-white/10 p-[2px] transition cursor-pointer",
+                      "hover:border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                    )}
+                    aria-label={tProfile('title')}
+                  >
+                    <Avatar
+                      src={user?.avatar ?? undefined}
+                      alt={user?.nickname ?? user?.email ?? "User"}
+                      size="sm"
+                    />
+                  </button>
                   <Button
                     variant="ghost"
                     color="custom"
@@ -636,6 +653,10 @@ export default function Home() {
         open={importModalOpen}
         onClose={closeImportModal}
         onImported={handleBookmarksImported}
+      />
+      <UserProfileModal
+        open={profileModalOpen}
+        onClose={closeProfileModal}
       />
     </div>
   );
