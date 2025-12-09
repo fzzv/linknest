@@ -36,6 +36,7 @@ const CategoryFormModal = ({
 }: CategoryFormModalProps) => {
   const t = useTranslations('CategoryFormModal');
   const [internalMessage, messageHolder] = useMessage({ placement: 'top' });
+  // 关闭弹窗后的提示用message
   const message = messageApi ?? internalMessage;
   const isEditMode = mode === 'edit';
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
@@ -73,14 +74,14 @@ const CategoryFormModal = ({
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : t('loadDetailFailed');
-        message.error(errorMessage);
+        internalMessage.error(errorMessage);
       } finally {
         setIsLoadingDetail(false);
       }
     };
 
     void fetchDetail();
-  }, [categoryId, isEditMode, message, open, reset, t]);
+  }, [categoryId, isEditMode, internalMessage, open, reset, t]);
 
   const handleClose = () => {
     reset(DEFAULT_VALUES);
@@ -91,7 +92,7 @@ const CategoryFormModal = ({
     try {
       if (isEditMode) {
         if (!categoryId) {
-          message.error(t('loadDetailFailed'));
+          internalMessage.error(t('loadDetailFailed'));
           return;
         }
         await updateCategory(categoryId, values);
@@ -109,7 +110,7 @@ const CategoryFormModal = ({
         : isEditMode
           ? t('updateFailed')
           : t('createFailed');
-      message.error(errorMessage);
+      internalMessage.error(errorMessage);
     }
   };
 
@@ -141,7 +142,7 @@ const CategoryFormModal = ({
         </>
       )}
     >
-      {messageApi ? null : messageHolder}
+      {messageHolder}
       <form
         id="create-category-form"
         className="grid grid-cols-1 gap-4"
