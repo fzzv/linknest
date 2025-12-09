@@ -5,8 +5,8 @@ import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import Link from "next/link";
-import { Menu, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
-import { cn } from "@linknest/utils";
+import { Download, Menu, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
+import { cn, download } from "@linknest/utils";
 import { IconName } from "@/components/SvgIcon";
 import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
@@ -18,6 +18,8 @@ import LinkFormModal from "@/components/LinkFormModal";
 import CategoryFormModal from "@/components/CategoryFormModal";
 import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
 import ImportBookmarksModal from "@/components/ImportBookmarksModal";
+import { exportBookmarks } from "@/services/bookmarks";
+import UserProfileModal from "@/components/UserProfileModal";
 
 type SidebarItem = {
   label: string;
@@ -45,9 +47,11 @@ export default function Home() {
     linkId: undefined,
   });
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
   const tSidebar = useTranslations('Sidebar');
+  const tProfile = useTranslations('UserProfileModal');
 
   // 语言切换
   const locale = useLocale();
@@ -270,6 +274,7 @@ export default function Home() {
   };
   const handleLogout = () => {
     logout();
+    setProfileModalOpen(false);
     message.success(t('logoutSuccess'));
   };
   // 刷新链接列表和分类列表
@@ -288,11 +293,30 @@ export default function Home() {
 
   const openImportModal = () => setImportModalOpen(true);
   const closeImportModal = () => setImportModalOpen(false);
+  const openProfileModal = () => setProfileModalOpen(true);
+  const closeProfileModal = () => setProfileModalOpen(false);
+  // 导出书签
+  const handleExportBookmarks = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const { blob, filename } = await exportBookmarks();
+      await download(blob, filename);
+      message.success(t('exportSuccess'));
+    } catch (error) {
+      const messageText =
+        error instanceof Error && error.message === 'Export failed'
+          ? t('exportFailed')
+          : error instanceof Error
+            ? error.message
+            : t('exportFailed');
+      message.error(messageText);
+    }
+  }, [isAuthenticated, message, t]);
   // 导入后刷新列表数据
   const handleBookmarksImported = useCallback(async () => {
     await refreshAfterLinkChange();
   }, [refreshAfterLinkChange]);
-  
+
   // 获取当前分类名称
   const sidebarLabelMap = useMemo(() => {
     const m = new Map<number | undefined, string>();
@@ -409,7 +433,7 @@ export default function Home() {
           isDesktopSidebarCollapsed ? "lg:pl-0" : "lg:pl-64",
         )}
       >
-        <nav className="flex h-16 items-center gap-3 border-b border-white/5 bg-[#050b16] px-4 text-sm font-semibold lg:hidden">
+        <nav className="flex h-16 items-center gap-3 border-b border-white/5 bg-[#050b16] px-4 text-sm font-semibold">
           <Button
             variant="ghost"
             size="icon"
@@ -445,12 +469,33 @@ export default function Home() {
                   <UploadIcon className="h-4 w-4" />
                   {t('importBookmarks')}
                 </Button>
+                <Button
+                  variant="ghost"
+                  color="custom"
+                  size="sm"
+                  className="border border-white/10"
+                  onClick={handleExportBookmarks}
+                >
+                  <Download className="h-4 w-4" />
+                  {t('exportBookmarks')}
+                </Button>
                 <div className="flex items-center gap-2">
-                  <Avatar
-                    src={user?.avatar ?? undefined}
-                    alt={user?.nickname ?? user?.email ?? "User"}
-                    size="sm"
-                  />
+                  <button
+                    type="button"
+                    title={t('updateUserInfo')}
+                    onClick={openProfileModal}
+                    className={cn(
+                      "rounded-full border border-white/10 p-[2px] transition cursor-pointer",
+                      "hover:border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                    )}
+                    aria-label={tProfile('title')}
+                  >
+                    <Avatar
+                      src={user?.avatar ?? undefined}
+                      alt={user?.nickname ?? user?.email ?? "User"}
+                      size="sm"
+                    />
+                  </button>
                   <Button
                     variant="ghost"
                     color="custom"
@@ -608,6 +653,10 @@ export default function Home() {
         open={importModalOpen}
         onClose={closeImportModal}
         onImported={handleBookmarksImported}
+      />
+      <UserProfileModal
+        open={profileModalOpen}
+        onClose={closeProfileModal}
       />
     </div>
   );

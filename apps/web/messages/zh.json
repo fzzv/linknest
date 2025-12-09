@@ -62,6 +62,9 @@
     "logoutSuccess": "退出成功",
     "addLink": "添加链接",
     "importBookmarks": "导入书签",
+    "exportBookmarks": "导出书签",
+    "exportSuccess": "书签已导出，开始下载…",
+    "exportFailed": "导出失败，请稍后重试。",
     "edit": "编辑",
     "delete": "删除",
     "cancel": "取消",
@@ -70,7 +73,8 @@
     "deleteFailed": "删除失败",
     "deleteCancelled": "删除取消",
     "searchFailed": "搜索链接失败",
-    "noSearchResults": "没有搜索到相关链接"
+    "noSearchResults": "没有搜索到相关链接",
+    "updateUserInfo": "更改用户信息"
   },
   "Sidebar": {
     "yourBookmarkHub": "您的收藏中心",
@@ -150,5 +154,24 @@
     "failed": "导入失败，请稍后重试。",
     "start": "开始导入",
     "cancel": "取消"
+  },
+  "UserProfileModal": {
+    "title": "编辑个人信息",
+    "save": "保存",
+    "cancel": "取消",
+    "changeAvatar": "更换头像",
+    "avatarHint": "上传一张方形图片，显示效果更佳。",
+    "removeAvatar": "移除头像",
+    "nickname": "昵称",
+    "nicknamePlaceholder": "请输入昵称",
+    "email": "邮箱",
+    "updateSuccess": "资料已更新",
+    "updateFailed": "更新失败，请稍后再试",
+    "uploadSuccess": "头像上传成功",
+    "uploadFailed": "头像上传失败，请稍后重试",
+    "emailInvalid": "请输入有效的邮箱地址",
+    "nicknameTooLong": "昵称长度不能超过 30 个字符",
+    "nicknameRequired": "请填写昵称",
+    "avatarTooLong": "头像地址过长"
   }
 }

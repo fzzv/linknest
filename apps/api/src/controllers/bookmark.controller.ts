@@ -1,11 +1,13 @@
-import { BadRequestException, Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Get, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiProduces, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import type { Response } from 'express';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { ImportBookmarksDto, ImportBookmarksResultDto } from 'src/dtos';
 import { BookmarkImportService } from 'src/services/bookmark-import.service';
 import { I18nService } from 'nestjs-i18n';
+import { BookmarkExportService } from 'src/services/bookmark-export.service';
 
 @ApiTags('书签')
 @ApiBearerAuth()
@@ -13,6 +15,7 @@ import { I18nService } from 'nestjs-i18n';
 export class BookmarkController {
   constructor(
     private readonly bookmarkImportService: BookmarkImportService,
+    private readonly bookmarkExportService: BookmarkExportService,
     private readonly i18n: I18nService
   ) { }
 
@@ -60,5 +63,16 @@ export class BookmarkController {
     }
 
     throw new BadRequestException(this.i18n.t('bookmark.uploadFileError'));
+  }
+
+  @Get('export')
+  @ApiOperation({ summary: '导出书签 HTML 文件' })
+  @ApiProduces('text/html')
+  @ApiOkResponse({ description: '书签 HTML 文件' })
+  async exportBookmarks(@CurrentUser('userId') userId: number, @Res() res: Response) {
+    const { content, filename } = await this.bookmarkExportService.exportToHtml(userId);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.send(content);
   }
 }

@@ -1,0 +1,4 @@
+{
+  "atLeastOneFile": "请上传至少一个文件",
+  "entityTypeAndIdRequired": "entityType 与 entityId 需要同时提供"
+}

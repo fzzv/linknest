@@ -7,11 +7,16 @@ export interface ApiResponse<T> {
   message: string;
 }
 
-interface RequestOptions extends Omit<RequestInit, 'body'> {
+type HandleResponse<T> = (res: Response) => Promise<T>;
+
+interface RequestOptionsBase extends Omit<RequestInit, 'body'> {
   token?: string;
   body?: BodyInit | Record<string, unknown> | null | undefined;
   locale?: string;
 }
+
+// handleResponse 自定义响应数据的处理方法
+type RequestOptions = RequestOptionsBase & { handleResponse?: HandleResponse<unknown> };
 
 // 不需要登录的接口
 const PUBLIC_PATHS = ['/users/login', '/users/register', '/users/send-code', '/users/refresh'];
@@ -49,8 +54,10 @@ function getCurrentLocale(fallback: string = 'en'): string {
   return fallback;
 }
 
+export async function apiClient<T>(path: string, options?: RequestOptionsBase): Promise<T>;
+export async function apiClient<T>(path: string, options: RequestOptions & { handleResponse: HandleResponse<T> }): Promise<T>;
 export async function apiClient<T>(path: string, options: RequestOptions = {}) {
-  const { token, headers, locale, body, ...rest } = options;
+  const { token, headers, locale, body, handleResponse, ...rest } = options;
   let authToken = token;
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
   const isBlob = typeof Blob !== 'undefined' && body instanceof Blob;
@@ -96,6 +103,11 @@ export async function apiClient<T>(path: string, options: RequestOptions = {}) {
     headers: requestHeaders,
     body: resolvedBody,
   });
+
+  // 如果提供了处理响应的函数，则直接返回处理后的结果
+  if (handleResponse) {
+    return handleResponse(response);
+  }
 
   const parseJson = async () => {
     try {

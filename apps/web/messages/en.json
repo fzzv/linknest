@@ -62,6 +62,9 @@
     "logoutSuccess": "Logged out successfully.",
     "addLink": "Add Link",
     "importBookmarks": "Import",
+    "exportBookmarks": "Export",
+    "exportSuccess": "Bookmarks exported. Download should start shortly.",
+    "exportFailed": "Export failed, please try again.",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
@@ -70,7 +73,8 @@
     "deleteFailed": "Failed to delete link",
     "deleteCancelled": "Delete cancelled",
     "searchFailed": "Failed to search links",
-    "noSearchResults": "No related links found."
+    "noSearchResults": "No related links found.",
+    "updateUserInfo": "Update user info"
   },
   "Sidebar": {
     "yourBookmarkHub": "Your Bookmark Hub",
@@ -150,5 +154,24 @@
     "failed": "Import failed, please try again later.",
     "start": "Import",
     "cancel": "Cancel"
+  },
+  "UserProfileModal": {
+    "title": "Edit Profile",
+    "save": "Save",
+    "cancel": "Cancel",
+    "changeAvatar": "Change Avatar",
+    "avatarHint": "Upload a square image for best display.",
+    "removeAvatar": "Remove Avatar",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter your nickname",
+    "email": "Email",
+    "updateSuccess": "Profile updated",
+    "updateFailed": "Failed to update profile",
+    "uploadSuccess": "Avatar uploaded",
+    "uploadFailed": "Failed to upload avatar",
+    "emailInvalid": "Please enter a valid email address",
+    "nicknameTooLong": "Nickname must be 30 characters or less",
+    "nicknameRequired": "Nickname is required",
+    "avatarTooLong": "Avatar URL is too long"
   }
 }

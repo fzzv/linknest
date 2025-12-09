@@ -1,8 +1,8 @@
 import { PrismaService } from "@linknest/db";
 import type { User } from "@linknest/db";
-import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { LoginDto, RefreshTokenDto, RegisterUserDto, SendVerificationCodeDto } from "src/dtos";
+import { LoginDto, RefreshTokenDto, RegisterUserDto, SendVerificationCodeDto, UpdateUserDto } from "src/dtos";
 import { ConfigurationService } from "src/services/configuration.service";
 import { MailService } from "src/services/mail.service";
 import { VerificationCodeService } from "src/services/verification-code.service";
@@ -114,6 +114,23 @@ export class UserService {
     } catch {
       throw new UnauthorizedException(this.i18n.t('error.invalidRefreshToken'));
     }
+  }
+
+  async updateProfile(userId: number, dto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(this.i18n.t('error.userNotFound'));
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        nickname: dto.nickname === undefined ? undefined : (dto.nickname?.trim() || null),
+        avatar: dto.avatar === undefined ? undefined : (dto.avatar?.trim() || null),
+      },
+    });
+
+    return this.toSafeUser(updated);
   }
 
   private generateVerificationCode() {

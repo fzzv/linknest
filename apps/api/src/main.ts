@@ -21,7 +21,7 @@ async function bootstrap() {
   // 全局拦截器：日志与统一响应结构
   app.useGlobalInterceptors(new LoggingInterceptor(), new ResponseInterceptor());
   // 配置静态资源目录
-  app.useStaticAssets(join(__dirname, '..', 'linkicons'), { prefix: '/linkicons/' });
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads/' });
 
   // Swagger 文档
   const swaggerConfig = new DocumentBuilder()
