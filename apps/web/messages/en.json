@@ -75,7 +75,11 @@
     "deleteCancelled": "Delete cancelled",
     "searchFailed": "Failed to search links",
     "noSearchResults": "No related links found.",
-    "updateUserInfo": "Update user info"
+    "updateUserInfo": "Update user info",
+    "exportConfirmTitle": "Export bookmarks?",
+    "exportConfirmContent": "Export all bookmarks to an HTML file.",
+    "logoutConfirmTitle": "Log out?",
+    "logoutConfirmContent": "You will need to sign in again to access your saved links."
   },
   "Sidebar": {
     "yourBookmarkHub": "Your Bookmark Hub",

@@ -5,7 +5,7 @@ import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import Link from "next/link";
-import { Download, Menu, Palette, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
+import { Download, LogOut, Menu, Palette, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
 import { cn, download } from "@linknest/utils";
 import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
@@ -276,11 +276,23 @@ export default function Home() {
       closeSidebar();
     }
   };
-  const handleLogout = () => {
-    logout();
-    setProfileModalOpen(false);
-    message.success(t('logoutSuccess'));
-  };
+  const handleLogout = useCallback(() => {
+    Modal.confirm({
+      icon: <LogOut className="h-5 w-5 text-base-content" />,
+      title: t('logoutConfirmTitle'),
+      content: (
+        <p className="text-sm text-base-content/90">{t('logoutConfirmContent')}</p>
+      ),
+      okText: t('logout'),
+      cancelText: t('cancel'),
+      closable: true,
+      onOk: () => {
+        logout();
+        setProfileModalOpen(false);
+        message.success(t('logoutSuccess'));
+      },
+    });
+  }, [logout, message, t]);
   // 刷新链接列表和分类列表
   const refreshAfterLinkChange = useCallback(async () => {
     const keyword = debouncedSearchTerm.trim();
@@ -302,21 +314,35 @@ export default function Home() {
   const openThemeModal = () => setThemeModalOpen(true);
   const closeThemeModal = () => setThemeModalOpen(false);
   // 导出书签
-  const handleExportBookmarks = useCallback(async () => {
+  const handleExportBookmarks = useCallback(() => {
     if (!isAuthenticated) return;
-    try {
-      const { blob, filename } = await exportBookmarks();
-      await download(blob, filename);
-      message.success(t('exportSuccess'));
-    } catch (error) {
-      const messageText =
-        error instanceof Error && error.message === 'Export failed'
-          ? t('exportFailed')
-          : error instanceof Error
-            ? error.message
-            : t('exportFailed');
-      message.error(messageText);
-    }
+
+    Modal.confirm({
+      icon: <Download className="h-5 w-5 text-base-content" />,
+      title: t('exportConfirmTitle'),
+      content: (
+        <p className="text-sm text-base-content/90">{t('exportConfirmContent')}</p>
+      ),
+      okText: t('exportBookmarks'),
+      cancelText: t('cancel'),
+      closable: true,
+      onOk: async () => {
+        try {
+          const { blob, filename } = await exportBookmarks();
+          await download(blob, filename);
+          message.success(t('exportSuccess'));
+        } catch (error) {
+          const messageText =
+            error instanceof Error && error.message === 'Export failed'
+              ? t('exportFailed')
+              : error instanceof Error
+                ? error.message
+                : t('exportFailed');
+          message.error(messageText);
+          return false;
+        }
+      },
+    });
   }, [isAuthenticated, message, t]);
   // 导入后刷新列表数据
   const handleBookmarksImported = useCallback(async () => {
@@ -342,7 +368,7 @@ export default function Home() {
       icon: <Trash2 className="h-5 w-5 text-error" />,
       title: t('delete'),
       content: (
-        <p className="text-sm text-primary">{t('deleteConfirm')}</p>
+        <p className="text-sm text-base-content/90">{t('deleteConfirm')}</p>
       ),
       okText: t('delete'),
       cancelText: t('cancel'),
@@ -368,7 +394,7 @@ export default function Home() {
       icon: <Trash2 className="h-5 w-5 text-error" />,
       title: tSidebar('delete'),
       content: (
-        <p className="text-sm text-primary">{tSidebar('deleteConfirm')}</p>
+        <p className="text-sm text-base-content/90">{tSidebar('deleteConfirm')}</p>
       ),
       okText: tSidebar('delete'),
       cancelText: t('cancel'),

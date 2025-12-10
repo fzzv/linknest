@@ -75,7 +75,11 @@
     "deleteCancelled": "删除取消",
     "searchFailed": "搜索链接失败",
     "noSearchResults": "没有搜索到相关链接",
-    "updateUserInfo": "更改用户信息"
+    "updateUserInfo": "更改用户信息",
+    "exportConfirmTitle": "确认导出书签？",
+    "exportConfirmContent": "将所有书签导出为 HTML 文件。",
+    "logoutConfirmTitle": "确认退出登录？",
+    "logoutConfirmContent": "退出后需要重新登录才能访问您的书签。"
   },
   "Sidebar": {
     "yourBookmarkHub": "您的收藏中心",
