@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMessage, TextField } from '@linknest/ui';
+import { useMessage, TextField, Button } from '@linknest/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -99,13 +99,13 @@ export default function RegisterPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#040916] text-white">
+    <div className="min-h-screen bg-base-100 text-primary">
       {messageHolder}
       <div className="flex items-center gap-2 text-xl font-semibold pt-10 pl-10">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500 text-sm font-bold">LN</span>
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-neutral text-sm font-bold">LN</span>
         LinkNest
       </div>
-      <div className="mx-auto flex max-w-6xl gap-10 px-6 py-10 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto flex max-w-2xl gap-10 px-6 py-10 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex-1 items-center justify-center hidden lg:block">
           <Image
             src="/cover.svg"
@@ -118,14 +118,15 @@ export default function RegisterPage() {
         </div>
 
         <div className="flex-1">
-          <div className="rounded-[32px] bg-[#0c1427] p-8 shadow-2xl shadow-black/60">
+          <div className="rounded-[32px] bg-base-200 p-8 shadow-2xl shadow-black/60">
             <div className="space-y-2 text-center lg:text-left">
               <h1 className="text-3xl font-semibold">{t('title')}</h1>
-              <p className="text-slate-400">{t('description')}</p>
+              <p className="text-base-content/70">{t('description')}</p>
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={onSubmit}>
               <TextField
+                size="md"
                 label={t('nickname')}
                 placeholder={t('nicknamePlaceholder')}
                 {...register('nickname')}
@@ -140,14 +141,14 @@ export default function RegisterPage() {
                 {...register('email')}
                 error={errors.email?.message}
                 actionSlot={(
-                  <button
+                  <Button
                     type="button"
                     onClick={handleSendCode}
                     disabled={sendingCode || codeCooldown > 0}
-                    className="h-9 rounded-lg bg-indigo-500 px-4 text-xs font-semibold text-white transition hover:bg-indigo-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-9 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {codeCooldown > 0 ? t('sentCode', { codeCooldown }) : t('sendCode')}
-                  </button>
+                  </Button>
                 )}
               />
 
@@ -167,7 +168,7 @@ export default function RegisterPage() {
                 {...register('password')}
                 error={errors.password?.message}
               />
-              <p className="text-xs text-slate-500">{t('passwordRequirements')}</p>
+              <p className="text-xs text-base-content/70">{t('passwordRequirements')}</p>
 
               <TextField
                 label={t('confirmPassword')}
@@ -178,18 +179,19 @@ export default function RegisterPage() {
                 error={errors.confirmPassword?.message}
               />
 
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-12 w-full rounded-xl cursor-pointer bg-indigo-500 text-base font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+                color="primary"
+                className="h-12 w-full disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? t('creatingAccount') : t('createAccount')}
-              </button>
+              </Button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-slate-400">
+            <p className="mt-6 text-center text-sm text-base-content/70">
               {t('alreadyHaveAccount')} {' '}
-              <Link href="/login" className="text-indigo-400 font-medium hover:underline">
+              <Link href="/login" className="text-primary font-medium hover:underline">
                 {t('login')}
               </Link>
             </p>

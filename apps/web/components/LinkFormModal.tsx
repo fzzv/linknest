@@ -222,7 +222,7 @@ export const LinkFormModal = ({
         onSubmit={handleSubmit(onSubmit)}
       >
         {isEditMode && isLoadingLink ? (
-          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm text-white/70">
+          <div className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm text-primary-content">
             <span className="loading loading-spinner loading-sm" aria-hidden="true" />
             <span>{t('loadingDetail')}</span>
           </div>

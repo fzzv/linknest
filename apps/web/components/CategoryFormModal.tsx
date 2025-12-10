@@ -149,22 +149,31 @@ const CategoryFormModal = ({
         onSubmit={handleSubmit(onSubmit)}
       >
         {isEditMode && isLoadingDetail ? (
-          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm text-white/70">
+          <div className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm text-primary-content">
             <span className="loading loading-spinner loading-sm" aria-hidden="true" />
             <span>{t('loadingDetail')}</span>
           </div>
         ) : null}
+        <div className='grid grid-cols-2 gap-4'>
+          <InputField
+            label={t('nameLabel')}
+            placeholder={t('namePlaceholder')}
+            {...register('name')}
+            error={errors.name?.message}
+          />
 
-        <InputField
-          label={t('nameLabel')}
-          placeholder={t('namePlaceholder')}
-          {...register('name')}
-          fullWidth
-          error={errors.name?.message}
-        />
+          <InputField
+            label={t('sortOrderLabel')}
+            type="number"
+            inputMode="numeric"
+            placeholder={t('sortOrderPlaceholder')}
+            {...register('sortOrder')}
+            error={errors.sortOrder?.message}
+          />
+        </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-white">{t('iconLabel')}</p>
+          <p className="text-sm font-medium text-base-content">{t('iconLabel')}</p>
           <Controller
             name="icon"
             control={control}
@@ -178,18 +187,9 @@ const CategoryFormModal = ({
           {errors.icon?.message ? (
             <p className="text-xs text-error">{errors.icon.message}</p>
           ) : (
-            <p className="text-xs text-white/60">{t('iconHelper')}</p>
+            <p className="text-xs text-base-content/50">{t('iconHelper')}</p>
           )}
         </div>
-
-        <InputField
-          label={t('sortOrderLabel')}
-          type="number"
-          inputMode="numeric"
-          placeholder={t('sortOrderPlaceholder')}
-          {...register('sortOrder')}
-          error={errors.sortOrder?.message}
-        />
       </form>
     </Modal>
   );

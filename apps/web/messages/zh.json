@@ -21,7 +21,7 @@
   },
   "Register": {
     "title": "创建您的 LinkNest 账户",
-    "description": "组织您的数字世界，一个链接一次。",
+    "description": "组织您的数字世界。",
     "nickname": "昵称",
     "nicknamePlaceholder": "输入您的昵称",
     "email": "邮箱地址",
@@ -55,6 +55,7 @@
     "language": "语言",
     "languageEnglish": "英语",
     "languageChinese": "中文",
+    "theme": "主题",
     "allBookmarks": "所有收藏",
     "showAllYourSavedLinks": "显示所有您的收藏。已找到 {count} 个项目",
     "searchBookmarks": "搜索收藏...",
@@ -154,6 +155,12 @@
     "failed": "导入失败，请稍后重试。",
     "start": "开始导入",
     "cancel": "取消"
+  },
+  "ThemeSelector": {
+    "title": "切换主题",
+    "description": "从 35 个主题中选择一个，点击后立即生效。",
+    "currentTheme": "当前主题为",
+    "cancel": "关闭"
   },
   "UserProfileModal": {
     "title": "编辑个人信息",

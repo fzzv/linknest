@@ -2,38 +2,15 @@
 
 import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@linknest/utils';
-
-const inputSizes = {
-  xs: 'input-xs',
-  sm: 'input-sm',
-  md: 'input-md',
-  lg: 'input-lg',
-  xl: 'input-xl',
-} as const;
-
-const inputVariants = {
-  solid: 'border',
-  ghost: 'input-ghost',
-} as const;
-
-const inputColors = {
-  neutral: 'input-neutral',
-  primary: 'input-primary',
-  secondary: 'input-secondary',
-  accent: 'input-accent',
-  info: 'input-info',
-  success: 'input-success',
-  warning: 'input-warning',
-  error: 'input-error',
-} as const;
+import { INPUT_SIZES, INPUT_COLORS, INPUT_VARIANTS } from './common/constant';
 
 export interface InputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: ReactNode;
   helperText?: ReactNode;
   error?: ReactNode;
-  size?: keyof typeof inputSizes;
-  variant?: keyof typeof inputVariants;
-  color?: keyof typeof inputColors;
+  size?: keyof typeof INPUT_SIZES;
+  color?: keyof typeof INPUT_COLORS;
+  variant?: keyof typeof INPUT_VARIANTS;
   fullWidth?: boolean;
   wrapperClassName?: string;
   actionSlot?: ReactNode;
@@ -45,8 +22,8 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function
     helperText,
     error,
     size = 'md',
-    variant = 'solid',
     color = 'neutral',
+    variant = 'custom',
     fullWidth,
     className,
     wrapperClassName,
@@ -58,7 +35,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function
   return (
     <label className={cn('flex flex-col gap-2', fullWidth && 'w-full', wrapperClassName)}>
       {label ? (
-        <div className="flex items-center justify-between text-sm font-medium text-slate-200">
+        <div className="flex items-center justify-between text-sm font-medium text-base-content">
           <span>{label}</span>
           {actionSlot}
         </div>
@@ -68,12 +45,12 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function
         ref={ref}
         className={cn(
           'input',
-          inputSizes[size],
-          inputVariants[variant],
+          INPUT_SIZES[size],
+          INPUT_VARIANTS[variant],
+          INPUT_COLORS[error ? 'error' : color],
+          error && 'focus:outline-none focus:ring-1 focus:ring-error',
           fullWidth && 'w-full',
-          className,
-          inputColors[error ? 'error' : color],
-          error && 'focus:outline-none focus:ring-1 focus:ring-error'
+          className
         )}
         aria-invalid={Boolean(error)}
         {...props}
@@ -81,9 +58,9 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function
 
       {error ? (
         <span className="text-xs text-error">{error}</span>
-      ) : helperText ? (
-        <span className="text-xs text-slate-400">{helperText}</span>
-      ) : null}
+      ) : (
+        helperText && <span className="text-xs text-base-content/70">{helperText}</span>
+      )}
     </label>
   );
 });

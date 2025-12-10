@@ -169,7 +169,7 @@ export function ContextMenu({
     <div
       ref={menuRef}
       className={cn(
-        'z-1200 rounded-xl border border-white/10 bg-neutral text-white shadow-2xl backdrop-blur',
+        'z-1200 rounded-xl border border-primary/30 bg-base-100 text-base-content shadow-2xl backdrop-blur',
         'origin-top-left p-1',
         'max-h-[60vh] overflow-y-auto',
         menuClassName,
@@ -177,13 +177,13 @@ export function ContextMenu({
       role="menu"
       aria-label="Context menu"
     >
-      <ul className="menu menu-sm gap-1 text-sm text-white">
+      <ul className="menu menu-sm gap-1 text-sm">
         {items.map((item) => (
           <li key={item.key} className="w-full">
             <button
               type="button"
               className={cn(
-                'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition hover:bg-white/10',
+                'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition hover:bg-base-300',
                 item.danger && 'text-error hover:text-error',
                 item.disabled && 'cursor-not-allowed opacity-60 hover:bg-transparent',
               )}

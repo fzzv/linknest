@@ -5,12 +5,11 @@ import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import Link from "next/link";
-import { Download, Menu, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
+import { Download, Menu, Palette, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
 import { cn, download } from "@linknest/utils";
-import { IconName } from "@/components/SvgIcon";
 import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
-import { Avatar, Button, ContextMenu, Modal, Select, useMessage } from "@linknest/ui";
+import { Avatar, Button, ContextMenu, Modal, Select, useMessage, type IconName } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -20,6 +19,8 @@ import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
 import ImportBookmarksModal from "@/components/ImportBookmarksModal";
 import { exportBookmarks } from "@/services/bookmarks";
 import UserProfileModal from "@/components/UserProfileModal";
+import ThemeSelectorModal from "@/components/ThemeSelectorModal";
+import { useTheme } from "@/hooks/useTheme";
 
 type SidebarItem = {
   label: string;
@@ -48,10 +49,12 @@ export default function Home() {
   });
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [themeModalOpen, setThemeModalOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
   const tSidebar = useTranslations('Sidebar');
   const tProfile = useTranslations('UserProfileModal');
+  const { theme } = useTheme();
 
   // 语言切换
   const locale = useLocale();
@@ -61,6 +64,7 @@ export default function Home() {
     { value: 'en', label: t('languageEnglish') },
     { value: 'zh', label: t('languageChinese') },
   ];
+  const themeLabel = useMemo(() => theme.charAt(0).toUpperCase() + theme.slice(1), [theme]);
 
   const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const nextLocale = event.target.value as Locale;
@@ -295,6 +299,8 @@ export default function Home() {
   const closeImportModal = () => setImportModalOpen(false);
   const openProfileModal = () => setProfileModalOpen(true);
   const closeProfileModal = () => setProfileModalOpen(false);
+  const openThemeModal = () => setThemeModalOpen(true);
+  const closeThemeModal = () => setThemeModalOpen(false);
   // 导出书签
   const handleExportBookmarks = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -336,7 +342,7 @@ export default function Home() {
       icon: <Trash2 className="h-5 w-5 text-error" />,
       title: t('delete'),
       content: (
-        <p className="text-sm text-white/80">{t('deleteConfirm')}</p>
+        <p className="text-sm text-primary">{t('deleteConfirm')}</p>
       ),
       okText: t('delete'),
       cancelText: t('cancel'),
@@ -362,7 +368,7 @@ export default function Home() {
       icon: <Trash2 className="h-5 w-5 text-error" />,
       title: tSidebar('delete'),
       content: (
-        <p className="text-sm text-white/80">{tSidebar('deleteConfirm')}</p>
+        <p className="text-sm text-primary">{tSidebar('deleteConfirm')}</p>
       ),
       okText: tSidebar('delete'),
       cancelText: t('cancel'),
@@ -402,7 +408,7 @@ export default function Home() {
   const closeLinkModal = () => setLinkModal((prev) => ({ ...prev, open: false, linkId: undefined }));
 
   return (
-    <div className="min-h-screen bg-[#030712] text-white">
+    <div className="min-h-screen bg-base-100 text-base-content">
       {messageHolder}
       <Sidebar
         className={cn(
@@ -433,11 +439,11 @@ export default function Home() {
           isDesktopSidebarCollapsed ? "lg:pl-0" : "lg:pl-64",
         )}
       >
-        <nav className="flex h-16 items-center gap-3 border-b border-white/5 bg-[#050b16] px-4 text-sm font-semibold">
+        <nav className="flex h-16 items-center gap-3 border-b border-base-300 bg-base-100 px-4 text-sm font-semibold">
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-2xl border border-white/10 text-white/80"
+            color="primary"
             onClick={toggleSidebar}
             aria-label="Toggle sidebar"
             aria-expanded={isSidebarOpen}
@@ -449,31 +455,36 @@ export default function Home() {
             <Select
               size="sm"
               value={locale}
-              variant="solid"
+              color="custom"
               onChange={handleLanguageChange}
               options={languageOptions}
               aria-label={t('language')}
               wrapperClassName="w-auto"
               className="min-w-30 pl-5"
             />
-
+            <Button
+              size="sm"
+              color="primary"
+              onClick={openThemeModal}
+              aria-label={t('theme')}
+            >
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('theme')}</span>
+              <span className="text-xs uppercase sm:text-[11px]">{themeLabel}</span>
+            </Button>
             {isAuthenticated ? (
               <>
                 <Button
-                  variant="ghost"
-                  color="custom"
+                  color="primary"
                   size="sm"
-                  className="border border-white/10"
                   onClick={openImportModal}
                 >
                   <UploadIcon className="h-4 w-4" />
                   {t('importBookmarks')}
                 </Button>
                 <Button
-                  variant="ghost"
-                  color="custom"
+                  color="primary"
                   size="sm"
-                  className="border border-white/10"
                   onClick={handleExportBookmarks}
                 >
                   <Download className="h-4 w-4" />
@@ -485,8 +496,8 @@ export default function Home() {
                     title={t('updateUserInfo')}
                     onClick={openProfileModal}
                     className={cn(
-                      "rounded-full border border-white/10 p-[2px] transition cursor-pointer",
-                      "hover:border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                      "rounded-full border border-base-100 p-[2px] transition cursor-pointer",
+                      "hover:border-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                     )}
                     aria-label={tProfile('title')}
                   >
@@ -497,10 +508,8 @@ export default function Home() {
                     />
                   </button>
                   <Button
-                    variant="ghost"
-                    color="custom"
+                    color="primary"
                     size="sm"
-                    className="border border-white/10"
                     onClick={handleLogout}
                   >
                     {t('logout')}
@@ -508,41 +517,44 @@ export default function Home() {
                 </div>
               </>
             ) : (
-              <Link
-                href="/login"
-                className="rounded-2xl border border-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              <Button
+                color="primary"
+                size="sm"
               >
-                {t('login')}
-              </Link>
+                <Link
+                  href="/login"
+                >
+                  {t('login')}
+                </Link>
+              </Button>
             )}
           </div>
         </nav>
 
         <main className="px-4 py-5 sm:px-8 lg:px-14 flex flex-col gap-10 h-[calc(100vh-4rem)]">
           <div className="w-full shrink-0">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/40">{t('dashboard')}</p>
+            <p className="text-xs uppercase tracking-[0.35em]">{t('dashboard')}</p>
             <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div>
-                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">{activeCategoryLabel}</h1>
-                <p className="mt-3 text-base text-white/70">
+                <h1 className="text-4xl font-black tracking-tight sm:text-5xl">{activeCategoryLabel}</h1>
+                <p className="mt-3">
                   {t('showAllYourSavedLinks', { count: links.length })}
                 </p>
               </div>
               <div className="w-full flex gap-3 md:w-auto md:flex-row md:items-center">
-                <label className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-white/80 focus-within:border-white/30 md:w-72">
-                  <Search className="h-4 w-4 text-white/50" />
+                <label className="flex w-full items-center gap-3 rounded-2xl border border-base-100 bg-base-200 px-4 py-3 text-sm text-base-content focus-within:border-base-300 md:w-72">
+                  <Search className="h-4 w-4 text-base-content" />
                   <input
                     type="text"
                     placeholder={t('searchBookmarks')}
                     value={searchTerm}
                     onChange={handleSearchChange}
-                    className="w-full bg-transparent placeholder:text-white/40 focus:outline-none"
+                    className="w-full bg-transparent placeholder-base-content/50 focus:outline-none"
                   />
                 </label>
                 {isAuthenticated && (
                   <Button
-                    variant="custom"
-                    color="custom"
+                    color="primary"
                     className="shrink-0"
                     onClick={openCreateLinkModal}
                   >
@@ -620,7 +632,7 @@ export default function Home() {
               <div className="grid h-full gap-6" style={gridTemplateColumnsStyle}>
                 <div className="flex flex-col items-center justify-center gap-3 md:col-span-2 xl:col-span-3">
                   <img src="/empty.svg" alt="Empty" className="h-60 w-60 opacity-80" />
-                  <p className="text-sm text-white/60">
+                  <p className="text-sm text-primary">
                     {searchTerm.trim() ? t('noSearchResults') : t('noLinksFoundInThisCategory')}
                   </p>
                 </div>
@@ -653,6 +665,10 @@ export default function Home() {
         open={importModalOpen}
         onClose={closeImportModal}
         onImported={handleBookmarksImported}
+      />
+      <ThemeSelectorModal
+        open={themeModalOpen}
+        onClose={closeThemeModal}
       />
       <UserProfileModal
         open={profileModalOpen}

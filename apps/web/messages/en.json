@@ -55,6 +55,7 @@
     "language": "Language",
     "languageEnglish": "English",
     "languageChinese": "Chinese",
+    "theme": "Theme",
     "allBookmarks": "All Bookmarks",
     "showAllYourSavedLinks": "Showing all your saved links. {count} items found",
     "searchBookmarks": "Search bookmarks...",
@@ -153,6 +154,12 @@
     "success": "Import complete! {categories} categories, {links} links updated.",
     "failed": "Import failed, please try again later.",
     "start": "Import",
+    "cancel": "Cancel"
+  },
+  "ThemeSelector": {
+    "title": "Switch Theme",
+    "description": "Pick one of the 35 themes. Your choice applies immediately. ",
+    "currentTheme": "Current theme is",
     "cancel": "Cancel"
   },
   "UserProfileModal": {

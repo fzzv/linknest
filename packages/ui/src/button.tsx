@@ -2,46 +2,14 @@
 
 import { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@linknest/utils";
-
-const buttonVariants = {
-  soft: "btn-soft",
-  outline: "btn-outline",
-  dash: "btn-dash",
-  active: "btn-active",
-  ghost: "btn-ghost",
-  link: "btn-link",
-  wide: "btn-wide",
-  square: "btn-square",
-  circle: "btn-circle",
-  block: "btn-block",
-  custom: "",
-} as const;
-
-const buttonColors = {
-  neutral: "btn-neutral",
-  primary: "btn-primary",
-  secondary: "btn-secondary ",
-  accent: "btn-accent",
-  info: "btn-info",
-  success: "btn-success",
-  warning: "btn-warning",
-  error: "btn-error",
-  custom: "",
-} as const;
-
-const buttonSizes = {
-  sm: "btn-sm",
-  md: "btn-md",
-  lg: "btn-lg",
-  icon: "btn-square btn-sm p-0",
-} as const;
+import { BUTTON_SIZES, BUTTON_COLORS, BUTTON_VARIANTS } from './common/constant';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
   className?: string;
-  variant?: keyof typeof buttonVariants;
-  color?: keyof typeof buttonColors;
-  size?: keyof typeof buttonSizes;
+  size?: keyof typeof BUTTON_SIZES;
+  color?: keyof typeof BUTTON_COLORS;
+  variant?: keyof typeof BUTTON_VARIANTS;
   fullWidth?: boolean;
   isLoading?: boolean;
   leftIcon?: ReactNode;
@@ -51,7 +19,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = ({
   children,
   className,
-  variant = "soft",
+  variant = "custom",
   size = "md",
   color = "primary",
   fullWidth,
@@ -66,10 +34,10 @@ export const Button = ({
     <button
       type={type}
       className={cn(
-        "btn gap-2 rounded-2xl font-semibold normal-case transition",
-        buttonVariants[variant],
-        buttonColors[color],
-        buttonSizes[size],
+        "btn gap-2 rounded-md font-semibold normal-case transition",
+        BUTTON_SIZES[size],
+        BUTTON_COLORS[color],
+        BUTTON_VARIANTS[variant],
         fullWidth && "w-full",
         (disabled || isLoading) && "btn-disabled",
         className,

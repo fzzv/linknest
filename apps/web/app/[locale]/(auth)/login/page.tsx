@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { useMessage, TextField } from '@linknest/ui';
+import { useMessage, TextField, Button } from '@linknest/ui';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth';
 import { login as loginRequest } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
@@ -64,18 +64,18 @@ export default function LoginPage() {
   }, [isAuthenticated, router]);
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 text-white bg-[#050b1a]">
+    <div className="min-h-screen grid lg:grid-cols-2 text-primary bg-base-200">
       {messageHolder}
-      <div className="hidden lg:flex flex-col items-center justify-center bg-linear-to-b from-slate-950 to-slate-900 text-center space-y-6 px-12">
+      <div className="flex flex-col items-center justify-center bg-base-100 text-center space-y-6 px-12">
         <motion.div
-          className="w-20 h-20 rounded-3xl bg-indigo-500/90 flex items-center justify-center text-4xl font-semibold"
+          className="w-20 h-20 rounded-3xl bg-primary text-primary-content flex items-center justify-center text-4xl font-semibold"
           {...motionConfig}
         >
-          N
+          LN
         </motion.div>
         <motion.div className="space-y-4" {...motionConfig} transition={{ ...motionConfig.transition, delay: 0.1 }}>
           <h1 className="text-4xl font-semibold tracking-wide">LinkNest</h1>
-          <p className="text-slate-400 text-lg">{t('subtitle')}</p>
+          <p className="text-lg">{t('subtitle')}</p>
         </motion.div>
       </div>
 
@@ -87,7 +87,7 @@ export default function LoginPage() {
         >
           <div className="space-y-2">
             <h2 className="text-3xl font-semibold">{t('title')}</h2>
-            <p className="text-slate-400">{t('description')}</p>
+            <p className="text-base-content/70">{t('description')}</p>
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -107,21 +107,22 @@ export default function LoginPage() {
               autoComplete="current-password"
               {...register('password')}
               error={errors.password?.message}
-              actionSlot={<Link href="#" className="text-sm text-indigo-400 hover:underline">{t('forgotPassword')}</Link>}
+              actionSlot={<Link href="#" className="text-sm text-primary hover:underline">{t('forgotPassword')}</Link>}
             />
 
-            <button
+            <Button
               type="submit"
+              color="primary"
               disabled={isSubmitting}
-              className="h-12 w-full rounded-xl bg-indigo-500 text-base font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-12 w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? 'Signing in…' : t('login')}
-            </button>
+            </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-base-content/70">
             {t('dontHaveAccount')} {' '}
-            <Link href="/register" className="text-indigo-400 font-medium hover:underline">
+            <Link href="/register" className="text-primary font-medium hover:underline">
               {t('signUp')}
             </Link>
           </p>

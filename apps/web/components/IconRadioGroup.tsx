@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@linknest/utils';
-import SvgIcon, { IconName } from './SvgIcon';
+import { SvgIcon, type IconName } from '@linknest/ui';
 
 const COMMON_ICON_NAMES: IconName[] = [
   'Bookmark',
@@ -49,10 +49,11 @@ const IconRadioGroup = ({ value, onChange }: IconRadioGroupProps) => {
             aria-label={iconName}
             title={iconName}
             className={cn(
-              'flex h-16 flex-col items-center justify-center gap-2 rounded-xl border text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
+              'flex h-16 flex-col items-center justify-center gap-2 rounded-xl border text-xs font-medium transition',
+              'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
               isSelected
-                ? 'border-primary/80 bg-primary/10 text-white'
-                : 'border-white/10 text-white/70 hover:border-white/30 hover:bg-white/5',
+                ? 'border-base-300 bg-primary text-primary-content'
+                : 'border-base-300/50 bg-primary/10 hover:border-base-300 hover:bg-primary/50',
             )}
             onClick={() => onChange?.(iconName)}
           >

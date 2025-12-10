@@ -1,6 +1,5 @@
 import { cn } from "@linknest/utils";
-import { Button, ContextMenu } from "@linknest/ui";
-import SvgIcon, { IconName } from "@/components/SvgIcon";
+import { Button, ContextMenu, SvgIcon, type IconName } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useTranslations } from "next-intl";
 import { PencilLine, Trash2 } from "lucide-react";
@@ -36,15 +35,15 @@ const Sidebar = ({
   const t = useTranslations('Sidebar');
 
   return (
-    <aside className={cn("flex h-screen w-64 flex-col border-r border-white/5 bg-[#050b16] text-white/80", className)}>
+    <aside className={cn("flex h-screen w-64 flex-col border-r border-base-300 bg-base-100 text-primary", className)}>
       <header className="px-6 py-5">
-        <div className="flex items-center gap-4 rounded-3xl border border-white/5 bg-white/2 px-4 py-3">
-          <div className="relative h-12 w-12 rounded-2xl bg-primary flex items-center justify-center">
-            <span className="text-2xl font-bold">LN</span>
+        <div className="flex items-center gap-4 rounded-xl border border-primary bg-base-100 px-4 py-3 shadow-xl">
+          <div className="relative h-12 w-12 rounded-md bg-primary flex items-center justify-center">
+            <span className="text-2xl font-bold text-primary-content">LN</span>
           </div>
           <div>
-            <p className="text-lg font-semibold text-white">LinkNest</p>
-            <p className="text-xs text-white/50">{t('yourBookmarkHub')}</p>
+            <p className="text-lg font-semibold text-base-content">LinkNest</p>
+            <p className="text-xs text-base-content/80">{t('yourBookmarkHub')}</p>
           </div>
         </div>
       </header>
@@ -74,14 +73,13 @@ const Sidebar = ({
             : undefined;
 
           const button = (
-            <Button
+            <button
               key={item.id ?? item.label}
-              variant="custom"
               className={cn(
-                "h-auto w-full justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
-                isActive
-                  ? "border-primary text-white"
-                  : "text-white/70 hover:bg-white/5 hover:text-white",
+                "group flex items-center h-auto w-full justify-start gap-3 rounded-md px-4 py-3 text-left text-sm font-medium shadow-2xl",
+                "transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral cursor-pointer",
+                "text-base-content/70 border border-base-300 hover:text-base-content hover:bg-base-200",
+                isActive && "bg-primary/90 text-primary-content border-primary-content hover:bg-primary/90 hover:text-primary-content"
               )}
               onClick={() => onSelect?.(item.id, item)}
               aria-pressed={isActive}
@@ -89,9 +87,9 @@ const Sidebar = ({
               {item.icon && <SvgIcon name={item.icon} className="h-5 w-5" />}
               <span className="flex-1 text-left">{item.label}</span>
               {item.count !== undefined && (
-                <span className="text-xs font-normal text-white/50">{item.count}</span>
+                <span className="text-xs font-normal">{item.count}</span>
               )}
-            </Button>
+            </button>
           );
 
           if (canUseContextMenu && menuItems) {
@@ -110,7 +108,7 @@ const Sidebar = ({
         {isAuthenticated && <Button
           variant="outline"
           color="primary"
-          className="w-full rounded-2xl py-3 text-sm font-semibold transition"
+          className="w-full rounded-md py-3 text-sm font-semibold transition"
           onClick={onCreateCategory}
         >
           {t('newCategory')}

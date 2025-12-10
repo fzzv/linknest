@@ -21,7 +21,7 @@ export interface SvgIconProps extends LucideProps {
 
 const FALLBACK_ICON = LucideIcons.Circle || (() => null)
 
-const SvgIcon: React.FC<SvgIconProps> = ({ name, size = 24, strokeWidth = 2, color, className, ...rest }) => {
+export const SvgIcon: React.FC<SvgIconProps> = ({ name, size = 24, strokeWidth = 2, color, className, ...rest }) => {
   // runtime 从导入的对象中取图标组件
   const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<LucideProps>>)[name] ?? FALLBACK_ICON
 

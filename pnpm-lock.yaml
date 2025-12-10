@@ -325,6 +325,9 @@ importers:
       daisyui:
         specifier: ^5.5.5
         version: 5.5.5
+      lucide-react:
+        specifier: ^0.543.0
+        version: 0.543.0(react@19.2.0)
       react:
         specifier: ^19.1.0
         version: 19.2.0

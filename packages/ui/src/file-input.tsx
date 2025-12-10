@@ -2,35 +2,18 @@
 
 import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@linknest/utils';
+import { INPUT_SIZES, INPUT_COLORS, INPUT_VARIANTS } from './common/constant';
 
 export interface FileInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
   label?: ReactNode;
   helperText?: ReactNode;
   error?: ReactNode;
-  size?: keyof typeof inputSizes;
-  color?: keyof typeof inputColors;
+  size?: keyof typeof INPUT_SIZES;
+  color?: keyof typeof INPUT_COLORS;
+  variant?: keyof typeof INPUT_VARIANTS;
   fullWidth?: boolean;
   wrapperClassName?: string;
 }
-
-const inputSizes = {
-  xs: 'input-xs',
-  sm: 'input-sm',
-  md: 'input-md',
-  lg: 'input-lg',
-  xl: 'input-xl',
-} as const;
-
-const inputColors = {
-  neutral: 'input-neutral',
-  primary: 'input-primary',
-  secondary: 'input-secondary',
-  accent: 'input-accent',
-  info: 'input-info',
-  success: 'input-success',
-  warning: 'input-warning',
-  error: 'input-error',
-} as const;
 
 export const FileInput = forwardRef<HTMLInputElement, FileInputProps>(function FileInput(
   {
@@ -39,6 +22,7 @@ export const FileInput = forwardRef<HTMLInputElement, FileInputProps>(function F
     error,
     size = 'md',
     color = 'neutral',
+    variant = 'custom',
     fullWidth,
     className,
     wrapperClassName,
@@ -48,15 +32,16 @@ export const FileInput = forwardRef<HTMLInputElement, FileInputProps>(function F
 ) {
   return (
     <label className={cn('flex flex-col gap-2', fullWidth && 'w-full', wrapperClassName)}>
-      {label ? <span className="text-sm font-medium text-slate-200">{label}</span> : null}
+      {label ? <span className="text-sm font-medium text-base-content">{label}</span> : null}
 
       <input
         ref={ref}
         type="file"
         className={cn(
           'file-input',
-          inputSizes[size],
-          inputColors[error ? 'error' : color],
+          INPUT_SIZES[size],
+          INPUT_VARIANTS[variant],
+          INPUT_COLORS[error ? 'error' : color],
           fullWidth && 'w-full',
           className,
         )}
