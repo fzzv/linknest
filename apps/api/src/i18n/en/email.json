@@ -1,0 +1,9 @@
+{
+  "name": "LinkNest",
+  "subject": "LinkNest Verification Code",
+  "content": "Your verification code is <b>{code}</b>, valid for {expiresInMinutes} minutes. If you did not request this, please ignore this email.",
+  "resetSubject": "LinkNest Password Reset Code",
+  "resetContent": "You are resetting your password. Your verification code is <b>{code}</b>, valid for {expiresInMinutes} minutes. If you did not request this, please ignore this email.",
+  "failedToSendVerificationEmail": "Failed to send verification email, please try again later",
+  "failedToSendPasswordResetEmail": "Failed to send password reset email, please try again later"
+}

@@ -1,3 +1,5 @@
 {
-  "sendVerificationCode": "Verification code sent successfully"
+  "sendVerificationCode": "Verification code sent successfully",
+  "resetPasswordCodeSent": "Password reset code sent",
+  "resetPasswordSuccess": "Password updated successfully. Please log in with your new password."
 }

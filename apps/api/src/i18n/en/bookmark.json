@@ -1,11 +1,11 @@
 {
   "defaultFolderName": "Default Category",
   "unnamedCategory": "Unnamed Category",
-  "missingUrl": "The url is missing for the node ${path}",
-  "missingType": "The type is missing or not supported for the node ${path}",
+  "missingUrl": "The url is missing for the node {path}",
+  "missingType": "The type is missing or not supported for the node {path}",
   "jsonParseError": "Failed to parse JSON content",
   "noContent": "No content found",
-  "invalidObject": "The object is invalid for the node ${path}",
+  "invalidObject": "The object is invalid for the node {path}",
   "invalidFormat": "JSON data should be an array of bookmarks, or an object with a children array",
   "uploadFileError": "Please upload a bookmark file or provide valid html/json content"
 }

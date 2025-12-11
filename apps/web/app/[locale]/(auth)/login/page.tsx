@@ -4,11 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, Transition } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMessage, TextField, Button } from '@linknest/ui';
-import { loginSchema, type LoginFormValues } from '@/schemas/auth';
-import { login as loginRequest } from '@/services/auth';
+import { loginSchema, resetPasswordSchema, type LoginFormValues, type ResetPasswordFormValues } from '@/schemas/auth';
+import { login as loginRequest, resetPassword, sendResetPasswordCode } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
 import { useTranslations } from 'next-intl';
 
@@ -22,15 +22,19 @@ export default function LoginPage() {
   const router = useRouter();
   const [message, messageHolder] = useMessage({ placement: 'top' });
   const t = useTranslations('Login');
+  const [mode, setMode] = useState<'login' | 'reset'>('login');
+  const [codeCooldown, setCodeCooldown] = useState(0);
+  const [sendingCode, setSendingCode] = useState(false);
   // useAuthStore with separate selectors, avoiding object creation that trips the getServerSnapshot warning in server components
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasJustLoggedInRef = useRef(false);
 
   const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
+    register: registerLogin,
+    handleSubmit: handleLoginSubmit,
+    formState: { errors: loginErrors, isSubmitting: isLoggingIn },
+    setValue: setLoginValue,
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -39,7 +43,27 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+  const {
+    register: registerReset,
+    handleSubmit: handleResetSubmit,
+    getValues: getResetValues,
+    setError: setResetError,
+    reset: resetResetForm,
+    formState: { errors: resetErrors, isSubmitting: isResetting },
+  } = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: '',
+      code: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  });
+
+  const emailValidationSchema = useMemo(() => loginSchema.pick({ email: true }), []);
+  const isResetMode = mode === 'reset';
+
+  const onLoginSubmit = handleLoginSubmit(async (values: LoginFormValues) => {
     try {
       const data = await loginRequest(values);
       hasJustLoggedInRef.current = true;
@@ -53,6 +77,46 @@ export default function LoginPage() {
         message.error(t('loginFailed'));
       }
     }
+  });
+
+  const onResetSubmit = handleResetSubmit(
+    async (values) => {
+      try {
+        await resetPassword(values);
+        message.success(t('resetSuccess'));
+        setMode('login');
+        resetResetForm({ email: '', code: '', newPassword: '', confirmPassword: '' });
+        setLoginValue('email', values.email);
+        setLoginValue('password', '');
+        setCodeCooldown(0);
+      } catch (error) {
+        message.error(error instanceof Error ? error.message : t('resetFailed'));
+      }
+    },
+    (formErrors) => {
+      const firstError = Object.values(formErrors)[0];
+      const msg = typeof firstError?.message === 'string' ? firstError.message : t('formError');
+      message.error(msg);
+    },
+  );
+
+  const handleSendResetCode = async () => {
+    const email = getResetValues('email');
+    const result = emailValidationSchema.safeParse({ email });
+    if (!result.success) {
+      setResetError('email', { message: result.error.issues[0]?.message || t('pleaseEnterValidEmail') });
+      return;
+    }
+    try {
+      setSendingCode(true);
+      await sendResetPasswordCode(email);
+      setCodeCooldown(60);
+      message.success(t('codeSent'));
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : t('codeSendingFailed'));
+    } finally {
+      setSendingCode(false);
+    }
   };
 
   useEffect(() => {
@@ -62,6 +126,17 @@ export default function LoginPage() {
     message.warning(t('doNotRepeatLogin'));
     router.replace('/');
   }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    if (codeCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCodeCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [codeCooldown]);
+
+  const formTitle = isResetMode ? t('resetTitle') : t('title');
+  const formDescription = isResetMode ? t('resetDescription') : t('description');
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 text-primary bg-base-200">
@@ -86,46 +161,123 @@ export default function LoginPage() {
           transition={{ ...motionConfig.transition, delay: 0.2 }}
         >
           <div className="space-y-2">
-            <h2 className="text-3xl font-semibold">{t('title')}</h2>
-            <p className="text-base-content/70">{t('description')}</p>
+            <h2 className="text-3xl font-semibold">{formTitle}</h2>
+            <p className="text-base-content/70">{formDescription}</p>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <TextField
-              label={t('email')}
-              type="email"
-              placeholder={t('emailPlaceholder')}
-              autoComplete="email"
-              {...register('email')}
-              error={errors.email?.message}
-            />
+          {isResetMode ? (
+            // 重置密码表单
+            <form className="space-y-6" onSubmit={onResetSubmit}>
+              <TextField
+                label={t('email')}
+                type="email"
+                placeholder={t('emailPlaceholder')}
+                autoComplete="email"
+                {...registerReset('email')}
+                error={resetErrors.email?.message}
+                actionSlot={(
+                  <Button
+                    type="button"
+                    onClick={handleSendResetCode}
+                    disabled={sendingCode || codeCooldown > 0 || isResetting}
+                    className="h-9 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {codeCooldown > 0 ? t('sentCode', { codeCooldown }) : t('sendCode')}
+                  </Button>
+                )}
+              />
 
-            <TextField
-              label={t('password')}
-              type="password"
-              placeholder={t('passwordPlaceholder')}
-              autoComplete="current-password"
-              {...register('password')}
-              error={errors.password?.message}
-              actionSlot={<Link href="#" className="text-sm text-primary hover:underline">{t('forgotPassword')}</Link>}
-            />
+              <TextField
+                label={t('code')}
+                placeholder={t('codePlaceholder')}
+                inputMode="numeric"
+                {...registerReset('code')}
+                error={resetErrors.code?.message}
+              />
 
-            <Button
-              type="submit"
-              color="primary"
-              disabled={isSubmitting}
-              className="h-12 w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSubmitting ? 'Signing in…' : t('login')}
-            </Button>
-          </form>
+              <TextField
+                label={t('newPassword')}
+                type="password"
+                placeholder={t('newPasswordPlaceholder')}
+                autoComplete="new-password"
+                {...registerReset('newPassword')}
+                error={resetErrors.newPassword?.message}
+              />
 
-          <p className="text-center text-sm text-base-content/70">
-            {t('dontHaveAccount')} {' '}
-            <Link href="/register" className="text-primary font-medium hover:underline">
-              {t('signUp')}
-            </Link>
-          </p>
+              <TextField
+                label={t('confirmPassword')}
+                type="password"
+                placeholder={t('confirmPasswordPlaceholder')}
+                autoComplete="new-password"
+                {...registerReset('confirmPassword')}
+                error={resetErrors.confirmPassword?.message}
+              />
+
+              <Button
+                type="submit"
+                color="primary"
+                disabled={isResetting}
+                className="h-12 w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isResetting ? t('resetting') : t('confirmReset')}
+              </Button>
+            </form>
+          ) : (
+            // 登录表单
+            <form className="space-y-6" onSubmit={onLoginSubmit}>
+              <TextField
+                label={t('email')}
+                type="email"
+                placeholder={t('emailPlaceholder')}
+                autoComplete="email"
+                {...registerLogin('email')}
+                error={loginErrors.email?.message}
+              />
+
+              <TextField
+                label={t('password')}
+                type="password"
+                placeholder={t('passwordPlaceholder')}
+                autoComplete="current-password"
+                {...registerLogin('password')}
+                error={loginErrors.password?.message}
+                actionSlot={(
+                  <button
+                    type="button"
+                    className="text-sm text-primary hover:underline cursor-pointer"
+                    onClick={() => setMode('reset')}
+                  >
+                    {t('forgotPassword')}
+                  </button>
+                )}
+              />
+
+              <Button
+                type="submit"
+                color="primary"
+                disabled={isLoggingIn}
+                className="h-12 w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isLoggingIn ? 'Signing in…' : t('login')}
+              </Button>
+            </form>
+          )}
+
+          {isResetMode ? (
+            <p className="text-center text-sm text-base-content/70">
+              {t('rememberPassword')} {' '}
+              <button type="button" className="text-primary font-medium hover:underline cursor-pointer" onClick={() => setMode('login')}>
+                {t('backToLogin')}
+              </button>
+            </p>
+          ) : (
+            <p className="text-center text-sm text-base-content/70">
+              {t('dontHaveAccount')} {' '}
+              <Link href="/register" className="text-primary font-medium hover:underline cursor-pointer">
+                {t('signUp')}
+              </Link>
+            </p>
+          )}
         </motion.div>
       </div>
     </div>
