@@ -21,7 +21,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly configurationService: ConfigurationService,
     private readonly i18n: I18nService
-  ) {}
+  ) { }
 
   async getUsers() {
     return this.prisma.user.findMany({
@@ -163,15 +163,53 @@ export class UserService {
       throw new BadRequestException(this.i18n.t('error.passwordsDoNotMatch'));
     }
 
+    const recentPasswordHistories = await this.prisma.passwordHistory.findMany({
+      where: { userId: existingUser.id },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+      select: { password: true },
+    });
+
+    const recentPasswords = [existingUser.password, ...recentPasswordHistories.map((history) => history.password)];
+    for (const password of recentPasswords) {
+      const isReused = await verifyPassword(newPassword, password);
+      if (isReused) {
+        throw new BadRequestException(this.i18n.t('error.passwordRecentlyUsed'));
+      }
+    }
+
+    // 先校验是否最近三次的密码 再校验验证码，避免需要重复发验证码
     const isValidCode = await this.verificationCodeService.verifyCode(email, code);
     if (!isValidCode) {
       throw new BadRequestException(this.i18n.t('error.invalidCode'));
     }
 
     const hashedPassword = await hashPassword(newPassword);
-    await this.prisma.user.update({
-      where: { id: existingUser.id },
-      data: { password: hashedPassword },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: existingUser.id },
+        data: { password: hashedPassword },
+      });
+
+      await tx.passwordHistory.create({
+        data: {
+          userId: existingUser.id,
+          password: existingUser.password,
+        },
+      });
+
+      const outdatedPasswords = await tx.passwordHistory.findMany({
+        where: { userId: existingUser.id },
+        orderBy: { createdAt: 'desc' },
+        skip: 3,
+        select: { id: true },
+      });
+
+      if (outdatedPasswords.length > 0) {
+        await tx.passwordHistory.deleteMany({
+          where: { id: { in: outdatedPasswords.map((item) => item.id) } },
+        });
+      }
     });
 
     return { message: this.i18n.t('message.resetPasswordSuccess') };

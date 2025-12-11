@@ -5,5 +5,6 @@
   "invalidRefreshToken": "Refresh Token 无效",
   "userNotFound": "用户不存在",
   "tryAgainLater": "请 {cooldown} 秒后再试",
-  "passwordsDoNotMatch": "两次输入的密码不一致"
+  "passwordsDoNotMatch": "两次输入的密码不一致",
+  "passwordRecentlyUsed": "新密码不能与近三次使用过的密码相同"
 }

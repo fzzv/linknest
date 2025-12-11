@@ -5,5 +5,6 @@
   "invalidRefreshToken": "The refresh token is invalid",
   "userNotFound": "The user not found",
   "tryAgainLater": "Please try again in {cooldown} seconds",
-  "passwordsDoNotMatch": "Passwords do not match"
+  "passwordsDoNotMatch": "Passwords do not match",
+  "passwordRecentlyUsed": "The new password cannot match any of the last three passwords"
 }
