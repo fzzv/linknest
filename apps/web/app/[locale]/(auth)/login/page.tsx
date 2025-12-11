@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMessage, TextField, Button } from '@linknest/ui';
-import { loginSchema, resetPasswordSchema, type LoginFormValues, type ResetPasswordFormValues } from '@/schemas/auth';
+import { createLoginSchema, createResetPasswordSchema, type LoginFormValues, type ResetPasswordFormValues } from '@/schemas/auth';
 import { login as loginRequest, resetPassword, sendResetPasswordCode } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
 import { useTranslations } from 'next-intl';
@@ -29,6 +29,9 @@ export default function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasJustLoggedInRef = useRef(false);
+
+  const loginSchema = useMemo(() => createLoginSchema(t), [t]);
+  const resetPasswordSchema = useMemo(() => createResetPasswordSchema(t), [t]);
 
   const {
     register: registerLogin,
@@ -60,7 +63,7 @@ export default function LoginPage() {
     },
   });
 
-  const emailValidationSchema = useMemo(() => loginSchema.pick({ email: true }), []);
+  const emailValidationSchema = useMemo(() => loginSchema.pick({ email: true }), [loginSchema]);
   const isResetMode = mode === 'reset';
 
   const onLoginSubmit = handleLoginSubmit(async (values: LoginFormValues) => {

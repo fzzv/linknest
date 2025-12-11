@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { loginSchema, registerSchema, type RegisterFormValues } from '@/schemas/auth';
+import { createLoginSchema, createRegisterSchema, type RegisterFormValues } from '@/schemas/auth';
 import { registerAccount, sendVerificationCode } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
 import { useTranslations } from 'next-intl';
@@ -21,6 +21,8 @@ export default function RegisterPage() {
   const hasJustRegisteredRef = useRef(false);
 
   const t = useTranslations('Register');
+  const loginSchema = useMemo(() => createLoginSchema(t), [t]);
+  const registerSchema = useMemo(() => createRegisterSchema(t), [t]);
 
   const {
     register,
@@ -58,7 +60,7 @@ export default function RegisterPage() {
   }, [codeCooldown]);
 
   // 邮箱验证
-  const emailValidationSchema = useMemo(() => loginSchema.pick({ email: true }), []);
+  const emailValidationSchema = useMemo(() => loginSchema.pick({ email: true }), [loginSchema]);
 
   // 发送验证码
   const handleSendCode = async () => {
