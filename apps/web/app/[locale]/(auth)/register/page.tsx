@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMessage, TextField, Button } from '@linknest/ui';
+import { useMessage, TextField, Button, Status, type StatusColor } from '@linknest/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -29,6 +29,7 @@ export default function RegisterPage() {
     handleSubmit,
     getValues,
     setError,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -40,6 +41,30 @@ export default function RegisterPage() {
       confirmPassword: '',
     },
   });
+
+  const password = watch('password') ?? '';
+  const passwordChecks = {
+    hasMinLength: password.length >= 8,
+    hasUppercaseAndNumber: /(?=.*[A-Z])(?=.*\d)/u.test(password),
+  };
+
+  const getPasswordStatusColor = (rulePassed: boolean): StatusColor => {
+    if (!password) return 'custom';
+    return rulePassed ? 'success' : 'error';
+  };
+
+  const passwordRequirements = [
+    {
+      id: 'minLength',
+      met: passwordChecks.hasMinLength,
+      label: t('passwordRequirementLength'),
+    },
+    {
+      id: 'uppercaseNumber',
+      met: passwordChecks.hasUppercaseAndNumber,
+      label: t('passwordRequirementUppercaseNumber'),
+    },
+  ];
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -170,7 +195,14 @@ export default function RegisterPage() {
                 {...register('password')}
                 error={errors.password?.message}
               />
-              <p className="text-xs text-base-content/70">{t('passwordRequirements')}</p>
+              <div className="space-y-1 text-xs text-base-content/70">
+                {passwordRequirements.map((rule) => (
+                  <div key={rule.id} className="flex items-center gap-2">
+                    <Status color={getPasswordStatusColor(rule.met)} />
+                    <span>{rule.label}</span>
+                  </div>
+                ))}
+              </div>
 
               <TextField
                 label={t('confirmPassword')}

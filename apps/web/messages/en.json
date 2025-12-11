@@ -61,6 +61,8 @@
     "passwordPlaceholder": "Enter your password",
     "confirmPassword": "Confirm Password",
     "confirmPasswordPlaceholder": "Confirm your password",
+    "passwordRequirementLength": "At least 8 characters long.",
+    "passwordRequirementUppercaseNumber": "Includes an uppercase letter and a number.",
     "passwordRequirements": "Password must be at least 8 characters long and contain at least one uppercase letter and one number",
     "confirmPasswordRequirements": "Passwords do not match",
     "creatingAccount": "Creating Account…",

@@ -61,6 +61,8 @@
     "passwordPlaceholder": "输入您的密码",
     "confirmPassword": "确认密码",
     "confirmPasswordPlaceholder": "确认您的密码",
+    "passwordRequirementLength": "密码至少 8 位字符。",
+    "passwordRequirementUppercaseNumber": "需要包含大写字母和数字。",
     "passwordRequirements": "密码至少 8 位，且包含大写字母和数字",
     "confirmPasswordRequirements": "两次输入的密码不一致",
     "creatingAccount": "创建账户中…",
