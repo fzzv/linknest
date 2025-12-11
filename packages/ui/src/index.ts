@@ -12,3 +12,4 @@ export * from './input-field';
 export * from './context-menu';
 export * from './upload';
 export * from './svg-icon';
+export * from './status';

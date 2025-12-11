@@ -81,3 +81,29 @@ export const SELECT_VARIANTS = {
   ghost: 'select-ghost',
   custom: ''
 } as const;
+
+export const STATUS_COLORS = {
+  neutral: 'status-neutral',
+  primary: 'status-primary',
+  secondary: 'status-secondary',
+  accent: 'status-accent',
+  info: 'status-info',
+  success: 'status-success',
+  warning: 'status-warning',
+  error: 'status-error',
+  custom: '',
+} as const;
+
+export const STATUS_SIZES = {
+  xs: 'status-xs',
+  sm: 'status-sm',
+  md: 'status-md',
+  lg: 'status-lg',
+  xl: 'status-xl',
+} as const;
+
+export const STATUS_VARIANTS = {
+  ping: 'animate-ping',
+  bounce: 'animate-bounce',
+  custom: ''
+} as const;
