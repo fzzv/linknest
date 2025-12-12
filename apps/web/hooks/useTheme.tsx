@@ -57,14 +57,16 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const isValidTheme = (value: unknown): value is ThemeName =>
   typeof value === 'string' && (DAISY_THEMES as readonly string[]).includes(value);
 
-const getInitialTheme = (): ThemeName => {
-  if (typeof window === 'undefined') return DEFAULT_THEME;
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return isValidTheme(stored) ? stored : DEFAULT_THEME;
-};
-
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<ThemeName>(getInitialTheme);
+  const [theme, setTheme] = useState<ThemeName>(DEFAULT_THEME);
+
+  useEffect(() => {
+    // Read persisted theme after mount to avoid SSR/client mismatches
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (isValidTheme(stored)) {
+      setTheme(stored);
+    }
+  }, []);
 
   useEffect(() => {
     const nextTheme = isValidTheme(theme) ? theme : DEFAULT_THEME;
