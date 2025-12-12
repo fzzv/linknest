@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { motion, Transition } from 'framer-motion';
 import { useMessage, TextField, Button, Status, type StatusColor } from '@linknest/ui';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +12,12 @@ import { createLoginSchema, createRegisterSchema, type RegisterFormValues } from
 import { registerAccount, sendVerificationCode } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
 import { useTranslations } from 'next-intl';
+
+const motionConfig = {
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: 'easeOut' } as Transition,
+};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -128,12 +135,16 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-base-100 text-primary">
       {messageHolder}
-      <div className="flex items-center gap-2 text-xl font-semibold pt-10 pl-10">
+      <motion.div className="flex items-center gap-2 text-xl font-semibold pt-10 pl-10" {...motionConfig}>
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-neutral text-sm font-bold">LN</span>
         LinkNest
-      </div>
+      </motion.div>
       <div className="mx-auto flex max-w-2xl gap-10 px-6 py-10 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex-1 items-center justify-center hidden lg:block">
+        <motion.div
+          className="flex-1 items-center justify-center hidden lg:block"
+          {...motionConfig}
+          transition={{ ...motionConfig.transition, delay: 0.1 }}
+        >
           <Image
             src="/cover.svg"
             alt="LinkNest cover"
@@ -142,16 +153,29 @@ export default function RegisterPage() {
             className="h-auto w-full rounded-2xl object-contain"
             priority
           />
-        </div>
+        </motion.div>
 
-        <div className="flex-1">
+        <motion.div
+          className="flex-1"
+          {...motionConfig}
+          transition={{ ...motionConfig.transition, delay: 0.2 }}
+        >
           <div className="rounded-[32px] bg-base-200 p-8 shadow-2xl shadow-black/60">
-            <div className="space-y-2 text-center lg:text-left">
+            <motion.div
+              className="space-y-2 text-center lg:text-left"
+              {...motionConfig}
+              transition={{ ...motionConfig.transition, delay: 0.25 }}
+            >
               <h1 className="text-3xl font-semibold">{t('title')}</h1>
               <p className="text-base-content/70">{t('description')}</p>
-            </div>
+            </motion.div>
 
-            <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+            <motion.form
+              className="mt-8 space-y-5"
+              onSubmit={onSubmit}
+              {...motionConfig}
+              transition={{ ...motionConfig.transition, delay: 0.3 }}
+            >
               <TextField
                 size="md"
                 label={t('nickname')}
@@ -221,16 +245,20 @@ export default function RegisterPage() {
               >
                 {isSubmitting ? t('creatingAccount') : t('createAccount')}
               </Button>
-            </form>
+            </motion.form>
 
-            <p className="mt-6 text-center text-sm text-base-content/70">
+            <motion.p
+              className="mt-6 text-center text-sm text-base-content/70"
+              {...motionConfig}
+              transition={{ ...motionConfig.transition, delay: 0.35 }}
+            >
               {t('alreadyHaveAccount')} {' '}
               <Link href="/login" className="text-primary font-medium hover:underline">
                 {t('login')}
               </Link>
-            </p>
+            </motion.p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
