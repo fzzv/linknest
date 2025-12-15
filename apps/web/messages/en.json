@@ -200,6 +200,7 @@
     "title": "Switch Theme",
     "description": "Pick one of the 35 themes. Your choice applies immediately. ",
     "currentTheme": "Current theme is",
+    "reset": "Reset",
     "cancel": "Cancel"
   },
   "UserProfileModal": {

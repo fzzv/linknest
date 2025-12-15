@@ -200,6 +200,7 @@
     "title": "切换主题",
     "description": "从 35 个主题中选择一个，点击后立即生效。",
     "currentTheme": "当前主题为",
+    "reset": "重置",
     "cancel": "关闭"
   },
   "UserProfileModal": {
