@@ -79,7 +79,7 @@ export default function RegisterPage() {
     if (hasJustRegisteredRef.current) return;
     message.warning(t('pleaseLogOutFirst'));
     router.replace('/');
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, message, t]);
 
   useEffect(() => {
     if (codeCooldown <= 0) {

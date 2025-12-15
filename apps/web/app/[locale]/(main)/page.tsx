@@ -357,11 +357,11 @@ export default function Home() {
   }, [sidebarItems]);
   const activeCategoryLabel = sidebarLabelMap.get(activeCategoryId) ?? t('allBookmarks');
 
-  const handleEditLink = (id?: number) => {
+  const handleEditLink = useCallback((id?: number) => {
     if (!id) return;
     setLinkModal({ open: true, linkId: id });
-  };
-  const handleDeleteLink = (id?: number) => {
+  }, [])
+  const handleDeleteLink = useCallback((id?: number) => {
     if (!id || !isAuthenticated) return;
 
     Modal.confirm({
@@ -385,7 +385,7 @@ export default function Home() {
         }
       },
     });
-  };
+  }, [])
 
   const handleDeleteCategory = (id?: number) => {
     if (!id || !isAuthenticated) return;

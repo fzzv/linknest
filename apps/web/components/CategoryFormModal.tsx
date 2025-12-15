@@ -58,7 +58,7 @@ const CategoryFormModal = ({
     if (open && !isEditMode) {
       reset(DEFAULT_VALUES);
     }
-  }, [DEFAULT_VALUES, isEditMode, open, reset]);
+  }, [isEditMode, open, reset]);
 
   useEffect(() => {
     if (!open || !isEditMode || !categoryId) return;

@@ -128,7 +128,7 @@ export default function LoginPage() {
     if (hasJustLoggedInRef.current) return;
     message.warning(t('doNotRepeatLogin'));
     router.replace('/');
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, message, t]);
 
   useEffect(() => {
     if (codeCooldown <= 0) return;
