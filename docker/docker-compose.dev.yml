@@ -3,7 +3,7 @@ name: linknest
 services:
   linknest-server:
     build:
-      target: dev
+      dockerfile: apps/api/Dockerfile.dev
     volumes:
       - ..:/app
       - linknest_root_node_modules:/app/node_modules
@@ -27,7 +27,7 @@ services:
 
   linknest-web:
     build:
-      target: dev
+      dockerfile: apps/web/Dockerfile.dev
     volumes:
       - ..:/app
       - linknest_root_node_modules:/app/node_modules

@@ -2,11 +2,103 @@ name: linknest
 
 services:
   mysql:
+    image: mysql:8.4
+    container_name: linknest-mysql
     restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_EXPOSE_PORT:-3316}:3306"
+    volumes:
+      - linknest_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p\"$MYSQL_ROOT_PASSWORD\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - linknest
   redis:
+    image: redis:7.4-alpine
+    container_name: linknest-redis
     restart: unless-stopped
+    env_file:
+      - ./.env
+    command:
+      [
+        "sh",
+        "-c",
+        "if [ -z \"$${REDIS_PASSWORD}\" ]; then redis-server --appendonly yes; else redis-server --appendonly yes --requirepass \"$${REDIS_PASSWORD}\"; fi",
+      ]
+    ports:
+      - "${REDIS_EXPOSE_PORT:-6389}:6379"
+    volumes:
+      - linknest_redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "if [ -z \"$REDIS_PASSWORD\" ]; then redis-cli ping | grep PONG; else redis-cli -a \"$REDIS_PASSWORD\" ping | grep PONG; fi"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - linknest
   linknest-server:
+    image: linknest-server
+    container_name: linknest-server
     restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}"
+      PORT: "3000"
+      MYSQL_HOST: "mysql"
+      MYSQL_PORT: "3306"
+      MYSQL_DB: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    ports:
+      - "${API_EXPOSE_PORT:-3000}:3000"
+    volumes:
+      - linknest_uploads:/app/apps/api/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - linknest
   linknest-web:
+    image: linknest-web
+    container_name: linknest-web
     restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      PORT: "3001"
+      NEXT_PUBLIC_API_BASE_URL: "${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3000}"
+    ports:
+      - "${WEB_EXPOSE_PORT:-3001}:3001"
+    depends_on:
+      - linknest-server
+    networks:
+      - linknest
 
+volumes:
+  linknest_mysql:
+  linknest_redis:
+  linknest_uploads:
+
+networks:
+  linknest:
+    driver: bridge

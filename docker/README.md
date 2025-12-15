@@ -2,9 +2,15 @@
 
 LinkNest 的 Docker 一键启动方案（MySQL + Redis + API + Web）
 
-- `docker-compose.yml`：基础服务定义（默认按生产方式运行）
-- `docker-compose.dev.yml`：开发模式覆盖（挂载代码、热更新）
-- `docker-compose.prod.yml`：生产模式覆盖（主要是 `restart` 策略等）
+- `docker-compose.yml`：基础服务定义（本地/通用）
+- `docker-compose.dev.yml`：开发模式覆盖（挂载代码、热更新，使用 `Dockerfile.dev`）
+- `docker-compose.prod.yml`：生产环境定义（使用 Turbo Prune 构建，启用 `restart: unless-stopped`）
+
+Dockerfile 位置：
+- `apps/web/Dockerfile`：Web 生产镜像（Turbo Prune）
+- `apps/web/Dockerfile.dev`：Web 开发镜像
+- `apps/api/Dockerfile`：API 生产镜像（Turbo Prune）
+- `apps/api/Dockerfile.dev`：API 开发镜像
 
 > 项目名（compose name）：`linknest`
 >
@@ -39,11 +45,12 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up 
 ### 生产环境（pro）
 
 ```bash
-docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d --build
+docker compose -f docker/docker-compose.prod.yml up -d --build
 ```
 
 特点：
 - 以生产方式启动，并启用 `restart: unless-stopped`
+- API/Web 镜像构建使用 `turbo prune --docker`，只打包运行所需的最小工作区
 
 ## 3 访问
 
@@ -66,7 +73,7 @@ Prisma: `packages/db/generated` 中的 Prisma Client 可能包含 Windows 二进
 如需手动执行（示例为生产组合）：
 
 ```bash
-docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml exec linknest-server sh -lc "cd /app/packages/db && node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma"
+docker compose -f docker/docker-compose.prod.yml exec linknest-server sh -lc "cd /app/packages/db && node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma"
 ```
 
 ## 5 常用命令
@@ -74,18 +81,17 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml ex
 查看日志：
 
 ```bash
-docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml logs -f linknest-server
+docker compose -f docker/docker-compose.prod.yml logs -f linknest-server
 ```
 
 停止并移除容器（保留数据卷）：
 
 ```bash
-docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml down
+docker compose -f docker/docker-compose.prod.yml down
 ```
 
 停止并移除容器 + 清理数据卷（会删除 MySQL/Redis 数据）：
 
 ```bash
-docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml down -v
+docker compose -f docker/docker-compose.prod.yml down -v
 ```
-
