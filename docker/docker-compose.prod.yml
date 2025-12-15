@@ -1,0 +1,12 @@
+name: linknest
+
+services:
+  mysql:
+    restart: unless-stopped
+  redis:
+    restart: unless-stopped
+  linknest-server:
+    restart: unless-stopped
+  linknest-web:
+    restart: unless-stopped
+

@@ -1,0 +1,55 @@
+name: linknest
+
+services:
+  linknest-server:
+    build:
+      target: dev
+    volumes:
+      - ..:/app
+      - linknest_root_node_modules:/app/node_modules
+      - linknest_api_node_modules:/app/apps/api/node_modules
+      - linknest_web_node_modules:/app/apps/web/node_modules
+      - linknest_db_node_modules:/app/packages/db/node_modules
+      - linknest_ui_node_modules:/app/packages/ui/node_modules
+      - linknest_utils_node_modules:/app/packages/utils/node_modules
+      - linknest_eslint_config_node_modules:/app/packages/eslint-config/node_modules
+      - linknest_jest_config_node_modules:/app/packages/jest-config/node_modules
+      - linknest_typescript_config_node_modules:/app/packages/typescript-config/node_modules
+      - linknest_db_generated:/app/packages/db/generated
+      - linknest_uploads:/app/apps/api/uploads
+    command: >
+      sh -c
+      "cd /app/packages/db
+      && node_modules/.bin/prisma generate --schema prisma/schema.prisma --generator client
+      && node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma
+      && pnpm --filter @linknest/db build
+      && pnpm --filter api dev"
+
+  linknest-web:
+    build:
+      target: dev
+    volumes:
+      - ..:/app
+      - linknest_root_node_modules:/app/node_modules
+      - linknest_api_node_modules:/app/apps/api/node_modules
+      - linknest_web_node_modules:/app/apps/web/node_modules
+      - linknest_db_node_modules:/app/packages/db/node_modules
+      - linknest_ui_node_modules:/app/packages/ui/node_modules
+      - linknest_utils_node_modules:/app/packages/utils/node_modules
+      - linknest_eslint_config_node_modules:/app/packages/eslint-config/node_modules
+      - linknest_jest_config_node_modules:/app/packages/jest-config/node_modules
+      - linknest_typescript_config_node_modules:/app/packages/typescript-config/node_modules
+      - linknest_db_generated:/app/packages/db/generated
+    command: ["sh", "-c", "pnpm --filter web dev"]
+
+volumes:
+  linknest_root_node_modules:
+  linknest_api_node_modules:
+  linknest_web_node_modules:
+  linknest_db_node_modules:
+  linknest_ui_node_modules:
+  linknest_utils_node_modules:
+  linknest_eslint_config_node_modules:
+  linknest_jest_config_node_modules:
+  linknest_typescript_config_node_modules:
+  linknest_db_generated:

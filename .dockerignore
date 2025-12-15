@@ -1,0 +1,16 @@
+.vscode/
+.github/
+.git/
+.env*
+.turbo
+.DS_Store
+*.log
+
+**/node_modules/
+**/.pnpm-store/
+**/dist/
+**/coverage/
+
+apps/web/.next
+apps/web/out
+apps/api/uploads
