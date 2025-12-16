@@ -21,6 +21,7 @@ icon 支持 url 和 base64 两种格式。
         "type": "link",
         "title": "title",
         "url": "url",
+        "description": "描述",
         "icon": "图标，支持url和base64"
       },
       {
@@ -41,6 +42,7 @@ icon 支持 url 和 base64 两种格式。
     "type": "link",
     "title": "title",
     "url": "url",
+    "description": "描述",
     "icon": "图标，支持url和base64"
   }
 ]
