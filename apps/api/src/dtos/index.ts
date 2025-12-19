@@ -3,6 +3,7 @@ export * from './register-user.dto';
 export * from './send-verification-code.dto';
 export * from './refresh-token.dto';
 export * from './user-response.dto';
+export * from './reset-password.dto';
 export * from './category.dto';
 export * from './link.dto';
 export * from './import-bookmarks.dto';

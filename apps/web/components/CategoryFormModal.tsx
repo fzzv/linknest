@@ -36,6 +36,7 @@ const CategoryFormModal = ({
 }: CategoryFormModalProps) => {
   const t = useTranslations('CategoryFormModal');
   const [internalMessage, messageHolder] = useMessage({ placement: 'top' });
+  // 关闭弹窗后的提示用message
   const message = messageApi ?? internalMessage;
   const isEditMode = mode === 'edit';
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
@@ -57,7 +58,7 @@ const CategoryFormModal = ({
     if (open && !isEditMode) {
       reset(DEFAULT_VALUES);
     }
-  }, [DEFAULT_VALUES, isEditMode, open, reset]);
+  }, [isEditMode, open, reset]);
 
   useEffect(() => {
     if (!open || !isEditMode || !categoryId) return;
@@ -73,14 +74,14 @@ const CategoryFormModal = ({
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : t('loadDetailFailed');
-        message.error(errorMessage);
+        internalMessage.error(errorMessage);
       } finally {
         setIsLoadingDetail(false);
       }
     };
 
     void fetchDetail();
-  }, [categoryId, isEditMode, message, open, reset, t]);
+  }, [categoryId, isEditMode, internalMessage, open, reset, t]);
 
   const handleClose = () => {
     reset(DEFAULT_VALUES);
@@ -91,7 +92,7 @@ const CategoryFormModal = ({
     try {
       if (isEditMode) {
         if (!categoryId) {
-          message.error(t('loadDetailFailed'));
+          internalMessage.error(t('loadDetailFailed'));
           return;
         }
         await updateCategory(categoryId, values);
@@ -109,7 +110,7 @@ const CategoryFormModal = ({
         : isEditMode
           ? t('updateFailed')
           : t('createFailed');
-      message.error(errorMessage);
+      internalMessage.error(errorMessage);
     }
   };
 
@@ -141,29 +142,38 @@ const CategoryFormModal = ({
         </>
       )}
     >
-      {messageApi ? null : messageHolder}
+      {messageHolder}
       <form
         id="create-category-form"
         className="grid grid-cols-1 gap-4"
         onSubmit={handleSubmit(onSubmit)}
       >
         {isEditMode && isLoadingDetail ? (
-          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm text-white/70">
+          <div className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm text-primary-content">
             <span className="loading loading-spinner loading-sm" aria-hidden="true" />
             <span>{t('loadingDetail')}</span>
           </div>
         ) : null}
+        <div className='grid grid-cols-2 gap-4'>
+          <InputField
+            label={t('nameLabel')}
+            placeholder={t('namePlaceholder')}
+            {...register('name')}
+            error={errors.name?.message}
+          />
 
-        <InputField
-          label={t('nameLabel')}
-          placeholder={t('namePlaceholder')}
-          {...register('name')}
-          fullWidth
-          error={errors.name?.message}
-        />
+          <InputField
+            label={t('sortOrderLabel')}
+            type="number"
+            inputMode="numeric"
+            placeholder={t('sortOrderPlaceholder')}
+            {...register('sortOrder')}
+            error={errors.sortOrder?.message}
+          />
+        </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-white">{t('iconLabel')}</p>
+          <p className="text-sm font-medium text-base-content">{t('iconLabel')}</p>
           <Controller
             name="icon"
             control={control}
@@ -177,18 +187,9 @@ const CategoryFormModal = ({
           {errors.icon?.message ? (
             <p className="text-xs text-error">{errors.icon.message}</p>
           ) : (
-            <p className="text-xs text-white/60">{t('iconHelper')}</p>
+            <p className="text-xs text-base-content/50">{t('iconHelper')}</p>
           )}
         </div>
-
-        <InputField
-          label={t('sortOrderLabel')}
-          type="number"
-          inputMode="numeric"
-          placeholder={t('sortOrderPlaceholder')}
-          {...register('sortOrder')}
-          error={errors.sortOrder?.message}
-        />
       </form>
     </Modal>
   );

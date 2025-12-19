@@ -1,11 +1,11 @@
 {
   "defaultFolderName": "默认分类",
   "unnamedCategory": "未命名分类",
-  "missingUrl": "节点 ${path} 缺少 url",
-  "missingType": "节点 ${path} 缺少 type 或 type 不支持",
+  "missingUrl": "节点 {path} 缺少 url",
+  "missingType": "节点 {path} 缺少 type 或 type 不支持",
   "jsonParseError": "JSON 内容解析失败",
   "noContent": "未解析到书签内容",
-  "invalidObject": "节点 ${path} 不是有效的对象",
+  "invalidObject": "节点 {path} 不是有效的对象",
   "invalidFormat": "JSON 数据格式应为书签数组，或包含 children 的对象",
   "uploadFileError": "请上传书签文件或提供符合要求的 html/json 内容"
 }

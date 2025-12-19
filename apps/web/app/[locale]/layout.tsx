@@ -4,6 +4,7 @@ import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import localFont from 'next/font/local';
+import { DEFAULT_THEME, ThemeProvider } from '@/hooks/useTheme';
 import '../globals.css';
 
 const geistSans = localFont({
@@ -45,9 +46,11 @@ export default async function LocaleLayout({
   }
   setRequestLocale(locale);
   return (
-    <html lang={locale}>
+    <html lang={locale} data-theme={DEFAULT_THEME}>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <ThemeProvider>
+          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

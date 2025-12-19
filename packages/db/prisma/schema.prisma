@@ -7,6 +7,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "windows"]
 }
 
 generator docs {
@@ -30,9 +31,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   // --- 新增关联 ---
-  categories Category[] // 用户拥有的分类
-  links      Link[] // 用户拥有的链接（方便统计总数或全局搜索）
-  files      File[]
+  categories        Category[] // 用户拥有的分类
+  links             Link[] // 用户拥有的链接（方便统计总数或全局搜索）
+  files             File[]
+  passwordHistories PasswordHistory[]
 }
 
 model VerificationCode {
@@ -171,4 +173,19 @@ model FileAttachment {
   @@index([entityType, entityId])
   // 查某个文件被挂在哪些实体上（用于清理）
   @@index([fileId])
+}
+
+// --------------------------------------
+// 密码历史表：记录用户密码历史
+// 用于修改密码时不能与近三次密码相同
+// --------------------------------------
+model PasswordHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  password  String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt]) // 复合索引 查询最近的三个密码更快
 }

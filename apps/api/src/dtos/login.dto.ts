@@ -8,6 +8,6 @@ export class LoginDto {
 
   @ApiProperty({ example: 'Passw0rd', description: '登录密码' })
   @IsString({ message: '密码格式不正确' })
-  @MinLength(6, { message: '密码至少 6 位' })
+  @MinLength(8, { message: '密码至少 8 位' })
   password!: string;
 }

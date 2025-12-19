@@ -106,7 +106,7 @@ export function ImportBookmarksModal({ open, onClose, onImported }: ImportBookma
       >
         {insideMessageHolder}
         <div className="space-y-4">
-          <div className="rounded-2xl border border-white/5 bg-white/2 px-4 py-3 text-sm text-white/80">
+          <div className="rounded-xl border border-base-300 bg-base-100 px-4 py-3 text-sm text-base-content">
             {t('description')}
           </div>
 
@@ -116,7 +116,6 @@ export function ImportBookmarksModal({ open, onClose, onImported }: ImportBookma
             onFileSelect={handleSelectFile}
             description={t('dropDescription')}
             hint={t('hint')}
-            className="border-white/10"
           >
             {t('dropTitle')}
           </Upload>
@@ -124,22 +123,24 @@ export function ImportBookmarksModal({ open, onClose, onImported }: ImportBookma
           {selectedFile ? (
             <div className="flex items-center justify-between rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3">
               <div className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
-                <div className="text-sm text-white">
-                  <p className="font-semibold">{selectedFile.name}</p>
-                  <p className="text-xs text-white/60">{formatFileSize(selectedFile.size)}</p>
+                <span className="h-2 w-2 rounded-full bg-base-content" aria-hidden="true" />
+                <div className="text-sm">
+                  <p className="font-semibold text-base-content">{selectedFile.name}</p>
+                  <p className="text-xs text-base-content/50">{formatFileSize(selectedFile.size)}</p>
                 </div>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                color="error"
                 type="button"
                 onClick={() => setSelectedFile(null)}
-                className="text-xs font-semibold text-white/70 transition hover:text-white"
+                className="text-xs font-semibold"
               >
                 {t('remove')}
-              </button>
+              </Button>
             </div>
           ) : (
-            <p className="text-xs text-white/50">{t('filePlaceholder')}</p>
+            <p className="text-xs text-base-content/50">{t('filePlaceholder')}</p>
           )}
         </div>
       </Modal>

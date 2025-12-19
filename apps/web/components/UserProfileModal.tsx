@@ -133,32 +133,29 @@ export function UserProfileModal({ open, onClose }: UserProfileModalProps) {
           className="space-y-5"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col justify-center items-center gap-4">
             <Upload
               variant="avatar"
               accept="image/*"
               value={avatarValue ?? undefined}
               onFileSelect={handleUploadAvatar}
               overlayText={t('changeAvatar')}
-              className="border border-dashed border-white/10 bg-white/5"
               disabled={uploading || isSubmitting}
             />
             <div className="flex flex-1 flex-col gap-2">
-              <p className="text-sm text-white/70">{t('avatarHint')}</p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  color="primary"
-                  size="sm"
-                  onClick={handleRemoveAvatar}
-                  disabled={uploading || avatarValue === null || avatarValue === undefined}
-                >
-                  {t('removeAvatar')}
-                </Button>
-              </div>
-              {errors.avatar?.message ? (
+              <p className="text-sm text-base-content/70">{t('avatarHint')}</p>
+              <Button
+                variant="outline"
+                color="primary"
+                size="sm"
+                onClick={handleRemoveAvatar}
+                disabled={uploading || avatarValue === null || avatarValue === undefined}
+              >
+                {t('removeAvatar')}
+              </Button>
+              {errors.avatar?.message && (
                 <p className="text-xs text-error">{errors.avatar.message}</p>
-              ) : null}
+              )}
             </div>
           </div>
 

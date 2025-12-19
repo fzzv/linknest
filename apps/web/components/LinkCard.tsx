@@ -43,7 +43,7 @@ const LinkCard = ({ link, className, onContextMenu }: LinkCardProps) => {
       target={link.url ? "_blank" : undefined}
       rel={link.url ? "noopener noreferrer" : undefined}
       className={cn(
-        "card card-side bg-base-100 shadow-sm",
+        "card card-side bg-base-200 border border-primary/20 shadow-sm",
         className,
       )}
       onContextMenu={onContextMenu}
@@ -58,19 +58,19 @@ const LinkCard = ({ link, className, onContextMenu }: LinkCardProps) => {
             onError={() => setFinalIconSrc('/ghost.svg')}
           />
         ) : (
-          <span className="flex h-24 w-24 items-center justify-center text-2xl font-semibold text-white/90 shadow-sm">
+          <span className="flex h-24 w-24 items-center justify-center text-2xl font-semibold text-primary shadow-sm">
             {fallbackInitial}
           </span>
         )}
       </figure>
       <div className="card-body">
         <Tooltip content={link.title} className="block w-full" variant="primary" placement="bottom">
-          <h3 className="text-base font-semibold leading-tight text-white group-hover:text-white line-clamp-1">
+          <h3 className="text-base font-semibold leading-tight line-clamp-1">
             {link.title}
           </h3>
         </Tooltip>
         <Tooltip content={link.description} className="block w-full">
-          <p className="text-sm leading-relaxed text-white/60 line-clamp-1">
+          <p className="text-sm leading-relaxed line-clamp-1 text-base-content/70">
             {link.description}
           </p>
         </Tooltip>

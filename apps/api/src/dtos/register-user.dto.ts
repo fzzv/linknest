@@ -8,7 +8,7 @@ export class RegisterUserDto {
 
   @ApiProperty({ example: 'Passw0rd', minLength: 6, description: '登录密码' })
   @IsString({ message: '密码格式不正确' })
-  @MinLength(6, { message: '密码至少 6 位' })
+  @MinLength(8, { message: '密码至少 8 位' })
   password!: string;
 
   @ApiProperty({ example: '123456', description: '邮箱验证码' })

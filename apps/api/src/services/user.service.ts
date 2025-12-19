@@ -2,7 +2,7 @@ import { PrismaService } from "@linknest/db";
 import type { User } from "@linknest/db";
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { LoginDto, RefreshTokenDto, RegisterUserDto, SendVerificationCodeDto, UpdateUserDto } from "src/dtos";
+import { LoginDto, RefreshTokenDto, RegisterUserDto, ResetPasswordDto, SendVerificationCodeDto, UpdateUserDto } from "src/dtos";
 import { ConfigurationService } from "src/services/configuration.service";
 import { MailService } from "src/services/mail.service";
 import { VerificationCodeService } from "src/services/verification-code.service";
@@ -21,7 +21,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly configurationService: ConfigurationService,
     private readonly i18n: I18nService
-  ) {}
+  ) { }
 
   async getUsers() {
     return this.prisma.user.findMany({
@@ -51,7 +51,7 @@ export class UserService {
     await this.mailService.sendVerificationCode(email, code, this.verificationCodeTtlMinutes);
     await this.verificationCodeService.setCode(email, code, this.verificationCodeTtlMinutes * 60 * 1000);
 
-    return { message: this.i18n.t('messages.sendVerificationCode') };
+    return { message: this.i18n.t('message.sendVerificationCode') };
   }
 
   async register({ email, password, code, nickname }: RegisterUserDto) {
@@ -131,6 +131,88 @@ export class UserService {
     });
 
     return this.toSafeUser(updated);
+  }
+
+  async sendResetPasswordCode({ email }: SendVerificationCodeDto) {
+    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+    if (!existingUser) {
+      throw new NotFoundException(this.i18n.t('error.userNotFound'));
+    }
+
+    // 获取冷却时间
+    const cooldown = await this.verificationCodeService.getCooldownInSeconds(email);
+    if (cooldown > 0) {
+      throw new BadRequestException(this.i18n.t('error.tryAgainLater', { args: { cooldown } }));
+    }
+
+    // 生成验证码
+    const code = this.generateVerificationCode();
+    await this.mailService.sendPasswordResetCode(email, code, this.verificationCodeTtlMinutes);
+    await this.verificationCodeService.setCode(email, code, this.verificationCodeTtlMinutes * 60 * 1000);
+
+    return { message: this.i18n.t('message.resetPasswordCodeSent') };
+  }
+
+  async resetPassword({ email, code, newPassword, confirmPassword }: ResetPasswordDto) {
+    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+    if (!existingUser) {
+      throw new NotFoundException(this.i18n.t('error.userNotFound'));
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException(this.i18n.t('error.passwordsDoNotMatch'));
+    }
+
+    const recentPasswordHistories = await this.prisma.passwordHistory.findMany({
+      where: { userId: existingUser.id },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+      select: { password: true },
+    });
+
+    const recentPasswords = [existingUser.password, ...recentPasswordHistories.map((history) => history.password)];
+    for (const password of recentPasswords) {
+      const isReused = await verifyPassword(newPassword, password);
+      if (isReused) {
+        throw new BadRequestException(this.i18n.t('error.passwordRecentlyUsed'));
+      }
+    }
+
+    // 先校验是否最近三次的密码 再校验验证码，避免需要重复发验证码
+    const isValidCode = await this.verificationCodeService.verifyCode(email, code);
+    if (!isValidCode) {
+      throw new BadRequestException(this.i18n.t('error.invalidCode'));
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: existingUser.id },
+        data: { password: hashedPassword },
+      });
+
+      await tx.passwordHistory.create({
+        data: {
+          userId: existingUser.id,
+          password: existingUser.password,
+        },
+      });
+
+      const outdatedPasswords = await tx.passwordHistory.findMany({
+        where: { userId: existingUser.id },
+        orderBy: { createdAt: 'desc' },
+        skip: 3,
+        select: { id: true },
+      });
+
+      if (outdatedPasswords.length > 0) {
+        await tx.passwordHistory.deleteMany({
+          where: { id: { in: outdatedPasswords.map((item) => item.id) } },
+        });
+      }
+    });
+
+    return { message: this.i18n.t('message.resetPasswordSuccess') };
   }
 
   private generateVerificationCode() {

@@ -37,7 +37,8 @@ export const LinkFormModal = ({
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isLoadingLink, setIsLoadingLink] = useState(false);
   const [internalMessage, messageHolder] = useMessage({ placement: 'top' });
-  const message = messageApi ?? internalMessage;
+  // 关闭弹窗后的提示用message
+  const message = messageApi ?? internalMessage
 
   const schema = useMemo(() => createAddLinkSchema((key) => t(key)), [t]);
   const defaultValues = useMemo(
@@ -84,14 +85,14 @@ export const LinkFormModal = ({
         }
       } catch (error) {
         const messageText = error instanceof Error ? error.message : t('loadCategoryFailed');
-        message.error(messageText);
+        internalMessage.error(messageText);
       } finally {
         setLoadingCategories(false);
       }
     };
 
     void fetchData();
-  }, [open, activeCategoryId, isEditMode, message, setValue, t]);
+  }, [open, activeCategoryId, isEditMode, internalMessage, setValue, t]);
 
   useEffect(() => {
     if (!open || !activeCategoryId || isEditMode) return;
@@ -115,7 +116,7 @@ export const LinkFormModal = ({
         });
       } catch (error) {
         const messageText = error instanceof Error ? error.message : t('loadDetailFailed');
-        message.error(messageText);
+        internalMessage.error(messageText);
         reset(defaultValues);
       } finally {
         setIsLoadingLink(false);
@@ -123,7 +124,7 @@ export const LinkFormModal = ({
     };
 
     void fetchLink();
-  }, [open, isEditMode, linkId, activeCategoryId, message, reset, t, defaultValues]);
+  }, [open, isEditMode, linkId, activeCategoryId, internalMessage, reset, t, defaultValues]);
 
   const categoryOptions = useMemo(
     () => categories.map((category) => ({ value: category.id, label: category.name })),
@@ -140,10 +141,10 @@ export const LinkFormModal = ({
     try {
       const { url } = await uploadLinkIcon(file);
       setValue('icon', url, { shouldValidate: true });
-      message.success(t('uploadSuccess'));
+      internalMessage.success(t('uploadSuccess'));
     } catch (error) {
       const messageText = error instanceof Error ? error.message : t('uploadFailed');
-      message.error(messageText);
+      internalMessage.error(messageText);
     } finally {
       setIsUploadingIcon(false);
     }
@@ -160,7 +161,7 @@ export const LinkFormModal = ({
     try {
       if (isEditMode) {
         if (!linkId) {
-          message.error(t('loadDetailFailed'));
+          internalMessage.error(t('loadDetailFailed'));
           return;
         }
         await updateLink(linkId, values);
@@ -185,7 +186,7 @@ export const LinkFormModal = ({
         : isEditMode
           ? t('updateFailed')
           : t('createFailed');
-      message.error(messageText);
+      internalMessage.error(messageText);
     }
   };
 
@@ -214,14 +215,14 @@ export const LinkFormModal = ({
         </>
       )}
     >
-      {messageApi ? null : messageHolder}
+      {messageHolder}
       <form
         id="add-link-form"
         className="grid grid-cols-1 gap-4"
         onSubmit={handleSubmit(onSubmit)}
       >
         {isEditMode && isLoadingLink ? (
-          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-sm text-white/70">
+          <div className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm text-primary-content">
             <span className="loading loading-spinner loading-sm" aria-hidden="true" />
             <span>{t('loadingDetail')}</span>
           </div>

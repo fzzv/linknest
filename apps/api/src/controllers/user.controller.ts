@@ -7,6 +7,7 @@ import {
   RefreshTokenDto,
   RegisterResponseDto,
   RegisterUserDto,
+  ResetPasswordDto,
   SendVerificationCodeDto,
   UpdateUserDto,
   UserDto
@@ -43,6 +44,24 @@ export class UserController {
   @PublicApi()
   register(@Body() dto: RegisterUserDto) {
     return this.userService.register(dto);
+  }
+
+  @Post('reset-password/code')
+  @ApiOperation({ summary: '发送重置密码验证码' })
+  @ApiBody({ type: SendVerificationCodeDto })
+  @ApiCreatedResponse({ description: '验证码发送成功', type: MessageResponseDto })
+  @PublicApi()
+  sendResetPasswordCode(@Body() dto: SendVerificationCodeDto) {
+    return this.userService.sendResetPasswordCode(dto);
+  }
+
+  @Patch('reset-password')
+  @ApiOperation({ summary: '重置密码' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiOkResponse({ description: '重置成功', type: MessageResponseDto })
+  @PublicApi()
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.userService.resetPassword(dto);
   }
 
   @Post('login')

@@ -14,6 +14,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import { Upload as UploadIcon, Plus as PlusIcon } from 'lucide-react';
 
 type UploadVariant = 'button' | 'avatar' | 'dropzone';
 
@@ -70,47 +71,6 @@ export interface UploadProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
    */
   className?: string;
 }
-
-const UploadIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <path
-      d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M12 4v10m0 0 4-4m-4 4-4-4"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const PlusIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <path
-      d="M12 5v14M5 12h14"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 export const Upload = forwardRef<HTMLInputElement, UploadProps>(function Upload(
   {
@@ -198,10 +158,10 @@ export const Upload = forwardRef<HTMLInputElement, UploadProps>(function Upload(
 
   const sharedDropProps = allowDrop
     ? {
-        onDragOver: handleDragOver,
-        onDragLeave: handleDragLeave,
-        onDrop: handleDrop,
-      }
+      onDragOver: handleDragOver,
+      onDragLeave: handleDragLeave,
+      onDrop: handleDrop,
+    }
     : {};
 
   const baseContainerClass = cn(
@@ -217,9 +177,10 @@ export const Upload = forwardRef<HTMLInputElement, UploadProps>(function Upload(
       aria-label="Upload avatar"
       tabIndex={disabled ? -1 : 0}
       className={cn(
-        'group relative inline-flex h-28 w-28 items-center justify-center overflow-hidden border border-dashed border-white/10 bg-white/5',
-        shape === 'circle' ? 'rounded-full' : 'rounded-2xl',
-        'hover:border-white/30 hover:bg-white/10',
+        'group relative inline-flex h-28 w-28 items-center justify-center overflow-hidden',
+        'border border-dashed border-base-content/50 bg-base-300',
+        shape === 'circle' ? 'rounded-full' : 'rounded-md',
+        'hover:border-base-content hover:bg-base-300/10',
         baseContainerClass,
       )}
       onClick={handleClick}
@@ -234,14 +195,14 @@ export const Upload = forwardRef<HTMLInputElement, UploadProps>(function Upload(
           draggable={false}
         />
       ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-white/70">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-base-content">
           {icon ?? <PlusIcon className="h-7 w-7" />}
           <span className="text-xs font-semibold">Upload</span>
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition group-hover:opacity-100">
-        <span className="text-xs font-semibold text-white">{overlayText}</span>
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-primary/50 opacity-0 transition group-hover:opacity-100">
+        <span className="text-xs font-semibold text-primary-content">{overlayText}</span>
       </div>
     </div>
   );
@@ -252,22 +213,22 @@ export const Upload = forwardRef<HTMLInputElement, UploadProps>(function Upload(
       tabIndex={disabled ? -1 : 0}
       aria-label="Upload file"
       className={cn(
-        'group flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/2 px-6 py-10 text-center',
-        'hover:border-white/30 hover:bg-white/5',
+        'group flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-base-content/50 bg-base-300/80 px-6 py-10 text-center',
+        'hover:border-base-content hover:bg-base-300',
         baseContainerClass,
       )}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       {...sharedDropProps}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-white/70">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-base-300/5 text-base-content">
         {icon ?? <UploadIcon className="h-6 w-6" />}
       </div>
-      <div className="mt-4 text-sm font-semibold text-white">
+      <div className="mt-4 text-sm font-semibold text-base-content">
         {children ?? 'Click or drag file to this area'}
       </div>
-      {description ? <p className="mt-2 text-xs text-white/70">{description}</p> : null}
-      {hint ? <p className="mt-3 text-xs text-white/50">{hint}</p> : null}
+      {description ? <p className="mt-2 text-xs text-base-content/70">{description}</p> : null}
+      {hint ? <p className="mt-3 text-xs text-base-content/50">{hint}</p> : null}
     </div>
   );
 
@@ -275,8 +236,8 @@ export const Upload = forwardRef<HTMLInputElement, UploadProps>(function Upload(
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/20',
-        'hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
+        'inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-base-content shadow-lg shadow-primary/20',
+        'hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
         baseContainerClass,
       )}
       onClick={handleClick}

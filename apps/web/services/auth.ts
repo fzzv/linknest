@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client';
-import type { LoginFormValues, RegisterFormValues } from '@/schemas/auth';
+import type { LoginFormValues, RegisterFormValues, ResetPasswordFormValues } from '@/schemas/auth';
 
 export interface User {
   id: number;
@@ -45,4 +45,16 @@ export const sendVerificationCode = (email: string) =>
   apiClient<MessageResponse>('/users/send-code', {
     method: 'POST',
     body: { email },
+  });
+
+export const sendResetPasswordCode = (email: string) =>
+  apiClient<MessageResponse>('/users/reset-password/code', {
+    method: 'POST',
+    body: { email },
+  });
+
+export const resetPassword = (payload: ResetPasswordFormValues) =>
+  apiClient<MessageResponse>('/users/reset-password', {
+    method: 'PATCH',
+    body: payload,
   });

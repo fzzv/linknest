@@ -135,7 +135,7 @@ function ModalComponentImpl({
       role="dialog"
       aria-modal="true"
       className={cn(
-        'modal-box flex max-h-[90vh] w-full max-w-full flex-col gap-4 rounded-2xl border border-white/10 bg-neutral text-white shadow-2xl',
+        'modal-box flex max-h-[90vh] w-full max-w-full flex-col gap-4 rounded-2xl shadow-2xl',
         'backdrop-blur-lg',
         widthClassName,
         contentClassName,
@@ -144,28 +144,30 @@ function ModalComponentImpl({
     >
       <div
         className={cn(
-          'flex items-start justify-between gap-3 border-b border-white/5 pb-3',
+          'flex items-start justify-between gap-3 border-b border-base-content/50 pb-3',
           draggable && 'cursor-move select-none',
           draggable && dragHandleClassName,
         )}
       >
         <div className="flex flex-1 items-center gap-3">
           {icon ? <span className="text-xl">{icon}</span> : null}
-          {title ? <h3 className="text-lg font-semibold text-white">{title}</h3> : null}
+          {title ? <h3 className="text-lg font-semibold text-base-content">{title}</h3> : null}
         </div>
         {closable ? (
-          <button
+          <Button
+            variant="soft"
+            size="icon"
+            color="primary"
             type="button"
-            className="btn btn-ghost btn-sm text-white/70"
             aria-label="Close modal"
             onClick={handleCancel}
           >
             ✕
-          </button>
+          </Button>
         ) : null}
       </div>
 
-      <div className={cn('ln-modal-body flex-1 overflow-y-auto text-sm text-white/90', bodyClassName)}>
+      <div className={cn('ln-modal-body flex-1 overflow-y-auto text-sm text-base-content px-2', bodyClassName)}>
         {children ?? content}
       </div>
 
@@ -192,7 +194,7 @@ function ModalComponentImpl({
     ? createPortal(
         <div
           className={cn(
-            'modal modal-open z-1100',
+            'modal modal-open',
             centered ? 'items-center' : 'items-start pt-10 sm:pt-16',
             className,
           )}

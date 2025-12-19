@@ -2,6 +2,7 @@
 
 import { forwardRef, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { cn } from '@linknest/utils';
+import { SELECT_SIZES, SELECT_COLORS, SELECT_VARIANTS } from './common/constant';
 
 export type SelectOption = {
   value: string | number;
@@ -9,38 +10,14 @@ export type SelectOption = {
   disabled?: boolean;
 };
 
-const selectSizes = {
-  xs: 'select-xs',
-  sm: 'select-sm',
-  md: 'select-md',
-  lg: 'select-lg',
-  xl: 'select-xl',
-} as const;
-
-const selectVariants = {
-  solid: 'border',
-  ghost: 'select-ghost',
-} as const;
-
-const selectColors = {
-  neutral: 'select-neutral',
-  primary: 'select-primary',
-  secondary: 'select-secondary',
-  accent: 'select-accent',
-  info: 'select-info',
-  success: 'select-success',
-  warning: 'select-warning',
-  error: 'select-error',
-} as const;
-
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   label?: ReactNode;
   helperText?: ReactNode;
   error?: ReactNode;
   options?: SelectOption[];
-  size?: keyof typeof selectSizes;
-  variant?: keyof typeof selectVariants;
-  color?: keyof typeof selectColors;
+  size?: keyof typeof SELECT_SIZES;
+  color?: keyof typeof SELECT_COLORS;
+  variant?: keyof typeof SELECT_VARIANTS;
   fullWidth?: boolean;
   wrapperClassName?: string;
 }
@@ -52,8 +29,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     error,
     options,
     size = 'md',
-    variant = 'solid',
     color = 'neutral',
+    variant = 'custom',
     fullWidth,
     className,
     wrapperClassName,
@@ -63,18 +40,18 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 ) {
   return (
     <label className={cn('flex flex-col gap-2', fullWidth && 'w-full', wrapperClassName)}>
-      {label ? <span className="text-sm font-medium text-slate-200">{label}</span> : null}
+      {label && <span className="text-sm font-medium text-base-content">{label}</span>}
 
       <select
         ref={ref}
         className={cn(
-          'select',
-          selectSizes[size],
-          selectVariants[variant],
-          selectColors[error ? 'error' : color],
+          'select cursor-pointer rounded-md',
+          SELECT_SIZES[size],
+          SELECT_VARIANTS[variant],
+          SELECT_COLORS[error ? 'error' : color],
+          error && 'focus:outline-none focus:ring-1 focus:ring-error',
           fullWidth && 'w-full',
-          className,
-          error && 'focus:outline-none focus:ring-1 focus:ring-error'
+          className
         )}
         aria-invalid={Boolean(error)}
         {...props}
@@ -90,9 +67,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 
       {error ? (
         <span className="text-xs text-error">{error}</span>
-      ) : helperText ? (
-        <span className="text-xs text-slate-400">{helperText}</span>
-      ) : null}
+      ) : (
+        helperText && <span className="text-xs text-base-content/70">{helperText}</span>
+      )}
     </label>
   );
 });
