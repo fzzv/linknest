@@ -3,6 +3,7 @@ import { Button, ContextMenu, SvgIcon, type IconName } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useTranslations } from "next-intl";
 import { PencilLine, Trash2 } from "lucide-react";
+import Image from "next/image";
 
 interface SidebarItem {
   label: string;
@@ -39,7 +40,7 @@ const Sidebar = ({
       <header className="px-6 py-5">
         <div className="flex items-center gap-4 rounded-xl border border-primary bg-base-100 px-4 py-3 shadow-xl">
           <div className="relative h-12 w-12 rounded-md bg-primary flex items-center justify-center">
-            <span className="text-2xl font-bold text-primary-content">LN</span>
+            <Image src="/logo.svg" alt="LinkNest" width={48} height={48} />
           </div>
           <div>
             <p className="text-lg font-semibold text-base-content">LinkNest</p>
