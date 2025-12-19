@@ -1,0 +1,166 @@
+[
+  {
+    "type": "folder",
+    "title": "AI",
+    "children": [
+      {
+        "type": "link",
+        "title": "通义千问",
+        "url": "https://tongyi.aliyun.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/tongyi.aliyun.com.ico",
+        "description": "阿里巴巴推出的大语言模型，提供全能型的AI问答与创作服务。"
+      },
+      {
+        "type": "link",
+        "title": "ChatGPT",
+        "url": "https://chat.openai.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/chatgpt.com.ico",
+        "description": "OpenAI开发的革命性AI对话工具，具备领先的理解与生成能力。"
+      },
+      {
+        "type": "link",
+        "title": "Claude",
+        "url": "https://claude.ai/",
+        "icon": "https://icons.duckduckgo.com/ip3/claude.ai.ico",
+        "description": "Anthropic开发的AI助手，以安全、逻辑性强和长文本处理见长。"
+      },
+      {
+        "type": "link",
+        "title": "Gemini",
+        "url": "https://gemini.google.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/google.com.ico",
+        "description": "Google最强原生多模态AI模型，能够无缝理解文本、图像和视频。"
+      },
+      {
+        "type": "link",
+        "title": "Kimi智能助手",
+        "url": "https://kimi.moonshot.cn/",
+        "icon": "https://icons.duckduckgo.com/ip3/kimi.moonshot.cn.ico",
+        "description": "月之暗面推出的AI助手，支持超长上下文输入，擅长分析长文档。"
+      }
+    ]
+  },
+  {
+    "type": "folder",
+    "title": "工具",
+    "children": [
+      {
+        "type": "link",
+        "title": "tldraw",
+        "url": "https://www.tldraw.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/tldraw.com.ico",
+        "description": "一款极简风格的无限画布白板工具，体验流畅，支持多人协作。"
+      },
+      {
+        "type": "link",
+        "title": "JSON Formatter",
+        "url": "https://jsonformatter.org/",
+        "icon": "https://icons.duckduckgo.com/ip3/jsonformatter.org.ico",
+        "description": "强大的在线工具，用于验证、格式化、美化及转换JSON数据。"
+      },
+      {
+        "type": "link",
+        "title": "Excalidraw",
+        "url": "https://excalidraw.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/excalidraw.com.ico",
+        "description": "手绘风格的虚拟白板，非常适合绘制流程图和软件架构图。"
+      },
+      {
+        "type": "link",
+        "title": "TinyPNG (图片压缩)",
+        "url": "https://tinypng.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/tinypng.com.ico",
+        "description": "智能WebP、PNG和JPEG图片压缩工具，在保持画质的同时减小体积。"
+      },
+      {
+        "type": "link",
+        "title": "Carbon (代码转图片)",
+        "url": "https://carbon.now.sh/",
+        "icon": "https://icons.duckduckgo.com/ip3/carbon.now.sh.ico",
+        "description": "将源代码生成为精美的代码截图，支持多种主题，适合分享演示。"
+      }
+    ]
+  },
+  {
+    "type": "folder",
+    "title": "设计",
+    "children": [
+      {
+        "type": "link",
+        "title": "Figma",
+        "url": "https://www.figma.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/figma.com.ico",
+        "description": "行业领先的在线界面设计与协作工具，支持从原型到交付的全流程。"
+      },
+      {
+        "type": "link",
+        "title": "unDraw (扁平插画)",
+        "url": "https://undraw.co/",
+        "icon": "https://icons.duckduckgo.com/ip3/undraw.co.ico",
+        "description": "开源免费的扁平化插画库，支持在线自定义主题色并导出SVG。"
+      },
+      {
+        "type": "link",
+        "title": "Dribbble",
+        "url": "https://dribbble.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/dribbble.com.ico",
+        "description": "全球顶尖设计师的创意作品分享社区，寻找设计灵感的好去处。"
+      },
+      {
+        "type": "link",
+        "title": "Behance",
+        "url": "https://www.behance.net/",
+        "icon": "https://icons.duckduckgo.com/ip3/behance.net.ico",
+        "description": "Adobe旗下的创意作品展示与发现平台，涵盖摄影、设计等领域。"
+      },
+      {
+        "type": "link",
+        "title": "IconFont (阿里图标库)",
+        "url": "https://www.iconfont.cn/",
+        "icon": "https://icons.duckduckgo.com/ip3/iconfont.cn.ico",
+        "description": "阿里巴巴打造的矢量图标管理平台，拥有海量免费图标资源。"
+      }
+    ]
+  },
+  {
+    "type": "folder",
+    "title": "技术文档",
+    "children": [
+      {
+        "type": "link",
+        "title": "React",
+        "url": "https://react.dev/",
+        "icon": "https://icons.duckduckgo.com/ip3/react.dev.ico",
+        "description": "Meta开源的JavaScript库，用于构建高效、灵活的用户界面。"
+      },
+      {
+        "type": "link",
+        "title": "Vue.js",
+        "url": "https://vuejs.org/",
+        "icon": "https://icons.duckduckgo.com/ip3/vue2.zcopy.site.ico",
+        "description": "渐进式JavaScript框架，易学易用，拥有灵活的组件系统。"
+      },
+      {
+        "type": "link",
+        "title": "Golang",
+        "url": "https://go.dev/",
+        "icon": "https://icons.duckduckgo.com/ip3/go.dev.ico",
+        "description": "Google开发的高性能静态编程语言，简洁高效，适合并发编程。"
+      },
+      {
+        "type": "link",
+        "title": "MDN Web Docs",
+        "url": "https://developer.mozilla.org/",
+        "icon": "https://icons.duckduckgo.com/ip3/developer.mozilla.org.ico",
+        "description": "Mozilla维护的Web技术权威文档，涵盖HTML、CSS和JavaScript。"
+      },
+      {
+        "type": "link",
+        "title": "Tailwind CSS",
+        "url": "https://tailwindcss.com/",
+        "icon": "https://icons.duckduckgo.com/ip3/tailwindcss.com.ico",
+        "description": "实用优先的原子化CSS框架，帮助开发者快速构建定制化现代网站。"
+      }
+    ]
+  }
+]

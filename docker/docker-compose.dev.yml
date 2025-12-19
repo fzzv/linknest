@@ -23,6 +23,7 @@ services:
       && node_modules/.bin/prisma generate --schema prisma/schema.prisma --generator client
       && node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma
       && pnpm --filter @linknest/db build
+      && pnpm -C /app/packages/db run seed:default-links
       && pnpm --filter api dev"
 
   linknest-web:

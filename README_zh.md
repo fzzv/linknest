@@ -56,6 +56,7 @@ cp packages/db/.env.example packages/db/.env
 pnpm -C packages/db exec prisma generate --schema prisma/schema.prisma --generator client
 pnpm -C packages/db exec prisma migrate deploy --schema prisma/schema.prisma
 pnpm --filter @linknest/db build
+pnpm -C packages/db run seed:default-links
 pnpm dev
 ```
 

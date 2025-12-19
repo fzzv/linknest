@@ -27,4 +27,4 @@ FROM base AS runner
 ENV NODE_ENV=production
 COPY --from=installer /app /app
 EXPOSE 3000
-CMD ["sh", "-c", "cd /app/packages/db && node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma && node /app/apps/api/dist/main"]
+CMD ["sh", "-c", "cd /app/packages/db && node_modules/.bin/prisma migrate deploy --schema prisma/schema.prisma && node /app/packages/db/dist/src/seed-default-links.js && node /app/apps/api/dist/main"]
