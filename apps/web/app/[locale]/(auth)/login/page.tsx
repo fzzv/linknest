@@ -11,6 +11,7 @@ import { createLoginSchema, createResetPasswordSchema, type LoginFormValues, typ
 import { login as loginRequest, resetPassword, sendResetPasswordCode } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 const motionConfig = {
   initial: { opacity: 0, y: 24 },
@@ -149,7 +150,7 @@ export default function LoginPage() {
           className="w-20 h-20 rounded-3xl bg-primary text-primary-content flex items-center justify-center text-4xl font-semibold"
           {...motionConfig}
         >
-          LN
+          <Image src="/logo.svg" alt="LinkNest" width={100} height={100} />
         </motion.div>
         <motion.div className="space-y-4" {...motionConfig} transition={{ ...motionConfig.transition, delay: 0.1 }}>
           <h1 className="text-4xl font-semibold tracking-wide">LinkNest</h1>
