@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, Transition } from 'framer-motion';
 import { useMessage, TextField, Button, Status, type StatusColor } from '@linknest/ui';
+import { Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -23,6 +24,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const [codeCooldown, setCodeCooldown] = useState(0);
   const [sendingCode, setSendingCode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, messageHolder] = useMessage({ placement: 'top' });
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasJustRegisteredRef = useRef(false);
@@ -135,11 +138,13 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-base-100 text-primary">
       {messageHolder}
-      <motion.div className="flex items-center gap-2 text-xl font-semibold pt-10 pl-10" {...motionConfig}>
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-neutral text-sm font-bold">
-          <Image src="/logo.svg" alt="LinkNest" width={28} height={28} />
-        </span>
-        LinkNest
+      <motion.div className="text-xl font-semibold pt-10 pl-10" {...motionConfig}>
+        <Link href="/" aria-label="LinkNest home" className="inline-flex items-center gap-2">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-neutral text-sm font-bold">
+            <Image src="/logo.svg" alt="LinkNest" width={28} height={28} />
+          </span>
+          LinkNest
+        </Link>
       </motion.div>
       <div className="mx-auto flex max-w-2xl gap-10 px-6 py-10 lg:flex-row lg:items-center lg:justify-between">
         <motion.div
@@ -215,11 +220,21 @@ export default function RegisterPage() {
 
               <TextField
                 label={t('password')}
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder={t('passwordPlaceholder')}
                 autoComplete="new-password"
                 {...register('password')}
                 error={errors.password?.message}
+                inputSlot={(
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-base-content/60 transition hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                )}
               />
               <div className="space-y-1 text-xs text-base-content/70">
                 {passwordRequirements.map((rule) => (
@@ -232,11 +247,21 @@ export default function RegisterPage() {
 
               <TextField
                 label={t('confirmPassword')}
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder={t('confirmPasswordPlaceholder')}
                 autoComplete="new-password"
                 {...register('confirmPassword')}
                 error={errors.confirmPassword?.message}
+                inputSlot={(
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-base-content/60 transition hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                )}
               />
 
               <Button
