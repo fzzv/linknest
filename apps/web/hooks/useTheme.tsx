@@ -1,48 +1,13 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
-const THEME_STORAGE_KEY = 'linknest-theme';
-
-const DAISY_THEMES = [
-  'bumblebee',
-  'retro',
-  'halloween',
-  'lofi',
-  'garden',
-  'coffee',
-  'fantasy',
-  'aqua',
-  'pastel',
-  'light',
-  'synthwave',
-  'emerald',
-  'cupcake',
-  'dark',
-  'night',
-  'silk',
-  'acid',
-  'business',
-  'cyberpunk',
-  'dim',
-  'nord',
-  'corporate',
-  'cmyk',
-  'valentine',
-  'abyss',
-  'wireframe',
-  'black',
-  'forest',
-  'caramellatte',
-  'lemonade',
-  'dracula',
-  'winter',
-  'sunset',
-  'luxury',
-  'autumn',
-] as const;
-
-type ThemeName = (typeof DAISY_THEMES)[number];
+import {
+  THEME_STORAGE_KEY,
+  DAISY_THEMES,
+  DEFAULT_THEME,
+  isValidTheme,
+  type ThemeName,
+} from './theme-constants';
 
 type ThemeContextValue = {
   theme: ThemeName;
@@ -50,15 +15,23 @@ type ThemeContextValue = {
   themes: typeof DAISY_THEMES;
 };
 
-const DEFAULT_THEME: ThemeName = 'dark';
-
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const isValidTheme = (value: unknown): value is ThemeName =>
-  typeof value === 'string' && (DAISY_THEMES as readonly string[]).includes(value);
+type ThemeProviderProps = {
+  children: React.ReactNode;
+  initialTheme?: ThemeName;
+};
 
-const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<ThemeName>(DEFAULT_THEME);
+const ThemeProvider = ({ children, initialTheme }: ThemeProviderProps) => {
+  const [theme, setTheme] = useState<ThemeName>(() => {
+    if (typeof document !== 'undefined') {
+      const domTheme = document.documentElement.getAttribute('data-theme');
+      if (isValidTheme(domTheme)) {
+        return domTheme;
+      }
+    }
+    return initialTheme ?? DEFAULT_THEME;
+  });
 
   useEffect(() => {
     // Read persisted theme after mount to avoid SSR/client mismatches
@@ -73,9 +46,8 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     document.documentElement.setAttribute('data-theme', nextTheme);
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
-    } catch {
-      // ignore write errors (e.g., private mode)
-    }
+      document.cookie = `${THEME_STORAGE_KEY}=${nextTheme}; path=/; max-age=31536000; samesite=lax`;
+    } catch { }
   }, [theme]);
 
   const value = useMemo(

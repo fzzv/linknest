@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import { NextIntlClientProvider, hasLocale, Locale } from 'next-intl';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import localFont from 'next/font/local';
 import { DEFAULT_THEME, ThemeProvider } from '@/hooks/useTheme';
+import { THEME_STORAGE_KEY, isValidTheme } from '@/hooks/theme-constants';
 import '../globals.css';
 
 const geistSans = localFont({
@@ -45,10 +47,12 @@ export default async function LocaleLayout({
     notFound();
   }
   setRequestLocale(locale);
+  const themeCookie = (await cookies()).get(THEME_STORAGE_KEY)?.value;
+  const initialTheme = isValidTheme(themeCookie) ? themeCookie : DEFAULT_THEME;
   return (
-    <html lang={locale} data-theme={DEFAULT_THEME}>
+    <html lang={locale} data-theme={initialTheme}>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ThemeProvider>
+        <ThemeProvider initialTheme={initialTheme}>
           <NextIntlClientProvider>{children}</NextIntlClientProvider>
         </ThemeProvider>
       </body>
