@@ -155,10 +155,14 @@ export default function LoginPage() {
           className="w-20 h-20 rounded-3xl bg-primary text-primary-content flex items-center justify-center text-4xl font-semibold"
           {...motionConfig}
         >
-          <Image src="/logo.svg" alt="LinkNest" width={100} height={100} />
+          <Link href="/" aria-label="LinkNest home" className="flex h-full w-full items-center justify-center">
+            <Image src="/logo.svg" alt="LinkNest" width={100} height={100} />
+          </Link>
         </motion.div>
         <motion.div className="space-y-4" {...motionConfig} transition={{ ...motionConfig.transition, delay: 0.1 }}>
-          <h1 className="text-4xl font-semibold tracking-wide">LinkNest</h1>
+          <Link href="/" aria-label="LinkNest home" className="inline-flex">
+            <h1 className="text-4xl font-semibold tracking-wide">LinkNest</h1>
+          </Link>
           <p className="text-lg">{t('subtitle')}</p>
         </motion.div>
       </div>
