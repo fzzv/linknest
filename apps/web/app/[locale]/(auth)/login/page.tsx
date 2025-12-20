@@ -7,11 +7,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMessage, TextField, Button } from '@linknest/ui';
+import { Eye, EyeOff } from 'lucide-react';
 import { createLoginSchema, createResetPasswordSchema, type LoginFormValues, type ResetPasswordFormValues } from '@/schemas/auth';
 import { login as loginRequest, resetPassword, sendResetPasswordCode } from '@/services/auth';
 import { useAuthStore } from '@/store/auth-store';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { cn } from '@linknest/utils';
 
 const motionConfig = {
   initial: { opacity: 0, y: 24 },
@@ -26,6 +28,9 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'reset'>('login');
   const [codeCooldown, setCodeCooldown] = useState(0);
   const [sendingCode, setSendingCode] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showResetConfirmPassword, setShowResetConfirmPassword] = useState(false);
   // useAuthStore with separate selectors, avoiding object creation that trips the getServerSnapshot warning in server components
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -201,20 +206,46 @@ export default function LoginPage() {
 
               <TextField
                 label={t('newPassword')}
-                type="password"
+                type={showResetPassword ? 'text' : 'password'}
                 placeholder={t('newPasswordPlaceholder')}
                 autoComplete="new-password"
                 {...registerReset('newPassword')}
                 error={resetErrors.newPassword?.message}
+                inputSlot={(
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPassword((prev) => !prev)}
+                    aria-label={showResetPassword ? 'Hide password' : 'Show password'}
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-md text-base-content/60 cursor-pointer transition",
+                      "hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    )}
+                  >
+                    {showResetPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                )}
               />
 
               <TextField
                 label={t('confirmPassword')}
-                type="password"
+                type={showResetConfirmPassword ? 'text' : 'password'}
                 placeholder={t('confirmPasswordPlaceholder')}
                 autoComplete="new-password"
                 {...registerReset('confirmPassword')}
                 error={resetErrors.confirmPassword?.message}
+                inputSlot={(
+                  <button
+                    type="button"
+                    onClick={() => setShowResetConfirmPassword((prev) => !prev)}
+                    aria-label={showResetConfirmPassword ? 'Hide password' : 'Show password'}
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-md text-base-content/60 cursor-pointer transition",
+                      "hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    )}
+                  >
+                    {showResetConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                )}
               />
 
               <Button
@@ -240,11 +271,21 @@ export default function LoginPage() {
 
               <TextField
                 label={t('password')}
-                type="password"
+                type={showLoginPassword ? 'text' : 'password'}
                 placeholder={t('passwordPlaceholder')}
                 autoComplete="current-password"
                 {...registerLogin('password')}
                 error={loginErrors.password?.message}
+                inputSlot={(
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword((prev) => !prev)}
+                    aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-base-content/60 transition hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                  >
+                    {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                )}
                 actionSlot={(
                   <button
                     type="button"
