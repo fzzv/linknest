@@ -138,11 +138,13 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-base-100 text-primary">
       {messageHolder}
-      <motion.div className="flex items-center gap-2 text-xl font-semibold pt-10 pl-10" {...motionConfig}>
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-neutral text-sm font-bold">
-          <Image src="/logo.svg" alt="LinkNest" width={28} height={28} />
-        </span>
-        LinkNest
+      <motion.div className="text-xl font-semibold pt-10 pl-10" {...motionConfig}>
+        <Link href="/" aria-label="LinkNest home" className="inline-flex items-center gap-2">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-neutral text-sm font-bold">
+            <Image src="/logo.svg" alt="LinkNest" width={28} height={28} />
+          </span>
+          LinkNest
+        </Link>
       </motion.div>
       <div className="mx-auto flex max-w-2xl gap-10 px-6 py-10 lg:flex-row lg:items-center lg:justify-between">
         <motion.div
