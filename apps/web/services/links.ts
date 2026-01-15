@@ -11,6 +11,9 @@ export interface LinkItem {
   sortOrder: number;
   categoryId: number;
   userId: number;
+  isPublic: boolean;
+  viewCount: number;
+  likeCount: number;
   createdAt: string;
   updatedAt: string;
 }

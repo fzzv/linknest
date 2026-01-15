@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { NextIntlClientProvider, hasLocale, Locale } from 'next-intl';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
@@ -8,6 +9,11 @@ import localFont from 'next/font/local';
 import { DEFAULT_THEME, ThemeProvider } from '@/hooks/useTheme';
 import { THEME_STORAGE_KEY, isValidTheme } from '@/hooks/theme-constants';
 import '../globals.css';
+
+type LocaleLayoutProps = {
+  children: ReactNode;
+  params: Promise<{ locale: string }>;
+};
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
@@ -23,7 +29,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: Omit<LayoutProps<'/[locale]'>, 'children'>
+  props: Omit<LocaleLayoutProps, 'children'>
 ): Promise<Metadata> {
   const {locale} = await props.params;
 
@@ -41,7 +47,7 @@ export async function generateMetadata(
 export default async function LocaleLayout({
   children,
   params
-}: LayoutProps<'/[locale]'>) {
+}: LocaleLayoutProps) {
   const {locale} = await params;
   if (!hasLocale(routing.locales, locale)) {
     notFound();

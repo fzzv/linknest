@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, Min } from 'class-validator';
 
 export class CreateLinkDto {
   @ApiProperty({ example: 'GitHub' })
@@ -35,6 +35,11 @@ export class CreateLinkDto {
   @IsInt()
   @Min(1)
   categoryId!: number;
+
+  @ApiProperty({ example: false, required: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
 }
 
 export class UpdateLinkDto extends PartialType(CreateLinkDto) {}
@@ -66,6 +71,15 @@ export class LinkDto {
 
   @ApiProperty({ example: 1 })
   userId!: number;
+
+  @ApiProperty({ example: false })
+  isPublic!: boolean;
+
+  @ApiProperty({ example: 100 })
+  viewCount!: number;
+
+  @ApiProperty({ example: 50 })
+  likeCount!: number;
 
   @ApiProperty({ type: String, format: 'date-time' })
   createdAt!: Date;

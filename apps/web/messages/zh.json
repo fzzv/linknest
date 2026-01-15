@@ -221,5 +221,39 @@
     "nicknameTooLong": "昵称长度不能超过 30 个字符",
     "nicknameRequired": "请填写昵称",
     "avatarTooLong": "头像地址过长"
+  },
+  "Common": {
+    "login": "登录",
+    "logout": "退出"
+  },
+  "Discover": {
+    "title": "发现",
+    "heroTitle": "发现精彩链接",
+    "heroSubtitle": "寻找和收藏社区精选的优质资源",
+    "searchPlaceholder": "搜索链接、分类...",
+    "search": "搜索",
+    "featuredCategories": "精选分类",
+    "viewAll": "查看全部",
+    "thisWeekHot": "本周热门",
+    "recentlyPublic": "最近公开",
+    "noResults": "暂无内容",
+    "filterLatest": "最新",
+    "filterPopular": "最热",
+    "filterRecommended": "推荐",
+    "views": "{count} 次浏览",
+    "likes": "{count} 次点赞",
+    "like": "点赞",
+    "unlike": "取消点赞",
+    "loginToLike": "登录后才能点赞",
+    "linksCount": "{count} 个链接",
+    "goToDashboard": "我的仪表盘",
+    "backToHome": "返回首页",
+    "loadMore": "加载更多"
+  },
+  "Footer": {
+    "copyright": "2024 LinkNest。保留所有权利。",
+    "about": "关于",
+    "privacy": "隐私",
+    "terms": "条款"
   }
 }

@@ -8,6 +8,11 @@ export class CreateCategoryDto {
   @IsNotEmpty()
   name!: string;
 
+  @ApiProperty({ example: 'Work related bookmarks', required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  description?: string | null;
+
   @ApiProperty({ example: 0, required: false, default: 0 })
   @IsOptional()
   @IsInt()
@@ -38,6 +43,9 @@ export class CategoryDto {
 
   @ApiProperty({ example: 'Work' })
   name!: string;
+
+  @ApiProperty({ example: 'Work related bookmarks', nullable: true })
+  description!: string | null;
 
   @ApiProperty({ example: 0 })
   sortOrder!: number;

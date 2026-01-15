@@ -221,5 +221,39 @@
     "nicknameTooLong": "Nickname must be 30 characters or less",
     "nicknameRequired": "Nickname is required",
     "avatarTooLong": "Avatar URL is too long"
+  },
+  "Common": {
+    "login": "Log In",
+    "logout": "Log Out"
+  },
+  "Discover": {
+    "title": "Discover",
+    "heroTitle": "Discover Amazing Links",
+    "heroSubtitle": "Find and save the best resources curated by our community",
+    "searchPlaceholder": "Search links, categories...",
+    "search": "Search",
+    "featuredCategories": "Featured Categories",
+    "viewAll": "View All",
+    "thisWeekHot": "This Week's Hottest",
+    "recentlyPublic": "Recently Shared",
+    "noResults": "No results found",
+    "filterLatest": "Latest",
+    "filterPopular": "Popular",
+    "filterRecommended": "Recommended",
+    "views": "{count} views",
+    "likes": "{count} likes",
+    "like": "Like",
+    "unlike": "Unlike",
+    "loginToLike": "Log in to like",
+    "linksCount": "{count} links",
+    "goToDashboard": "My Dashboard",
+    "backToHome": "Back to Home",
+    "loadMore": "Load More"
+  },
+  "Footer": {
+    "copyright": "2024 LinkNest. All rights reserved.",
+    "about": "About",
+    "privacy": "Privacy",
+    "terms": "Terms"
   }
 }

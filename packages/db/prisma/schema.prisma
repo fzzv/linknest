@@ -35,6 +35,7 @@ model User {
   links             Link[] // 用户拥有的链接（方便统计总数或全局搜索）
   files             File[]
   passwordHistories PasswordHistory[]
+  linkLikes         LinkLike[] // 用户点赞的链接
 }
 
 model VerificationCode {
@@ -52,11 +53,12 @@ model VerificationCode {
 // 分类模型 (对应 Chrome 书签的文件夹)
 // --------------------------------------
 model Category {
-  id        Int     @id @default(autoincrement())
-  name      String  @db.VarChar(255) // 分类名称
-  sortOrder Int     @default(0) // 排序权重，数字越小越靠前
-  isPublic  Boolean @default(false) // 是否公开（未来扩展分享功能用）
-  icon      String? @db.VarChar(255) // 分类图标
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(255) // 分类名称
+  description String? @db.VarChar(500) // 分类说明
+  sortOrder   Int     @default(0) // 排序权重，数字越小越靠前
+  isPublic    Boolean @default(false) // 是否公开（未来扩展分享功能用）
+  icon        String? @db.VarChar(255) // 分类图标
 
   // --- 关联用户 ---
   userId Int?
@@ -103,11 +105,24 @@ model Link {
   userId Int?
   user   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  isPublic Boolean @default(false)
+
+  // --- 统计字段 ---
+  viewCount Int @default(0) // 浏览量
+  likeCount Int @default(0) // 点赞数（冗余存储，提升查询性能）
+
+  // --- 点赞关联 ---
+  linkLikes LinkLike[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([categoryId]) // 查找分类下的链接
   @@index([userId]) // 查找用户的所有链接
+  @@index([isPublic, updatedAt])
+  @@index([isPublic, viewCount]) // 按浏览量查询公开链接
+  @@index([isPublic, likeCount]) // 按点赞数查询公开链接
+  @@index([isPublic, createdAt]) // 按创建时间查询公开链接
 }
 
 // --------------------------------------
@@ -188,4 +203,21 @@ model PasswordHistory {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId, createdAt]) // 复合索引 查询最近的三个密码更快
+}
+
+// --------------------------------------
+// 链接点赞表：记录用户对链接的点赞
+// --------------------------------------
+model LinkLike {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  linkId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, linkId]) // 确保用户只能点赞一次
+  @@index([linkId]) // 查询链接的点赞数
+  @@index([userId]) // 查询用户的点赞列表
 }

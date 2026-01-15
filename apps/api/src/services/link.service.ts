@@ -1,6 +1,6 @@
 import { PrismaService, type Link } from '@linknest/db';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateLinkDto, UpdateLinkDto } from 'src/dtos';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { CreateLinkDto, UpdateLinkDto, LikeResponseDto } from 'src/dtos';
 
 @Injectable()
 export class LinkService {
@@ -80,6 +80,7 @@ export class LinkService {
         sortOrder: dto.sortOrder ?? 0,
         categoryId: dto.categoryId,
         userId,
+        isPublic: dto.isPublic ?? false,
       },
     });
   }
@@ -99,6 +100,7 @@ export class LinkService {
         cover: dto.cover,
         sortOrder: dto.sortOrder,
         categoryId: dto.categoryId,
+        isPublic: dto.isPublic,
       },
     });
   }
@@ -133,5 +135,100 @@ export class LinkService {
       throw new NotFoundException('Public category not found');
     }
     return category;
+  }
+
+  /**
+   * 确保链接是公开的
+   */
+  private async ensurePublicLink(id: number): Promise<Link> {
+    const link = await this.prisma.link.findFirst({
+      where: { id, isPublic: true },
+    });
+    if (!link) {
+      throw new NotFoundException('Public link not found');
+    }
+    return link;
+  }
+
+  /**
+   * 点赞链接
+   */
+  async likeLink(linkId: number, userId: number): Promise<LikeResponseDto> {
+    const link = await this.ensurePublicLink(linkId);
+
+    // 检查是否已点赞
+    const existing = await this.prisma.linkLike.findUnique({
+      where: {
+        userId_linkId: { userId, linkId },
+      },
+    });
+
+    if (existing) {
+      throw new ConflictException('Already liked');
+    }
+
+    // 使用事务同时创建点赞记录和增加计数
+    await this.prisma.$transaction([
+      this.prisma.linkLike.create({
+        data: { userId, linkId },
+      }),
+      this.prisma.link.update({
+        where: { id: linkId },
+        data: { likeCount: { increment: 1 } },
+      }),
+    ]);
+
+    return {
+      liked: true,
+      likeCount: link.likeCount + 1,
+    };
+  }
+
+  /**
+   * 取消点赞
+   */
+  async unlikeLink(linkId: number, userId: number): Promise<LikeResponseDto> {
+    const link = await this.ensurePublicLink(linkId);
+
+    // 检查是否已点赞
+    const existing = await this.prisma.linkLike.findUnique({
+      where: {
+        userId_linkId: { userId, linkId },
+      },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Like not found');
+    }
+
+    // 使用事务同时删除点赞记录和减少计数
+    await this.prisma.$transaction([
+      this.prisma.linkLike.delete({
+        where: { id: existing.id },
+      }),
+      this.prisma.link.update({
+        where: { id: linkId },
+        data: { likeCount: { decrement: 1 } },
+      }),
+    ]);
+
+    return {
+      liked: false,
+      likeCount: Math.max(0, link.likeCount - 1),
+    };
+  }
+
+  /**
+   * 增加浏览量
+   */
+  async incrementViewCount(linkId: number): Promise<{ message: string }> {
+    await this.ensurePublicLink(linkId);
+
+    await this.prisma.link.update({
+      where: { id: linkId },
+      data: { viewCount: { increment: 1 } },
+    });
+
+    return { message: 'View count incremented' };
   }
 }

@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { CreateLinkDto, LinkDto, MessageResponseDto, UpdateLinkDto, UploadLinkIconResponseDto } from 'src/dtos';
+import { CreateLinkDto, LinkDto, MessageResponseDto, UpdateLinkDto, UploadLinkIconResponseDto, LikeResponseDto } from 'src/dtos';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { PublicApi } from 'src/decorators/public-api.decorator';
 import { LinkIconService } from 'src/services/link-icon.service';
@@ -150,5 +150,33 @@ export class LinkController {
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
   uploadLinkIcon(@UploadedFile() file: Express.Multer.File) {
     return this.linkIconService.upload(file);
+  }
+
+  @Post(':id/like')
+  @ApiOperation({ summary: '点赞链接' })
+  @ApiOkResponse({ type: LikeResponseDto })
+  likeLink(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('userId') userId: number,
+  ) {
+    return this.linkService.likeLink(id, userId);
+  }
+
+  @Delete(':id/like')
+  @ApiOperation({ summary: '取消点赞' })
+  @ApiOkResponse({ type: LikeResponseDto })
+  unlikeLink(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('userId') userId: number,
+  ) {
+    return this.linkService.unlikeLink(id, userId);
+  }
+
+  @Post(':id/view')
+  @PublicApi()
+  @ApiOperation({ summary: '增加浏览量' })
+  @ApiOkResponse({ type: MessageResponseDto })
+  incrementViewCount(@Param('id', ParseIntPipe) id: number) {
+    return this.linkService.incrementViewCount(id);
   }
 }
