@@ -4,15 +4,14 @@ import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "rea
 import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
-import Link from "next/link";
-import { Download, LogOut, Menu, Palette, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { Download, Home, LogOut, Menu, Palette, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
 import { cn, download } from "@linknest/utils";
 import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
 import { Avatar, Button, ContextMenu, Modal, Select, useMessage, type IconName } from "@linknest/ui";
 import { useAuthStore } from "@/store/auth-store";
 import { useLocale, useTranslations, type Locale } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
 import LinkFormModal from "@/components/LinkFormModal";
 import CategoryFormModal from "@/components/CategoryFormModal";
 import { useVirtualizedMasonryGrid } from "@/hooks/useVirtualizedMasonryGrid";
@@ -476,7 +475,10 @@ export default function DashboardPage() {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <span>LinkNest</span>
+          <Link href="/" className="flex items-center gap-1 hover:text-primary transition-colors">
+            <Home className="h-4 w-4" />
+            <span>LinkNest</span>
+          </Link>
           <div className="ml-auto flex items-center gap-3">
             <Select
               size="sm"

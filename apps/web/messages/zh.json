@@ -223,6 +223,7 @@
     "avatarTooLong": "头像地址过长"
   },
   "Common": {
+    "theme": "主题",
     "login": "登录",
     "logout": "退出"
   },

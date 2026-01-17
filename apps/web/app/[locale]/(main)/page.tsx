@@ -116,7 +116,7 @@ export default function DiscoverPage() {
       {messageHolder}
 
       {/* Navbar */}
-      <DiscoverNavbar onSearch={handleSearch} />
+      <DiscoverNavbar />
 
       {/* Hero Section */}
       <HeroSection onSearch={handleSearch} />

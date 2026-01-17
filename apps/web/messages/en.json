@@ -223,6 +223,7 @@
     "avatarTooLong": "Avatar URL is too long"
   },
   "Common": {
+    "theme": "Theme",
     "login": "Log In",
     "logout": "Log Out"
   },
