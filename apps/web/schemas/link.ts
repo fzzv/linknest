@@ -29,6 +29,7 @@ export const createAddLinkSchema = (t: AddLinkTranslator) =>
       }),
     categoryId: z
       .coerce.number({ error: t('categoryRequired') }).min(1, t('categoryRequired')),
+    isPublic: z.boolean().default(false),
   });
 
 export type AddLinkFormValues = z.infer<ReturnType<typeof createAddLinkSchema>>;

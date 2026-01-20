@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, FileInput, InputField, Modal, Select, useMessage, type MessageApi } from '@linknest/ui';
+import { Button, FileInput, InputField, ResponsiveDialog, Select, useMessage, type MessageApi } from '@linknest/ui';
 import { fetchCategories, type Category } from '@/services/categories';
 import { createLink, fetchLinkDetail, updateLink, uploadLinkIcon } from '@/services/links';
 import { useTranslations } from 'next-intl';
@@ -49,6 +49,7 @@ export const LinkFormModal = ({
       icon: undefined as string | undefined,
       sortOrder: undefined as number | undefined,
       categoryId: activeCategoryId ?? 0,
+      isPublic: false,
     }),
     [activeCategoryId],
   );
@@ -67,6 +68,7 @@ export const LinkFormModal = ({
   });
 
   const iconValue = watch('icon');
+  const isPublicValue = watch('isPublic');
   const modalTitle = isEditMode ? t('editTitle') : t('title');
   const submitLabel = isEditMode ? t('save') : t('submit');
 
@@ -113,6 +115,7 @@ export const LinkFormModal = ({
           icon: data.icon ?? undefined,
           sortOrder: data.sortOrder ?? undefined,
           categoryId: data.categoryId ?? activeCategoryId ?? 0,
+          isPublic: data.isPublic ?? false,
         });
       } catch (error) {
         const messageText = error instanceof Error ? error.message : t('loadDetailFailed');
@@ -175,6 +178,7 @@ export const LinkFormModal = ({
           icon: values.icon,
           sortOrder: values.sortOrder,
           categoryId: values.categoryId,
+          isPublic: values.isPublic,
         });
         message.success(t('createSuccess'));
         onCreated?.();
@@ -191,7 +195,7 @@ export const LinkFormModal = ({
   };
 
   return (
-    <Modal
+    <ResponsiveDialog
       open={open}
       onClose={handleClose}
       title={modalTitle}
@@ -295,8 +299,22 @@ export const LinkFormModal = ({
           />
           <input type="hidden" {...register('icon')} />
         </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-base-content">{t('isPublicLabel')}</p>
+            <p className="text-xs text-base-content/50">{t('isPublicHelper')}</p>
+          </div>
+          <input
+            type="checkbox"
+            className="toggle toggle-primary"
+            checked={isPublicValue}
+            onChange={(e) => setValue('isPublic', e.target.checked)}
+            disabled={isLoadingLink}
+          />
+        </div>
       </form>
-    </Modal>
+    </ResponsiveDialog>
   );
 };
 

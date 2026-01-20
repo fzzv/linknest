@@ -40,6 +40,7 @@
     "react-dom": "^19.2.3",
     "react-draggable": "^4.5.0",
     "react-hook-form": "^7.66.1",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^4.1.13",
+    "vaul": "^1.1.2"
   }
 }

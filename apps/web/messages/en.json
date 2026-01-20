@@ -157,7 +157,9 @@
     "loadingDetail": "Loading link details…",
     "loadDetailFailed": "Failed to load link",
     "updateSuccess": "Link updated",
-    "updateFailed": "Failed to update link"
+    "updateFailed": "Failed to update link",
+    "isPublicLabel": "Public",
+    "isPublicHelper": "Make this link visible on the Discover page"
   },
   "CategoryFormModal": {
     "title": "New Category",
@@ -179,7 +181,9 @@
     "editTitle": "Edit Category",
     "save": "Save",
     "loadDetailFailed": "Failed to load category",
-    "loadingDetail": "Loading category details…"
+    "loadingDetail": "Loading category details…",
+    "isPublicLabel": "Public",
+    "isPublicHelper": "Make this category visible on the Discover page"
   },
   "ImportBookmarks": {
     "title": "Import Bookmarks",
@@ -225,7 +229,10 @@
   "Common": {
     "theme": "Theme",
     "login": "Log In",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "language": "Language",
+    "languageEnglish": "English",
+    "languageChinese": "中文"
   },
   "Discover": {
     "title": "Discover",

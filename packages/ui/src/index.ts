@@ -8,6 +8,8 @@ export * from './select';
 export * from './tooltip';
 export * from './file-input';
 export * from './modal';
+export * from './drawer';
+export * from './responsive-dialog';
 export * from './input-field';
 export * from './context-menu';
 export * from './upload';

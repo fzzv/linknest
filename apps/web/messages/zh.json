@@ -157,7 +157,9 @@
     "loadingDetail": "正在加载链接信息…",
     "loadDetailFailed": "获取链接详情失败",
     "updateSuccess": "更新成功",
-    "updateFailed": "更新失败"
+    "updateFailed": "更新失败",
+    "isPublicLabel": "公开",
+    "isPublicHelper": "公开后其他用户可以在发现页看到此链接"
   },
   "CategoryFormModal": {
     "title": "新建分类",
@@ -179,7 +181,9 @@
     "editTitle": "编辑分类",
     "save": "保存",
     "loadDetailFailed": "获取分类详情失败",
-    "loadingDetail": "正在加载分类信息…"
+    "loadingDetail": "正在加载分类信息…",
+    "isPublicLabel": "公开",
+    "isPublicHelper": "公开后其他用户可以在发现页看到此分类"
   },
   "ImportBookmarks": {
     "title": "导入书签",
@@ -225,7 +229,10 @@
   "Common": {
     "theme": "主题",
     "login": "登录",
-    "logout": "退出"
+    "logout": "退出",
+    "language": "语言",
+    "languageEnglish": "English",
+    "languageChinese": "中文"
   },
   "Discover": {
     "title": "发现",

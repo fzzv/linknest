@@ -18,6 +18,7 @@ export const createCategorySchema = (t: CategoryFormTranslator) =>
       .refine((val) => val === undefined || !Number.isNaN(val), {
         message: t('sortOrderInvalid'),
       }),
+    isPublic: z.boolean().default(false),
   });
 
 export type CategoryFormValues = z.infer<ReturnType<typeof createCategorySchema>>;

@@ -7,6 +7,7 @@ export interface Category {
   icon?: string | null;
   sortOrder?: number;
   count?: number;
+  isPublic?: boolean;
 }
 
 export const fetchCategories = () => apiClient<Category[]>('/categories');

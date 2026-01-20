@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, InputField, Modal, useMessage, type MessageApi } from '@linknest/ui';
+import { Button, InputField, ResponsiveDialog, useMessage, type MessageApi } from '@linknest/ui';
 import { useTranslations } from 'next-intl';
 import IconRadioGroup, { COMMON_ICON_NAMES } from './IconRadioGroup';
 import { createCategory, fetchCategoryDetail, updateCategory } from '@/services/categories';
@@ -23,6 +23,7 @@ const DEFAULT_VALUES: CategoryFormValues = {
   name: '',
   icon: COMMON_ICON_NAMES[0] ?? '',
   sortOrder: undefined,
+  isPublic: false,
 };
 
 const CategoryFormModal = ({
@@ -48,11 +49,15 @@ const CategoryFormModal = ({
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CategoryFormInput, unknown, CategoryFormValues>({
     resolver: zodResolver(schema),
     defaultValues: DEFAULT_VALUES,
   });
+
+  const isPublicValue = watch('isPublic');
 
   useEffect(() => {
     if (open && !isEditMode) {
@@ -71,6 +76,7 @@ const CategoryFormModal = ({
           name: detail.name ?? '',
           icon: detail.icon ?? COMMON_ICON_NAMES[0] ?? '',
           sortOrder: detail.sortOrder ?? undefined,
+          isPublic: detail.isPublic ?? false,
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : t('loadDetailFailed');
@@ -118,7 +124,7 @@ const CategoryFormModal = ({
   const submitLabel = isEditMode ? t('save') : t('submit');
 
   return (
-    <Modal
+    <ResponsiveDialog
       open={open}
       onClose={handleClose}
       title={modalTitle}
@@ -190,8 +196,21 @@ const CategoryFormModal = ({
             <p className="text-xs text-base-content/50">{t('iconHelper')}</p>
           )}
         </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-base-content">{t('isPublicLabel')}</p>
+            <p className="text-xs text-base-content/50">{t('isPublicHelper')}</p>
+          </div>
+          <input
+            type="checkbox"
+            className="toggle toggle-primary"
+            checked={isPublicValue}
+            onChange={(e) => setValue('isPublic', e.target.checked)}
+          />
+        </div>
       </form>
-    </Modal>
+    </ResponsiveDialog>
   );
 };
 

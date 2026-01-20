@@ -1,11 +1,13 @@
 'use client';
 
+import { type ChangeEvent } from 'react';
 import { cn } from '@linknest/utils';
 import { LogIn, LayoutDashboard, LogOut, Palette } from 'lucide-react';
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { useLocale, useTranslations, type Locale } from 'next-intl';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useAuthStore } from '@/store/auth-store';
+import { Select } from '@linknest/ui';
 import ThemeSelectorModal from '@/components/ThemeSelectorModal';
 
 interface DiscoverNavbarProps {
@@ -17,6 +19,21 @@ export default function DiscoverNavbar({ className }: DiscoverNavbarProps) {
   const tCommon = useTranslations('Common');
   const { isAuthenticated, user, logout } = useAuthStore();
   const [themeModalOpen, setThemeModalOpen] = useState(false);
+
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const languageOptions = [
+    { value: 'en', label: tCommon('languageEnglish') },
+    { value: 'zh', label: tCommon('languageChinese') },
+  ];
+
+  const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextLocale = event.target.value as Locale;
+    if (nextLocale === locale) return;
+    router.replace(pathname, { locale: nextLocale });
+  };
 
   return (
     <>
@@ -37,6 +54,18 @@ export default function DiscoverNavbar({ className }: DiscoverNavbarProps) {
 
       {/* Right Actions */}
       <div className="flex-none flex items-center gap-2">
+        {/* Language Selector */}
+        <Select
+          size="sm"
+          value={locale}
+          color="custom"
+          onChange={handleLanguageChange}
+          options={languageOptions}
+          aria-label={tCommon('language')}
+          wrapperClassName="w-auto"
+          className="min-w-24 pl-3"
+        />
+
         {/* Theme Button */}
         <button
           className="btn btn-ghost btn-sm btn-circle"
