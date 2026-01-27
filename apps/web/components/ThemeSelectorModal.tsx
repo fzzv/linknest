@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, Button } from '@linknest/ui';
+import { ResponsiveDialog, Button } from '@linknest/ui';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTheme, type ThemeName } from '@/hooks/useTheme';
@@ -57,7 +57,7 @@ const ThemeSelectorModal = ({ open, onClose }: ThemeSelectorModalProps) => {
   };
 
   return (
-    <Modal
+    <ResponsiveDialog
       open={open}
       onClose={onClose}
       title={t('title')}
@@ -92,7 +92,7 @@ const ThemeSelectorModal = ({ open, onClose }: ThemeSelectorModalProps) => {
 
         <ThemeRadioGroup value={theme} onChange={handleSelectTheme} themes={themes} />
       </div>
-    </Modal>
+    </ResponsiveDialog>
   );
 };
 

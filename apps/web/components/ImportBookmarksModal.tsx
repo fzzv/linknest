@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Modal, Upload, useMessage } from '@linknest/ui';
+import { Button, ResponsiveDialog, Upload, useMessage } from '@linknest/ui';
 import { useTranslations } from 'next-intl';
 import { importBookmarks, type ImportBookmarksResult } from '@/services/bookmarks';
 import { formatFileSize } from '@linknest/utils';
@@ -87,7 +87,7 @@ export function ImportBookmarksModal({ open, onClose, onImported }: ImportBookma
   return (
     <>
       {messageHolder}
-      <Modal
+      <ResponsiveDialog
         open={open}
         onClose={handleClose}
         title={t('title')}
@@ -143,7 +143,7 @@ export function ImportBookmarksModal({ open, onClose, onImported }: ImportBookma
             <p className="text-xs text-base-content/50">{t('filePlaceholder')}</p>
           )}
         </div>
-      </Modal>
+      </ResponsiveDialog>
     </>
   );
 }

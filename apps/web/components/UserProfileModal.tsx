@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Button, InputField, Modal, Upload, useMessage } from '@linknest/ui';
+import { Button, InputField, ResponsiveDialog, Upload, useMessage } from '@linknest/ui';
 import { useTranslations } from 'next-intl';
 import { createUpdateUserSchema, type UpdateUserFormInput, type UpdateUserFormValues } from '@/schemas/user';
 import { updateUserProfile, uploadAvatar } from '@/services/users';
@@ -103,7 +103,7 @@ export function UserProfileModal({ open, onClose }: UserProfileModalProps) {
   return (
     <>
       {messageHolder}
-      <Modal
+      <ResponsiveDialog
         open={open}
         onClose={handleClose}
         title={t('title')}
@@ -177,7 +177,7 @@ export function UserProfileModal({ open, onClose }: UserProfileModalProps) {
             error={errors.email?.message}
           />
         </form>
-      </Modal>
+      </ResponsiveDialog>
     </>
   );
 }
