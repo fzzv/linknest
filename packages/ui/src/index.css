@@ -1,3 +1,4 @@
 @import "tailwindcss";
-@source "./**/*.{ts,tsx}";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: all;
+}

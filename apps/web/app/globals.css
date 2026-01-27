@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@linknest/ui/index.css";
 @plugin "daisyui" {
   themes: all;
 }
+@source "../../../packages/ui";
