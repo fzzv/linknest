@@ -131,58 +131,60 @@ export default function CategoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen flex flex-col bg-base-100">
       {messageHolder}
 
-      {/* Navbar */}
-      <DiscoverNavbar />
+      {/* Main Content */}
+      <main className="flex-1">
+        {/* Navbar */}
+        <DiscoverNavbar />
 
-      {/* Header */}
-      <section className="bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10 py-12 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-base-content/70 hover:text-primary transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{t('backToHome')}</span>
-          </Link>
+        {/* Header */}
+        <section className="bg-linear-to-br from-primary/10 via-base-100 to-secondary/10 py-12 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-base-content/70 hover:text-primary transition-colors mb-6"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{t('backToHome')}</span>
+            </Link>
 
-          {category ? (
-            <>
-              <h1 className="text-3xl md:text-4xl font-bold">{category.name}</h1>
-              {category.description && (
-                <p className="text-lg text-base-content/70 mt-2">
-                  {category.description}
+            {category ? (
+              <>
+                <h1 className="text-3xl md:text-4xl font-bold">{category.name}</h1>
+                {category.description && (
+                  <p className="text-lg text-base-content/70 mt-2">
+                    {category.description}
+                  </p>
+                )}
+                <p className="text-sm text-base-content/50 mt-4">
+                  {t('linksCount', { count: category.total })}
                 </p>
-              )}
-              <p className="text-sm text-base-content/50 mt-4">
-                {t('linksCount', { count: category.total })}
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="skeleton h-10 w-48 mb-2" />
-              <div className="skeleton h-6 w-96" />
-            </>
-          )}
-        </div>
-      </section>
+              </>
+            ) : (
+              <>
+                <div className="skeleton h-10 w-48 mb-2" />
+                <div className="skeleton h-6 w-96" />
+              </>
+            )}
+          </div>
+        </section>
 
-      {/* Filter & Content */}
-      <section className="container mx-auto px-4 py-8">
-        {/* Filter Tabs */}
-        <div className="mb-6">
-          <FilterTabs value={sort} onChange={handleSortChange} />
-        </div>
+        {/* Filter & Content */}
+        <section className="container mx-auto px-4 py-8">
+          {/* Filter Tabs */}
+          <div className="mb-6">
+            <FilterTabs value={sort} onChange={handleSortChange} />
+          </div>
 
-        {/* Links Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {isLoading && !category
-            ? Array.from({ length: 9 }).map((_, i) => (
+          {/* Links Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {isLoading && !category
+              ? Array.from({ length: 9 }).map((_, i) => (
                 <FeaturedLinkCardSkeleton key={i} />
               ))
-            : category?.links.map((link) => (
+              : category?.links.map((link) => (
                 <FeaturedLinkCard
                   key={link.id}
                   link={link}
@@ -191,32 +193,33 @@ export default function CategoryPage() {
                   onUnlike={handleUnlike}
                 />
               ))}
-        </div>
-
-        {/* Empty State */}
-        {!isLoading && category?.links.length === 0 && (
-          <p className="text-center text-base-content/60 py-12">
-            {t('noResults')}
-          </p>
-        )}
-
-        {/* Load More */}
-        {hasMore && category && category.links.length > 0 && (
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={handleLoadMore}
-              disabled={isLoading}
-              className="btn btn-outline btn-primary"
-            >
-              {isLoading ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                t('loadMore')
-              )}
-            </button>
           </div>
-        )}
-      </section>
+
+          {/* Empty State */}
+          {!isLoading && category?.links.length === 0 && (
+            <p className="text-center text-base-content/60 py-12">
+              {t('noResults')}
+            </p>
+          )}
+
+          {/* Load More */}
+          {hasMore && category && category.links.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoading}
+                className="btn btn-outline btn-primary"
+              >
+                {isLoading ? (
+                  <span className="loading loading-spinner loading-sm" />
+                ) : (
+                  t('loadMore')
+                )}
+              </button>
+            </div>
+          )}
+        </section>
+      </main>
 
       {/* Footer */}
       <Footer />

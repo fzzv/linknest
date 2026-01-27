@@ -112,47 +112,49 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen flex flex-col bg-base-100">
       {messageHolder}
 
-      {/* Navbar */}
-      <DiscoverNavbar />
+      {/* Main Content */}
+      <main className="flex-1">
+        {/* Navbar */}
+        <DiscoverNavbar />
 
-      {/* Hero Section */}
-      <HeroSection onSearch={handleSearch} />
+        {/* Hero Section */}
+        <HeroSection onSearch={handleSearch} />
 
-      {/* Featured Categories */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">{t('featuredCategories')}</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {isLoadingCategories
-            ? Array.from({ length: 8 }).map((_, i) => (
+        {/* Featured Categories */}
+        <section className="container mx-auto px-4 py-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">{t('featuredCategories')}</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {isLoadingCategories
+              ? Array.from({ length: 8 }).map((_, i) => (
                 <FeaturedCategoryCardSkeleton key={i} />
               ))
-            : featuredCategories.map((category) => (
+              : featuredCategories.map((category) => (
                 <FeaturedCategoryCard key={category.id} category={category} />
               ))}
-        </div>
-        {!isLoadingCategories && featuredCategories.length === 0 && (
-          <p className="text-center text-base-content/60 py-8">
-            {t('noResults')}
-          </p>
-        )}
-      </section>
+          </div>
+          {!isLoadingCategories && featuredCategories.length === 0 && (
+            <p className="text-center text-base-content/60 py-8">
+              {t('noResults')}
+            </p>
+          )}
+        </section>
 
-      {/* This Week's Hot Links */}
-      <section className="container mx-auto px-4 py-12 bg-base-200/50">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">{t('thisWeekHot')}</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {isLoadingFeaturedLinks
-            ? Array.from({ length: 6 }).map((_, i) => (
+        {/* This Week's Hot Links */}
+        <section className="container mx-auto px-4 py-12 bg-base-200/50">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">{t('thisWeekHot')}</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {isLoadingFeaturedLinks
+              ? Array.from({ length: 6 }).map((_, i) => (
                 <FeaturedLinkCardSkeleton key={i} />
               ))
-            : featuredLinks.map((link) => (
+              : featuredLinks.map((link) => (
                 <FeaturedLinkCard
                   key={link.id}
                   link={link}
@@ -161,25 +163,25 @@ export default function DiscoverPage() {
                   onUnlike={handleUnlike}
                 />
               ))}
-        </div>
-        {!isLoadingFeaturedLinks && featuredLinks.length === 0 && (
-          <p className="text-center text-base-content/60 py-8">
-            {t('noResults')}
-          </p>
-        )}
-      </section>
+          </div>
+          {!isLoadingFeaturedLinks && featuredLinks.length === 0 && (
+            <p className="text-center text-base-content/60 py-8">
+              {t('noResults')}
+            </p>
+          )}
+        </section>
 
-      {/* Recently Public */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">{t('recentlyPublic')}</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {isLoadingRecentLinks
-            ? Array.from({ length: 6 }).map((_, i) => (
+        {/* Recently Public */}
+        <section className="container mx-auto px-4 py-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">{t('recentlyPublic')}</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {isLoadingRecentLinks
+              ? Array.from({ length: 6 }).map((_, i) => (
                 <FeaturedLinkCardSkeleton key={i} />
               ))
-            : recentLinks.map((link) => (
+              : recentLinks.map((link) => (
                 <FeaturedLinkCard
                   key={link.id}
                   link={link}
@@ -188,13 +190,14 @@ export default function DiscoverPage() {
                   onUnlike={handleUnlike}
                 />
               ))}
-        </div>
-        {!isLoadingRecentLinks && recentLinks.length === 0 && (
-          <p className="text-center text-base-content/60 py-8">
-            {t('noResults')}
-          </p>
-        )}
-      </section>
+          </div>
+          {!isLoadingRecentLinks && recentLinks.length === 0 && (
+            <p className="text-center text-base-content/60 py-8">
+              {t('noResults')}
+            </p>
+          )}
+        </section>
+      </main>
 
       {/* Footer */}
       <Footer />
