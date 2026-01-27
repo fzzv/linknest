@@ -5,7 +5,7 @@ import { useDebounce } from "use-debounce";
 import Sidebar from "@/components/Sidebar";
 import LinkCard, { LinkCardData, LinkCardSkeleton } from "@/components/LinkCard";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { Download, Home, LogOut, Menu, Palette, PencilLine, Plus, Search, Trash2, Upload as UploadIcon } from "lucide-react";
+import { Download, Home, LogOut, Menu, MoreVertical, Palette, PencilLine, Plus, Search, Trash2, Upload as UploadIcon, X } from "lucide-react";
 import { cn, download } from "@linknest/utils";
 import { deleteCategory, fetchCategories, fetchPublicCategories } from "@/services/categories";
 import { deleteLink, fetchLinks, fetchPublicLinks, searchLinks as searchPrivateLinks, searchPublicLinks, type LinkItem } from "@/services/links";
@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [themeModalOpen, setThemeModalOpen] = useState(false);
+  const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const t = useTranslations('Home');
   const tSidebar = useTranslations('Sidebar');
@@ -312,6 +313,8 @@ export default function DashboardPage() {
   const closeProfileModal = () => setProfileModalOpen(false);
   const openThemeModal = () => setThemeModalOpen(true);
   const closeThemeModal = () => setThemeModalOpen(false);
+  const openNavDrawer = () => setIsNavDrawerOpen(true);
+  const closeNavDrawer = () => setIsNavDrawerOpen(false);
   // 导出书签
   const handleExportBookmarks = useCallback(() => {
     if (!isAuthenticated) return;
@@ -479,7 +482,9 @@ export default function DashboardPage() {
             <Home className="h-4 w-4" />
             <span>LinkNest</span>
           </Link>
-          <div className="ml-auto flex items-center gap-3">
+
+          {/* Desktop Navigation */}
+          <div className="ml-auto hidden md:flex items-center gap-3">
             <Select
               size="sm"
               value={locale}
@@ -557,7 +562,149 @@ export default function DashboardPage() {
               </Button>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            color="primary"
+            className="ml-auto md:hidden"
+            onClick={openNavDrawer}
+            aria-label="Open menu"
+          >
+            <MoreVertical className="h-5 w-5" />
+          </Button>
         </nav>
+
+        {/* Mobile Navigation Drawer */}
+        {isNavDrawerOpen && (
+          <div
+            aria-hidden
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] md:hidden"
+            onClick={closeNavDrawer}
+          />
+        )}
+        <div
+          className={cn(
+            "fixed inset-y-0 right-0 z-50 w-72 bg-base-100 shadow-2xl transition-transform duration-300 md:hidden",
+            isNavDrawerOpen ? "translate-x-0" : "translate-x-full",
+          )}
+        >
+          <div className="flex h-16 items-center justify-between border-b border-base-300 px-4">
+            <span className="font-semibold">{t('menu')}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              color="primary"
+              onClick={closeNavDrawer}
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2 p-4">
+            {/* Language Selector */}
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm">{t('language')}</span>
+              <Select
+                size="sm"
+                value={locale}
+                color="custom"
+                onChange={handleLanguageChange}
+                options={languageOptions}
+                aria-label={t('language')}
+                wrapperClassName="w-auto"
+                className="min-w-24 pl-5"
+              />
+            </div>
+
+            {/* Theme Button */}
+            <button
+              type="button"
+              onClick={() => {
+                closeNavDrawer();
+                openThemeModal();
+              }}
+              className="flex items-center justify-between py-3 hover:text-primary transition-colors"
+            >
+              <span className="flex items-center gap-2 text-sm">
+                <Palette className="h-4 w-4" />
+                {t('theme')}
+              </span>
+              <span className="text-xs uppercase badge badge-primary badge-sm">{themeLabel}</span>
+            </button>
+
+            {isAuthenticated ? (
+              <>
+                {/* User Info */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeNavDrawer();
+                    openProfileModal();
+                  }}
+                  className="flex items-center gap-3 py-3 hover:text-primary transition-colors border-t border-base-300 mt-2"
+                >
+                  <Avatar
+                    src={user?.avatar ?? undefined}
+                    alt={user?.nickname ?? user?.email ?? "User"}
+                    size="sm"
+                  />
+                  <span className="text-sm font-medium truncate">
+                    {user?.nickname ?? user?.email ?? "User"}
+                  </span>
+                </button>
+
+                {/* Import Bookmarks */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeNavDrawer();
+                    openImportModal();
+                  }}
+                  className="flex items-center gap-2 py-3 text-sm hover:text-primary transition-colors"
+                >
+                  <UploadIcon className="h-4 w-4" />
+                  {t('importBookmarks')}
+                </button>
+
+                {/* Export Bookmarks */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeNavDrawer();
+                    handleExportBookmarks();
+                  }}
+                  className="flex items-center gap-2 py-3 text-sm hover:text-primary transition-colors"
+                >
+                  <Download className="h-4 w-4" />
+                  {t('exportBookmarks')}
+                </button>
+
+                {/* Logout */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeNavDrawer();
+                    handleLogout();
+                  }}
+                  className="flex items-center gap-2 py-3 text-sm text-error hover:text-error/80 transition-colors border-t border-base-300 mt-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {t('logout')}
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                onClick={closeNavDrawer}
+                className="flex items-center justify-center gap-2 py-3 mt-2 bg-primary text-primary-content rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                {t('login')}
+              </Link>
+            )}
+          </div>
+        </div>
 
         <main className="px-4 py-5 sm:px-8 lg:px-14 flex flex-col gap-10 h-[calc(100vh-4rem)]">
           <div className="w-full shrink-0">
