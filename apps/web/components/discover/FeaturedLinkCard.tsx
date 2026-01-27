@@ -5,6 +5,7 @@ import { Heart, Eye, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FeaturedLink, PublicLink } from '@/services/discover';
+import { incrementViewCount } from '@/services/discover';
 import { API_BASE_URL } from '@/lib/env';
 
 interface FeaturedLinkCardProps {
@@ -37,6 +38,7 @@ export default function FeaturedLinkCard({
   const t = useTranslations('Discover');
   const [isLiked, setIsLiked] = useState(link.isLiked);
   const [likeCount, setLikeCount] = useState(link.likeCount);
+  const [viewCount, setViewCount] = useState(link.viewCount);
   const [isLiking, setIsLiking] = useState(false);
 
   const iconSrc = buildIconSrc(link.icon);
@@ -70,11 +72,20 @@ export default function FeaturedLinkCard({
     }
   };
 
+  const handleCardClick = () => {
+    // 点击链接时 增加浏览量
+    setViewCount((prev) => prev + 1);
+    incrementViewCount(link.id).catch(() => {
+      // 静默失败 - 链接仍然会打开
+    });
+  };
+
   return (
     <a
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={handleCardClick}
       className={cn(
         'card bg-base-200 border border-base-300 hover:border-primary/50 hover:shadow-lg transition-all duration-200 group',
         className,
@@ -130,7 +141,7 @@ export default function FeaturedLinkCard({
               </button>
               <div className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
-                <span>{link.viewCount}</span>
+                <span>{viewCount}</span>
               </div>
             </div>
           </div>
